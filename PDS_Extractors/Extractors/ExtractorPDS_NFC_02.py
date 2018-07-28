@@ -43,5 +43,5 @@ data = d.screen()
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 
-with open(date_string + 'PDS_02.json', 'w') as f:
+with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\' + date_string + '_PDS_02.json', 'w') as f:
     json.dump(data, f, indent=4, sort_keys=True, ensure_ascii=False)

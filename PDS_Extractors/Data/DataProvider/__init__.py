@@ -2,31 +2,22 @@ import json
 import LatestFileVersion
 import datetime
 from PDS_Extractors.Data.DataPoint import DataPoint
-import collections
 
 
 class DataProvider:
 
     @staticmethod
     def agrmz():
-        # TODO: clean
-        agrmz_file = LatestFileVersion.latest_file_version('json', 'PDS_KGS_AGRMZ',
-                                                           current='C:\\Users\\SubarFernanOlivera\\PycharmProjects'
-                                                                   '\\DataExtractor\\PDS_Extractors')
-
-        # agrmz_file = LatestFileVersion.latest_file_version('json', 'PDS_KGS_AGRMZ',
-        #                                                       current='C:\\Users\\vravagn\\PycharmProjects'
-        #                                                       '\\DataExtractor\\PDS_Extractors')
-
-        data_json = json.load(open(agrmz_file))
-
+        data_json = json.load(open(DataPoint.data_agrmz_raw))
         swap_list = []
         swap_string = ''
         counter = 0
         i = 0
         pos_first_register_data = ''
         asa_ab_first_register_data = ''
-
+        # print(type(data_json))
+        # for u in data_json:
+        #     print(u)
         while i < len(data_json):
 
             if data_json[i]['data'][1] == '_' and counter is 0:  # reached a start of register
@@ -45,7 +36,7 @@ class DataProvider:
                     i += 2
                     continue
                 else:
-                    swap_list.append(swap_string)
+                    swap_list.append((data_json[i]['bm'], swap_string))
                     swap_string = ''
                     counter = 0  # restart counter with current line data for further correct analysis
                     continue
@@ -58,9 +49,6 @@ class DataProvider:
 
         date = datetime.date.today()
         date_string = date.strftime('%y%m%d')
-
-        with open(date_string + 'PDS_KGS_AGR_test.json', 'w', encoding='utf-8') as f:
-            json.dump(swap_list, f, indent=4, sort_keys=True, ensure_ascii=False)
 
         slices = {
             1: {
@@ -112,8 +100,12 @@ class DataProvider:
 
         for full_line in swap_list:
 
-            amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the register (each line has 80 char)
-            register_dict[register] = {}
+            amount_of_lines = int(len(full_line[1]) / 80)  # finds the amount of data in the register (each line has 80 char)
+            if full_line[0] not in register_dict:
+                register = 0
+                register_dict[full_line[0]] = {}
+
+            register_dict[full_line[0]][register] = {}
             marker = False
             prior_substring = ''
             next_substring = ''
@@ -123,19 +115,19 @@ class DataProvider:
 
                 end_char = line * 80  # used to specify first char if the line to identify
                 start_char = end_char - 80  # same idea as former but for the last char
-                substring = full_line[start_char:end_char + 1]  # establish the sub range to parse
+                substring = full_line[1][start_char:end_char + 1]  # establish the sub range to parse
 
                 if line > 1:
                     prior_line = line - 1
                     prior_end_char = prior_line * 80
                     prior_start_char = prior_end_char - 80
-                    prior_substring = full_line[prior_start_char:prior_end_char + 1]
+                    prior_substring = full_line[1][prior_start_char:prior_end_char + 1]
 
                 if line < amount_of_lines:
                     next_line = line + 1
                     next_end_char = next_line * 80
                     next_start_char = next_end_char - 80
-                    next_substring = full_line[next_start_char:next_end_char + 1]
+                    next_substring = full_line[1][next_start_char:next_end_char + 1]
 
                 # in slices[line], the trigger line calls the slice and the dictionary key corresponding
                 # for q, r in zip(slices[line].keys(), slices[line].values()):
@@ -147,7 +139,7 @@ class DataProvider:
                         data = substring[r[0]:r[1]].strip()
                         if data == '':
                             data = None
-                        register_dict[register].update({q: data})
+                        register_dict[full_line[0]][register].update({q: data})
                     analised_lines.append(line)
 
                 elif not prior_substring.strip() == '' and '_' in prior_substring[1]:  # defines if you are in between the register header and
@@ -156,7 +148,7 @@ class DataProvider:
                         data = substring[r_1[0]:r_1[1]].strip()
                         if data == '':
                             data = None
-                        register_dict[register].update({q_1: data})
+                        register_dict[full_line[0]][register].update({q_1: data})
                     analised_lines.append(line)
 
                     if 'BG/BAUBARKEITSBED' not in next_substring and\
@@ -173,7 +165,7 @@ class DataProvider:
                         data = substring[r[0]:r[1]].strip()
                         if data == '':
                             data = None
-                        register_dict[register].update({q: data})
+                        register_dict[full_line[0]][register].update({q: data})
                     analised_lines.append(line)
                     marker = False
 
@@ -200,7 +192,7 @@ class DataProvider:
                     while not eof_CODEBEDINGUNGEN:
                         next_end_char_CODEBEDINGUNGEN = next_line_CODEBEDINGUNGEN * 80
                         next_start_char_CODEBEDINGUNGEN = next_end_char_CODEBEDINGUNGEN - 80
-                        next_substring_CODEBEDINGUNGEN = full_line[next_start_char_CODEBEDINGUNGEN:next_end_char_CODEBEDINGUNGEN + 1]
+                        next_substring_CODEBEDINGUNGEN = full_line[1][next_start_char_CODEBEDINGUNGEN:next_end_char_CODEBEDINGUNGEN + 1]
                         next_substring_anal_CODEBEDINGUNGEN = next_substring_CODEBEDINGUNGEN[dicto_data_1_CODEBEDINGUNGEN[0]: dicto_data_1_CODEBEDINGUNGEN[1]].strip()
                         restriction_CODEBEDINGUNGEN = restriction_CODEBEDINGUNGEN + next_substring_anal_CODEBEDINGUNGEN
                         analised_lines.append(next_line_CODEBEDINGUNGEN)
@@ -212,8 +204,8 @@ class DataProvider:
 
                     restriction_CODEBEDINGUNGEN = restriction_CODEBEDINGUNGEN.replace(' ', '')
 
-                    register_dict[register].update({'bg_CODEBEDINGUNGEN': bg_CODEBEDINGUNGEN})
-                    register_dict[register].update({'CODEBEDINGUNGEN': restriction_CODEBEDINGUNGEN})
+                    register_dict[full_line[0]][register].update({'bg_CODEBEDINGUNGEN': bg_CODEBEDINGUNGEN})
+                    register_dict[full_line[0]][register].update({'CODEBEDINGUNGEN': restriction_CODEBEDINGUNGEN})
                     analised_lines.append(line)
 
                 elif 'BG/BAUBARKEITSBED' in substring:
@@ -241,7 +233,7 @@ class DataProvider:
                     while not eof_BAUBARKEITSBED:
                         next_end_char_BAUBARKEITSBED = next_line_BAUBARKEITSBED * 80
                         next_start_char_BAUBARKEITSBED = next_end_char_BAUBARKEITSBED - 80
-                        next_substring_BAUBARKEITSBED = full_line[next_start_char_BAUBARKEITSBED:next_end_char_BAUBARKEITSBED + 1]
+                        next_substring_BAUBARKEITSBED = full_line[1][next_start_char_BAUBARKEITSBED:next_end_char_BAUBARKEITSBED + 1]
                         next_substring_anal_BAUBARKEITSBED = next_substring_BAUBARKEITSBED[dicto_data_1_BAUBARKEITSBED[0]: dicto_data_1_BAUBARKEITSBED[1]]
                         restriction_BAUBARKEITSBED = restriction_BAUBARKEITSBED + next_substring_anal_BAUBARKEITSBED
                         analised_lines.append(next_line_BAUBARKEITSBED)
@@ -254,8 +246,8 @@ class DataProvider:
 
                     restriction_BAUBARKEITSBED = restriction_BAUBARKEITSBED.replace(' ', '')
 
-                    register_dict[register].update({'bg_BAUBARKEITSBED': bg_BAUBARKEITSBED})
-                    register_dict[register].update({'BAUBARKEITSBED': restriction_BAUBARKEITSBED})
+                    register_dict[full_line[0]][register].update({'bg_BAUBARKEITSBED': bg_BAUBARKEITSBED})
+                    register_dict[full_line[0]][register].update({'BAUBARKEITSBED': restriction_BAUBARKEITSBED})
                     analised_lines.append(line)
 
                 elif 'PB/ZUSTEUERBED' in substring:
@@ -275,7 +267,7 @@ class DataProvider:
                     while not eof_ZUSTEUERBED:
                         next_end_char_ZUSTEUERBED = next_line_ZUSTEUERBED * 80
                         next_start_char_ZUSTEUERBED = next_end_char_ZUSTEUERBED - 80
-                        next_substring_ZUSTEUERBED = full_line[next_start_char_ZUSTEUERBED:next_end_char_ZUSTEUERBED + 1]
+                        next_substring_ZUSTEUERBED = full_line[1][next_start_char_ZUSTEUERBED:next_end_char_ZUSTEUERBED + 1]
                         next_substring_anal_ZUSTEUERBED = next_substring_ZUSTEUERBED[dicto_data_ZUSTEUERBED[0]: dicto_data_ZUSTEUERBED[1]].strip()
                         restriction_ZUSTEUERBED = restriction_ZUSTEUERBED + next_substring_anal_ZUSTEUERBED
                         analised_lines.append(next_line_ZUSTEUERBED)
@@ -287,7 +279,7 @@ class DataProvider:
 
                     restriction_ZUSTEUERBED = restriction_ZUSTEUERBED.replace(' ', '')
 
-                    register_dict[register].update({'ZUSTEUERBED': restriction_ZUSTEUERBED})
+                    register_dict[full_line[0]][register].update({'ZUSTEUERBED': restriction_ZUSTEUERBED})
 
                     analised_lines.append(line)
 
@@ -304,8 +296,8 @@ class DataProvider:
                         if data_1_VERW == '':
                             data_1_VERW = None
 
-                        register_dict[register].update({'VERW.-ST': data_0_VERW})
-                        register_dict[register].update({'VERW_Info': data_1_VERW})
+                        register_dict[full_line[0]][register].update({'VERW.-ST': data_0_VERW})
+                        register_dict[full_line[0]][register].update({'VERW_Info': data_1_VERW})
                     else:
                         x = 1
                         pass  # TODO: make logic for
@@ -313,11 +305,12 @@ class DataProvider:
                     analised_lines.append(line)
 
                 elif line not in analised_lines:
-                    register_dict[register].update({'extra_info': substring.strip()})
+                    register_dict[full_line[0]][register].update({'extra_info': substring.strip()})
 
             register += 1
 
-        with open(date_string + 'PDS_KGS_AGR_final.json', 'w', encoding='utf-8') as f:
+        with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\' +
+                  date_string + '_PDS_AGRMZ_parsed_final.json', 'w', encoding='utf-8') as f:
             json.dump(register_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
             # data = {p: [v, None][v.isspace()] for p, v in [(p, substring[r[0]:r[1]]), r in slices[line].values()]}
@@ -450,7 +443,9 @@ class DataProvider:
                                 if data:
                                     register_dict[code][reg_counter][q_2] += data
                             analised_lines.append(line)
+        # TODO: change directory to base path
         with open('PDS_ACC_final.json', 'w', encoding='utf-8') as f:
             json.dump(register_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
-DataProvider.acc()
+
+DataProvider.agrmz()
