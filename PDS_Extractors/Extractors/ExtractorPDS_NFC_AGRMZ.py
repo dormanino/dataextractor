@@ -1,8 +1,9 @@
 from MainframeMainConnections import MainframeMainConections as Connection
 import json
 import datetime
-import LatestFileVersion
 from collections import OrderedDict
+from PDS_Extractors.Data.DataPoint import DataPoint
+import time
 
 
 class PdsNfcAGRMZ:
@@ -10,19 +11,23 @@ class PdsNfcAGRMZ:
     def __init__(self):
         m = Connection.LogInMBBrasTN3270PDS()
         self.mainframe = m.mainframe_connection()
+        self.data_json = json.load(open(DataPoint.data_kgs_agr))
 
     def screen(self):
+        timeout = time.time() + 60 * 2
         line = 0
         page = 0
         data_eof_declaration = 'DATEI - ENDE'
-        kgs_file = LatestFileVersion.latest_file_version('json', 'PDS_KGS_AGR')
-        data_json = json.load(open(kgs_file))
+        data_deletion_declaration = 'STAEMME ALS GELOESCHT GEKENNZEICHNET'
         kg_list = []
         agrmz_data = []
-        for reg in data_json:
+        for reg in self.data_json:
             kg_list.append([reg['bm'], reg['kg']])
         for kg in kg_list:
             operation = True
+            if time.time() > timeout:
+                time.sleep(10)
+                timeout = time.time() + 60 * 2
             self.mainframe.send_string('AGRMZ', 1, 30)
             self.mainframe.send_string(kg[0], 2, 46)
             self.mainframe.move_to(2, 60)
@@ -43,7 +48,6 @@ class PdsNfcAGRMZ:
                     if not line_data.replace(' ', '') == '':
                         agr_dict = OrderedDict()
                         line += 1
-
                         if kg[1][0] == 'C':
                             agr_dict['data_type'] = 'Code'
                         elif kg[1][0] == 'G':
@@ -58,6 +62,8 @@ class PdsNfcAGRMZ:
                         agr_dict['data'] = line_data
                         agrmz_data.append(agr_dict)
                     if data_eof_declaration in self.mainframe.string_get(24, 1, 80):
+                        operation = False
+                    elif data_deletion_declaration in self.mainframe.string_get(24, 1, 80):
                         operation = False
                 page += 1
                 self.mainframe.move_to(24, 80)
@@ -88,5 +94,5 @@ date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 print(data)
 
-with open(date_string + 'PDS_KGS_AGRMZ.json', 'w') as f:
-    json.dump(data, f, indent=4, sort_keys=True, ensure_ascii=False).encode('utf-8')
+with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\' + date_string + '_PDS_BM´s_AGRMZ.json', 'w') as f:
+    json.dump(data, f, indent=4, sort_keys=True, ensure_ascii=False)
