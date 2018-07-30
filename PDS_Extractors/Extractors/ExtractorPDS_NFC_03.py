@@ -2,10 +2,9 @@ from MainframeMainConnections import MainframeMainConections as Connection
 import json
 import datetime
 from collections import OrderedDict
-import os
 
 
-class PdsNfc0E:
+class PdsNfc03:
 
     def __init__(self):
         m = Connection.LogInMBBrasTN3270PDS()
@@ -17,7 +16,7 @@ class PdsNfc0E:
         line_number = 1
         page_number = 1
         data_eof_declaration = 'DATEIENDE'
-        self.mainframe.send_string('0E', 1, 30)
+        self.mainframe.send_string('03', 1, 30)
         self.mainframe.move_to(24, 80)
         self.mainframe.send_enter()
         self.mainframe.wait_for_field()
@@ -28,10 +27,10 @@ class PdsNfc0E:
                 if not line_data.replace(' ', '') == '':
                     line_list['page'] = page_number
                     line_list['line'] = line_number
-                    line_list['text'] = line_data
+                    line_list['text'] = self.ebcdic_screen_operation(line, 1, 80, remove_spaces=False)
                     mainframe_data.append(line_list)
                     line_number += 1
-                if data_eof_declaration in self.mainframe.string_get(24, 1, 80):
+                if data_eof_declaration in self.ebcdic_screen_operation(24, 1, 80, remove_spaces=False):
                     oper_eof = False
             page_number += 1
             self.mainframe.move_to(24, 80)
@@ -55,12 +54,11 @@ class PdsNfc0E:
         return switch_data
 
 
-d = PdsNfc0E()
+d = PdsNfc03()
 data = d.screen()
 
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 
-path = 'C:\\Users\\vravagn\\PycharmProjects\\DataExtractor\\PDS_Extractors'
-with open(path + '\\' + date_string + '_PDS_0E.json', 'w') as f:
+with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\' + date_string + '_PDS_03.json', 'w') as f:
     json.dump(data, f, indent=4, sort_keys=True, ensure_ascii=False)

@@ -1,7 +1,6 @@
 import os
 import json
 import datetime
-import LatestFileVersion
 from BPM_STAR_Extractors.DataPoint import DataPoint
 from BPM_STAR_Extractors.String_Parser import Parse
 import time
@@ -295,7 +294,7 @@ class MakeFile:
             json.dump(matrix_bm_code, f, sort_keys=True, ensure_ascii=False)
 
 
-# MakeFile.parsed_12mpp()
-# MakeFile.bmqvvvol()
-# MakeFile.concatenateinfos()
-MakeFile.code_vs_bm_qty_matrix()
+MakeFile.parsed_12mpp()
+MakeFile.bmqvvvol()
+MakeFile.concatenateinfos()
+# MakeFile.code_vs_bm_qty_matrix()

@@ -87,5 +87,7 @@ d = ProPresum().pro_presum_main()
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 
-with open(date_string + '12mpp_raw.json', 'w') as f:
+path = 'C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\BPM_STAR_Extractors\\DataPoint\\'
+
+with open(path + date_string + '12mpp_raw.json', 'w') as f:
     json.dump(d, f, indent=4, sort_keys=True, ensure_ascii=False)

@@ -10,10 +10,10 @@ class PdsNfcAGR:
     def __init__(self):
         m = Connection.LogInMBBrasTN3270PDS()
         self.mainframe = m.mainframe_connection()
-        pds_02_bm_data = json.load(open(DataPoint.data_02))
+        pds_03_bm_data = json.load(open(DataPoint.data_03))
         self.bm_set = set()
 
-        for item in pds_02_bm_data:
+        for item in pds_03_bm_data:
             bm_string = item['text'][4:13]
             for char in [' ', '.', '-']:
                 bm_string = bm_string.replace(char, '')
@@ -77,5 +77,5 @@ data = d.screen()
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 
-with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\' + date_string + '_PDS_KGS_AGR_Vehicle.json', 'w') as f:
+with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\' + date_string + '_PDS_KGS_AGR_Aggregates.json', 'w') as f:
     json.dump(data, f, indent=4, sort_keys=True, ensure_ascii=False)
