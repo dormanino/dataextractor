@@ -45,8 +45,8 @@ class DataProvider:
                 none_flag = True
                 continue
 
-        with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\testing.json', 'w', encoding='utf-8') as f:
-            json.dump(data_source, f, indent=4, sort_keys=True, ensure_ascii=False)
+        # with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\testing.json', 'w', encoding='utf-8') as f:
+        #     json.dump(data_source, f, indent=4, sort_keys=True, ensure_ascii=False)
 
         slices = {
             1: {
