@@ -1,4 +1,5 @@
 from PDS_Extractors.Models.IDK import IDK
+from PDS_Extractors.Models.IDKKind import IDKKind
 
 
 class BaumusterData:
@@ -16,3 +17,6 @@ class BaumusterData:
     class JSONKeys:
         bm = "bm"
         idk_list = "data"
+
+    def extract_idk(self, idk: IDKKind):
+        return next(filter(lambda x: x.kind == idk, self.idk_list), None)
