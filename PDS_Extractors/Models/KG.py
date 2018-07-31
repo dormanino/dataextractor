@@ -4,7 +4,7 @@ from PDS_Extractors.Models.Register import Register
 class KG:
     def __init__(self, name: str, reg_list: [Register]):
         self.name = name
-        self.regs = reg_list
+        self.reg_list = reg_list
 
     @classmethod
     def from_dict(cls, datadict):

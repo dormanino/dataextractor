@@ -1,3 +1,5 @@
+from functools import reduce
+
 from PDS_Extractors.Models.IDKKind import IDKKind
 from PDS_Extractors.Models.KG import KG
 
@@ -17,3 +19,9 @@ class IDK:
     class JSONKeys:
         kind = "type"
         kg_list = "data"
+
+    def flattened_registers(self):
+        registers = []
+        for register_list in map(lambda x: x.reg_list, self.kg_list):
+            registers.extend(register_list)
+        return registers

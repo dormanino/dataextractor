@@ -28,3 +28,5 @@ class DataPoint:
     data_kgs_agr_aggregates = LatestFileVersion.latest_file_version(EXTENSION_json, '_PDS_KGS_AGR_Aggregates', current=PATH_DataFiles)
     data_agrmz_raw_aggregates = LatestFileVersion.latest_file_version(EXTENSION_json, '_PDS_BM´s_AGRMZ_Aggregates', current=PATH_DataFiles)
     data_agrmz_aggregates = LatestFileVersion.latest_file_version(EXTENSION_json, SUFFIX_data_agrmz_aggregate, current=PATH_DataFiles)
+
+    production = LatestFileVersion.latest_file_version(EXTENSION_json, 'dictionary_qvvs_by_month', current=PATH_DataFiles)

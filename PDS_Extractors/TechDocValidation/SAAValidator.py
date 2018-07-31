@@ -15,6 +15,9 @@ class SAAAnalysis:
         self.status = status
         self.comment = comment
 
+    def is_valid(self):
+        return self.status == SAAStatus.Valid
+
 
 class SAAValidator:
 
