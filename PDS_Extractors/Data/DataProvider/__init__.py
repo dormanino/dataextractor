@@ -322,7 +322,7 @@ class DataProvider:
         date = datetime.date.today()
         date_string = date.strftime('%y%m%d')
 
-        final_path = DataPoint.path + '\\' + date_string + '_PDS_AGRMZ_parsed_final_' + source + '.json'
+        final_path = DataPoint.PATH_DataFiles + '\\' + date_string + '_PDS_AGRMZ_parsed_final_' + source + '.json'
         with open(final_path, 'w', encoding='utf-8') as f:
             json.dump(main_dict, f, indent=4, sort_keys=False, ensure_ascii=False)
 

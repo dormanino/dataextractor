@@ -1,7 +1,7 @@
 import json
 
 from PDS_Extractors.Data.DataPoint import DataPoint
-from PDS_Extractors.Models.SAA import SAA
+from PDS_Extractors.Models.SAARegister import SAA
 
 
 class SAAProvider:
