@@ -7,10 +7,7 @@ from PDS_Extractors.Helpers.LatestFileVersion import LatestFileVersion
 class DataProvider:
 
     @staticmethod
-    def agrmz():
-
-        # vehicles_lineslist = json.load(open(DataPoint.data_agrmz_raw_vehicles))
-        aggregates_lineslist = json.load(open(DataPoint.data_agrmz_raw_aggregates))
+    def agrmz(source):
         complete_line = ''
         data_source = []
         curent_reg = ''
@@ -18,8 +15,14 @@ class DataProvider:
         data_type = ''
         kg = ''
         none_flag = False
-        # for line_counter, line_info_dict in enumerate (vehicles_lineslist):
-        for line_counter, line_info_dict in enumerate(aggregates_lineslist):
+
+        lines_list = ""
+        if source is 'vehicle':
+            lines_list = json.load(open(DataPoint.data_agrmz_raw_vehicles))
+        elif source is 'aggregate':
+            lines_list = json.load(open(DataPoint.data_agrmz_raw_aggregates))
+
+        for line_counter, line_info_dict in enumerate(lines_list):
             line = line_info_dict['data']
             if line is not None:
                 register_char = line[1]
@@ -44,9 +47,6 @@ class DataProvider:
                 data_source.append((bm, None, None, None))
                 none_flag = True
                 continue
-
-        # with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\testing.json', 'w', encoding='utf-8') as f:
-        #     json.dump(data_source, f, indent=4, sort_keys=True, ensure_ascii=False)
 
         slices = {
             1: {
@@ -91,33 +91,44 @@ class DataProvider:
                 'VERW_Info': (16, 80)
             }
         }
-        register = 0
-        register_dict = {}
 
+        main_dict = dict(source=source, data=[])
         for data in data_source:
-            bm = data[0]
-            data_type = data[1]
-            kg = data[2]
-            full_line = data[3]
 
-            if data_type is not None:
+            # Find/Create Baumuster node
+            info_bm = data[0]
+            bm_data = next(filter(lambda i: i['bm'] == info_bm, main_dict["data"]), None)
+            if bm_data is None:
+                bm_data = dict(bm='', data=[])
+                bm_data['bm'] = info_bm
+                main_dict['data'].append(bm_data)
 
+            info_data_input = data[1]
+            if info_data_input is not None:
+                print(data)
+
+                # Find/Create Data Input node
+                data_input = next(filter(lambda i: i['type'] == info_data_input, bm_data["data"]), None)
+                if data_input is None:
+                    data_input = dict(type='', data=[])
+                    data_input['type'] = info_data_input
+                    bm_data['data'].append(data_input)
+
+                # Find/Create Grouping Input node
+                info_grouping_input = data[2]
+                grouping_input = next(filter(lambda i: i['kg'] == info_grouping_input, data_input["data"]), None)
+                if grouping_input is None:
+                    grouping_input = dict(kg="", regs=[])
+                    grouping_input['kg'] = info_grouping_input
+                    data_input['data'].append(grouping_input)
+
+                full_line = data[3]
                 amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the register (each line has 80 char)
-                if bm not in register_dict:
-                    register_dict[bm] = {}
-                    register = 0
-                if data_type not in register_dict[bm]:
-                    register_dict[bm][data_type] = {}
-                    register = 0
-                if kg not in register_dict[bm][data_type]:
-                    register_dict[bm][data_type][kg] = {}
-                    register = 0
-
-                register_dict[bm][data_type][kg][register] = {}
+                register = dict()
                 marker = False
                 prior_substring = ''
                 next_substring = ''
-                analised_lines = []
+                analysed_lines = []
 
                 for line in range(1, amount_of_lines + 1):
 
@@ -138,22 +149,20 @@ class DataProvider:
                         next_substring = full_line[next_start_char:next_end_char + 1]
 
                     if '_' in substring[1]:  # if the line is the first register
-
                         for q, r in zip(slices[1].keys(), slices[1].values()):
                             data = substring[r[0]:r[1]].strip()
                             if data == '':
                                 data = None
-                            register_dict[bm][data_type][kg][register].update({q: data})
-                        analised_lines.append(line)
+                            register.update({q: data})
+                        analysed_lines.append(line)
 
                     elif not prior_substring.strip() == '' and '_' in prior_substring[1]:  # defines if you are in between the register header and
-
                         for q_1, r_1 in zip(slices[2].keys(), slices[2].values()):
                             data = substring[r_1[0]:r_1[1]].strip()
                             if data == '':
                                 data = None
-                            register_dict[bm][data_type][kg][register].update({q_1: data})
-                        analised_lines.append(line)
+                            register.update({q_1: data})
+                        analysed_lines.append(line)
 
                         if 'BG/BAUBARKEITSBED' not in next_substring and\
                                 'BG/CODEBEDINGUNGEN' not in next_substring and\
@@ -164,17 +173,15 @@ class DataProvider:
                             marker = False
 
                     elif marker:
-
                         for q, r in zip(slices[3].keys(), slices[3].values()):
                             data = substring[r[0]:r[1]].strip()
                             if data == '':
                                 data = None
-                            register_dict[bm][data_type][kg][register].update({q: data})
-                        analised_lines.append(line)
+                            register.update({q: data})
+                        analysed_lines.append(line)
                         marker = False
 
                     elif 'BG/CODEBEDINGUNGEN :' in substring:
-
                         dicto_codebedingungen = slices[4]
                         dicto_data_0_codebedingungen = dicto_codebedingungen['bg']
                         dicto_data_1_codebedingungen = dicto_codebedingungen['code']
@@ -199,7 +206,7 @@ class DataProvider:
                             next_substring_codebedingungen = full_line[next_start_char_codebedingungen:next_end_char_codebedingungen + 1]
                             next_substring_anal_codebedingungen = next_substring_codebedingungen[dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[1]].strip()
                             restriction_codebedingungen = restriction_codebedingungen + next_substring_anal_codebedingungen
-                            analised_lines.append(next_line_codebedingungen)
+                            analysed_lines.append(next_line_codebedingungen)
                             if ';' not in next_substring_anal_codebedingungen:
                                 eof_codebedingungen = False
                                 next_line_codebedingungen += 1
@@ -208,9 +215,9 @@ class DataProvider:
 
                         restriction_codebedingungen = restriction_codebedingungen.replace(' ', '')
 
-                        register_dict[bm][data_type][kg][register].update({'bg_codebedingungen': bg_codebedingungen})
-                        register_dict[bm][data_type][kg][register].update({'CODEBEDINGUNGEN': restriction_codebedingungen})
-                        analised_lines.append(line)
+                        register.update({'bg_codebedingungen': bg_codebedingungen})
+                        register.update({'CODEBEDINGUNGEN': restriction_codebedingungen})
+                        analysed_lines.append(line)
 
                     elif 'BG/BAUBARKEITSBED' in substring:
 
@@ -240,7 +247,7 @@ class DataProvider:
                             next_substring_baubarkeitsbed = full_line[next_start_char_baubarkeitsbed:next_end_char_baubarkeitsbed + 1]
                             next_substring_anal_baubarkeitsbed = next_substring_baubarkeitsbed[dicto_data_1_baubarkeitsbed[0]: dicto_data_1_baubarkeitsbed[1]]
                             restriction_baubarkeitsbed = restriction_baubarkeitsbed + next_substring_anal_baubarkeitsbed
-                            analised_lines.append(next_line_baubarkeitsbed)
+                            analysed_lines.append(next_line_baubarkeitsbed)
 
                             if ';' not in next_substring_anal_baubarkeitsbed:
                                 eof_baubarkeitsbed = False
@@ -250,9 +257,9 @@ class DataProvider:
 
                                 restriction_baubarkeitsbed = restriction_baubarkeitsbed.replace(' ', '')
 
-                        register_dict[bm][data_type][kg][register].update({'bg_baubarkeitsbed': bg_baubarkeitsbed})
-                        register_dict[bm][data_type][kg][register].update({'BAUBARKEITSBED': restriction_baubarkeitsbed})
-                        analised_lines.append(line)
+                        register.update({'bg_baubarkeitsbed': bg_baubarkeitsbed})
+                        register.update({'BAUBARKEITSBED': restriction_baubarkeitsbed})
+                        analysed_lines.append(line)
 
                     elif 'PB/ZUSTEUERBED' in substring:
                         dicto_zusteuerbed = slices[6]
@@ -275,7 +282,7 @@ class DataProvider:
                             next_substring_zusteuerbed = full_line[next_start_char_zusteuerbed:next_end_char_zusteuerbed + 1]
                             next_substring_anal_zusteuerbed = next_substring_zusteuerbed[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip()
                             restriction_zusteuerbed = restriction_zusteuerbed + next_substring_anal_zusteuerbed
-                            analised_lines.append(next_line_zusteuerbed)
+                            analysed_lines.append(next_line_zusteuerbed)
 
                             if ';' not in next_substring_anal_zusteuerbed:
                                 eof_zusteuerbed = False
@@ -284,8 +291,8 @@ class DataProvider:
                                 eof_zusteuerbed = True
 
                         restriction_zusteuerbed = restriction_zusteuerbed.replace(' ', '')
-                        register_dict[bm][data_type][kg][register].update({'ZUSTEUERBED': restriction_zusteuerbed})
-                        analised_lines.append(line)
+                        register.update({'ZUSTEUERBED': restriction_zusteuerbed})
+                        analysed_lines.append(line)
 
                     elif 'VERW.-ST.:' in substring:
                         dicto_verw = slices[7]
@@ -300,30 +307,24 @@ class DataProvider:
                             if data_1_verw == '':
                                 data_1_verw = None
 
-                            register_dict[bm][data_type][kg][register].update({'VERW.-ST': data_0_verw})
-                            register_dict[bm][data_type][kg][register].update({'VERW_Info': data_1_verw})
+                            register.update({'VERW.-ST': data_0_verw})
+                            register.update({'VERW_Info': data_1_verw})
                         else:
                             x = 1
                             pass  # TODO: make logic for
-                        analised_lines.append(line)
+                        analysed_lines.append(line)
 
-                    elif line not in analised_lines:
-                        register_dict[bm][data_type][kg][register].update({'extra_info': substring.strip()})
+                    elif line not in analysed_lines:
+                        register.update({'extra_info': substring.strip()})
 
-                register += 1
-            else:
-                register_dict[bm] = {}
+                grouping_input['regs'].append(register)
 
         date = datetime.date.today()
         date_string = date.strftime('%y%m%d')
 
-        # with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\' +
-        #           date_string + '_PDS_AGRMZ_parsed_final_vehicles.json', 'w', encoding='utf-8') as f:
-        #     json.dump(register_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
-
-        with open('C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\PDS_Extractors\\' +
-                  date_string + '_PDS_AGRMZ_parsed_final_aggregates.json', 'w', encoding='utf-8') as f:
-            json.dump(register_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
+        final_path = DataPoint.path + '\\' + date_string + '_PDS_AGRMZ_parsed_final_' + source + '.json'
+        with open(final_path, 'w', encoding='utf-8') as f:
+            json.dump(main_dict, f, indent=4, sort_keys=False, ensure_ascii=False)
 
         return print('concluded')
 
@@ -370,7 +371,6 @@ class DataProvider:
             }
         }
 
-        register = 0
         register_dict = {}
         dict_acc = {}
         for key, value in acc_dict.items():
@@ -415,7 +415,7 @@ class DataProvider:
                         for q, r in zip(slices[1].keys(), slices[1].values()):
                             data = substring[r[0]:r[1]].strip()
                             if q == 'code_bed':
-                                data.replace (' ', '')
+                                data.replace(' ', '')
                             if data == '':
                                 data = None
                             if q not in register_dict[code][reg_counter]:
@@ -430,7 +430,7 @@ class DataProvider:
                         for q_1, r_1 in zip(slices[2].keys(), slices[2].values()):
                             data = substring[r_1[0]:r_1[1]].strip()
                             if q_1 == 'code_bed':
-                                data.replace (' ', '')
+                                data.replace(' ', '')
                             if data == '':
                                 data = None
                             if q_1 not in register_dict[code][reg_counter]:
@@ -444,7 +444,7 @@ class DataProvider:
                             data = substring[r_2[0]:r_2[1]].strip()
                             if q_2 == 'code_bed':
                                 data.replace(' ', '')
-                            if data == '':  ## if the line does not have information, None cant be added
+                            if data == '':  # if the line does not have information, None cant be added
                                 data = None
                             if q_2 not in register_dict[code][reg_counter]:
                                 register_dict[code][reg_counter].update({q_2: data})
@@ -457,4 +457,5 @@ class DataProvider:
             json.dump(register_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
 
-DataProvider.agrmz()
+for source in ['vehicle', 'aggregate']:
+    DataProvider.agrmz(source)
