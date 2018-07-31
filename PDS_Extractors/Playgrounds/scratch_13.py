@@ -1,6 +1,6 @@
 import datetime
 
-from PDS_Extractors.Data.DataProvider.DataProvider import DataProvider
+from PDS_Extractors.Data.DataProvider.SAAProvider import DataProvider
 from PDS_Extractors.TechDocValidation.SAAValidator import SAAValidator, SAAStatus
 
 
