@@ -4,12 +4,12 @@ from PDS_Extractors.Data.DataPoint import DataPoint
 from PDS_Extractors.Models.SAA import SAA
 
 
-class DataProvider:
+class SAAProvider:
 
         @staticmethod
         def load_saas():
             # TODO: fetch from external data provider
-            data = json.load(open(DataPoint.data_agrmz))
+            data = json.load(open(DataPoint.data_agrmz_vehicles))
             saas = []
             index = 0
             loop = True
