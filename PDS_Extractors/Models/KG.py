@@ -14,5 +14,5 @@ class KG:
         )
 
     class JSONKeys:
-        name = "KG"
+        name = "kg"
         reg_list = "regs"

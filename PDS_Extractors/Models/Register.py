@@ -1,6 +1,5 @@
 class Register(object):
-    def __init__(self, id, abm_saa, em_ab, em_bis, t_a, t_b):
-        self.id = id
+    def __init__(self, abm_saa, em_ab, em_bis, t_a, t_b):
         self.abm_saa = abm_saa
         self.em_ab = em_ab
         self.em_bis = em_bis
@@ -10,7 +9,6 @@ class Register(object):
     @classmethod
     def from_dict(cls, datadict):
         return cls(
-            datadict[Register.JSONKeys.id],
             datadict[Register.JSONKeys.abm_saa],
             datadict[Register.JSONKeys.em_ab],
             datadict[Register.JSONKeys.em_bis],
@@ -19,7 +17,6 @@ class Register(object):
         )
 
     class JSONKeys:
-        id = "id"
         abm_saa = "abm_saa"  # conjunto de montagem - pacote de componentes
         em_ab = "em_ab"  # aviso de aplicacao a partir de
         em_bis = "em_bis"  # aviso de aplicacao ate
