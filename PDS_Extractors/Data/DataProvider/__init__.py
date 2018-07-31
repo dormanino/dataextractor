@@ -1,7 +1,7 @@
 import json
-import LatestFileVersion
 import datetime
 from PDS_Extractors.Data.DataPoint import DataPoint
+from PDS_Extractors.Helpers.LatestFileVersion import LatestFileVersion
 
 
 class DataProvider:

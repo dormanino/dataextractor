@@ -1,4 +1,0 @@
-
-
-class Validation:
-    def Date
