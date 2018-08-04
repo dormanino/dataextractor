@@ -29,7 +29,7 @@ months = dict(jan=1, fev=2, mar=3, abr=4, mai=5, jun=6,
 
 result = []
 production_year = 2018
-production_months = ["jul", "ago", "set"]
+production_months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 for monthly_production in list(filter(lambda x: x.month in production_months, production.monthly_production_list)):
     month = months[monthly_production.month]
     ref_date = datetime.date(production_year, month, 1)
@@ -37,6 +37,7 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
     for qvv_production in monthly_production.qvv_production_list:
         bm = next(filter(lambda x: x.bm == qvv_production.bm, vehicles.bm_data_list), None)
         if bm is None:
+            print(bm)
             continue
         # TODO: Reuse register already analyzed
         saa_registers = bm.extract_idk(IDKKind.SAA)
@@ -52,6 +53,7 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
                 qvv_production.qvv,
                 qvv_production.bm,
                 qvv_production.family,
+                qvv_production.bu,
                 qvv_production.volume,
                 register.abm_saa,
                 register.anz,
@@ -68,7 +70,7 @@ filename = DataPoint.PATH_DataFiles + '\\analysis_test.csv'
 outputFile = open(filename, "w", newline="\n")
 outputWriter = csv.writer(outputFile)
 outputWriter.writerow(["sep=,"])  # hack to enforce coma separator
-outputWriter.writerow(["mes", "qvv", "bm", "familia", "volume", "abm_saa", "anz",
+outputWriter.writerow(["mes", "qvv", "bm", "veh.family", "business_unit", "volume", "abm_saa", "anz",
                        "em_ab", "t_a", "em_bis", "t_b", "codebedingungen", "is_valid"])
 for data_line in result:
     outputWriter.writerow(data_line)
