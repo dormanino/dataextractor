@@ -4,6 +4,17 @@
 ### CUSTOM
 DataFiles/*.json
 DataFiles/*.csv
+B3902V/*.json
+B3902V/*.csv
+B3902V/*.TXT
+BPM_STAR_EXTRACTORS/*.json
+BPM_STAR_EXTRACTORS/*.csv
+BPM_STAR_EXTRACTORS/*.TXT
+BPM_STAR_EXTRACTORS/DataPoint/*.json
+BPM_STAR_EXTRACTORS/DataPoint/*.csv
+BPM_STAR_EXTRACTORS/DataPoint/*.TXT
+BPM_STAR_EXTRACTORS/Charting/*.json
+
 
 ### PyCharm ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm
