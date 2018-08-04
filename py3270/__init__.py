@@ -485,10 +485,15 @@ class Emulator(object):
         # included EBCDIC functionality
         xpos -= 1
         ypos -= 1
-        cmd = self.exec_command('EBCDIC({0},{1},{2})'.format(ypos, xpos, length).encode('cp500'))
+        cmd = self.exec_command('EBCDIC({0},{1},{2})'.format(ypos, xpos, length).encode())
         # this usage of ascii should only return a single line of data
         assert len(cmd.data) == 1, cmd.data
-        return cmd.data[0].decode('cp500')
+        switch_data = cmd.data[0]
+        switch_data = switch_data.replace(' '.encode(), ''.encode()).decode()
+        switch_data = bytearray.fromhex(switch_data).decode(encoding='cp037')
+        switch_data = switch_data.encode()
+        switch_data = switch_data.replace(b'\x00', b' ').decode()
+        return switch_data
 
     # TODO: fix this option
     def screen_get_EBCDIC(self, ypos, xpos, amnt_rows, amnt_cols):
@@ -502,7 +507,7 @@ class Emulator(object):
         # included EBCDIC functionality
         xpos -= 1
         ypos -= 1
-        cmd = self.exec_command('EBCDIC({0},{1},{2},{3})'.format(ypos, xpos, amnt_rows, amnt_cols).encode('cp500'))
+        cmd = self.exec_command('EBCDIC({0},{1},{2},{3})'.format(ypos, xpos, amnt_rows, amnt_cols).encode())
         # this usage of ascii should only return a single line of data
         assert len(cmd.data) == 1, cmd.data
         return cmd.data[0].decode('cp500')
