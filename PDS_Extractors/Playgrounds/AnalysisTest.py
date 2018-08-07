@@ -69,9 +69,10 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
 filename = DataPoint.PATH_DataFiles + '\\analysis_test.csv'
 outputFile = open(filename, "w", newline="\n")
 outputWriter = csv.writer(outputFile)
-outputWriter.writerow(["sep=,"])  # hack to enforce coma separator
-outputWriter.writerow(["mes", "qvv", "bm", "veh.family", "business_unit", "volume", "abm_saa", "anz",
-                       "em_ab", "t_a", "em_bis", "t_b", "codebedingungen", "is_valid"])
+# outputWriter.writerow(["sep=,"])  # hack to enforce coma separator
+outputWriter.writerow(["Date", "QVV", "Baumuster", "Vehicle Family", "Business Unit", "Volume",
+                       "SAA", "Amount of assembly turns for given SAA",  "Pem AB", "Termin AB",
+                       "Pem BIS", "Termin BIS", "Codebedingungen", "Validity"])
 for data_line in result:
     outputWriter.writerow(data_line)
 outputFile.close()
