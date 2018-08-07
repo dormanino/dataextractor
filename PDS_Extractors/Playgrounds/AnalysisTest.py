@@ -46,24 +46,24 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
         flattened_saas = saa_registers.flattened_registers()
         valid_saas = list(filter(lambda x: SAAValidator.saa_status_on_date(x, ref_date).is_valid(), flattened_saas))
         for register in filter(lambda x: x.codebedingungen is not None, valid_saas):
-            code_rule_is_valid = CodeRuleValidator.validate(register.codebedingungen, valid_saas)
-
-            result.append([
-                monthly_production.month,
-                qvv_production.qvv,
-                qvv_production.bm,
-                qvv_production.family,
-                qvv_production.bu,
-                qvv_production.volume,
-                register.abm_saa,
-                register.anz,
-                register.em_ab,
-                register.t_a,
-                register.em_bis,
-                register.t_b,
-                register.codebedingungen,
-                code_rule_is_valid
-            ])
+            code_rule_is_valid = CodeRuleValidator.validate(register.codebedingungen, qvv_production.composition)
+            if code_rule_is_valid:
+                result.append([
+                    monthly_production.month + '/' + str(production_year),
+                    qvv_production.qvv,
+                    qvv_production.bm,
+                    qvv_production.family,
+                    qvv_production.bu,
+                    qvv_production.volume,
+                    register.abm_saa,
+                    register.anz,
+                    register.em_ab,
+                    register.t_a,
+                    register.em_bis,
+                    register.t_b,
+                    register.codebedingungen,
+                    code_rule_is_valid
+                ])
 
 # Write the file
 filename = DataPoint.PATH_DataFiles + '\\analysis_test.csv'
