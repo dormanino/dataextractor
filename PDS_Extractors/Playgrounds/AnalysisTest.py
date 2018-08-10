@@ -4,57 +4,96 @@ import json
 import sys
 
 from PDS_Extractors.Data.DataPoint import DataPoint
+from PDS_Extractors.Helpers.MonthsHelper import MonthsHelper
 from PDS_Extractors.Models.BaumusterCollection import BaumusterCollection
-from PDS_Extractors.Models.BaumusterDataSource import BaumusterDataSource
-from PDS_Extractors.Models.IDKKind import IDKKind
+from PDS_Extractors.Models.BaumusterDataKind import BaumusterDataKind
+from PDS_Extractors.Models.GroupingType import GroupingType
+from PDS_Extractors.Models.Plant import Plant
 from PDS_Extractors.Models.Production import Production
-from PDS_Extractors.TechDocValidation.CodeRuleValidator import CodeRuleValidator
-from PDS_Extractors.TechDocValidation.SAAValidator import SAAValidator
+from PDS_Extractors.TechDocValidation.QVVCompositionValidator import QVVCompositionValidator
 
-vehicles_data = json.load(open(DataPoint.data_agrmz_vehicles))
-aggregates_data = json.load(open(DataPoint.data_agrmz_aggregates))
-production_data = json.load(open(DataPoint.production))
 
-vehicles = BaumusterCollection.from_dict(vehicles_data)
-aggregates = BaumusterCollection.from_dict(aggregates_data)
-production = Production.from_dict(production_data)
+production = Production.from_dict(json.load(open(DataPoint.production)))
+vehicles_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_vehicles_sbc)))
+aggregates_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_aggregates_sbc)))
+vehicles_jdf = BaumusterCollection.from_dict(json.load(open(DataPoint.data_vehicles_jdf)))
+aggregates_jdf = BaumusterCollection.from_dict(json.load(open(DataPoint.data_aggregates_jdf)))
 
-# safe checks
-if vehicles.source is not BaumusterDataSource.Vehicle or aggregates.source is not BaumusterDataSource.Aggregate:
+# Safe checks
+if (vehicles_sbc.kind is not BaumusterDataKind.Vehicle or vehicles_sbc.plant is not Plant.SBC) \
+        or (aggregates_sbc.kind is not BaumusterDataKind.Aggregate or aggregates_sbc.plant is not Plant.SBC) \
+        or (vehicles_jdf.kind is not BaumusterDataKind.Vehicle or vehicles_jdf.plant is not Plant.JDF) \
+        or (aggregates_jdf.kind is not BaumusterDataKind.Aggregate or aggregates_jdf.plant is not Plant.JDF):
     print("Bad data!")
     sys.exit()
 
-months = dict(jan=1, fev=2, mar=3, abr=4, mai=5, jun=6,
-              jul=7, ago=8, set=9, out=10, nov=11, dez=12)
+JDF_Families = ["Actros"]
+JDF_Aggr_BM = ["D979820", "D979811", "D960840", "D960820", "D943899", "D958860", "D958870", "D958880"]
 
-result = []
-production_year = 2018
+data_lines = []
+# For each month of production
 production_months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 for monthly_production in list(filter(lambda x: x.month in production_months, production.monthly_production_list)):
-    month = months[monthly_production.month]
-    ref_date = datetime.date(production_year, month, 1)
+    year = production.year
+    month = MonthsHelper.numeric[monthly_production.month]
+    ref_date = datetime.date(production.year, month, 1)
 
-    for qvv_production in monthly_production.qvv_production_list:
-        bm = next(filter(lambda x: x.bm == qvv_production.bm, vehicles.bm_data_list), None)
-        if bm is None:
-            print(bm)
+    # Do analysis for each QVV production
+    for qvv_prod in monthly_production.qvv_production_list:
+        valid_regs = dict()
+
+        # Pick the right vehicle data source based on family
+        if qvv_prod.family in JDF_Families:
+            vehicles_source = vehicles_jdf
+        else:
+            vehicles_source = vehicles_sbc
+
+        # Find the Baumuster for Vehicle
+        vehicle_bm = next(filter(lambda x: x.bm == qvv_prod.bm, vehicles_source.bm_data_list), None)
+        if vehicle_bm is None:
+            print("Couldn't find Vehicle Baumuster " + qvv_prod.bm)
             continue
-        # TODO: Reuse register already analyzed
-        saa_registers = bm.extract_idk(IDKKind.SAA)
-        if saa_registers is None:
-            continue
-        flattened_saas = saa_registers.flattened_registers()
-        valid_saas = list(filter(lambda x: SAAValidator.saa_status_on_date(x, ref_date).is_valid(), flattened_saas))
-        for register in filter(lambda x: x.codebedingungen is not None, valid_saas):
-            code_rule_is_valid = CodeRuleValidator.validate(register.codebedingungen, qvv_production.composition)
-            if code_rule_is_valid:
-                result.append([
-                    monthly_production.month + '/' + str(production_year),
-                    qvv_production.qvv,
-                    qvv_production.bm,
-                    qvv_production.family,
-                    qvv_production.bu,
-                    qvv_production.volume,
+
+        # Get SAA/LEG/General
+        for grouping_type in [GroupingType.SAA, GroupingType.LEG, GroupingType.General]:
+            grouping_name = grouping_type.name
+            valid_regs[grouping_name] = QVVCompositionValidator.validate(vehicle_bm, ref_date, grouping_type, qvv_prod.composition)
+
+        # Find the Aggregates for Vehicle
+        for aggregate in QVVCompositionValidator.validate(vehicle_bm, ref_date, GroupingType.Aggregate, qvv_prod.composition):
+            aggr_abm_saa = aggregate.clean_abm_saa
+
+            # Pick the right aggregate data source
+            if aggr_abm_saa in JDF_Aggr_BM:
+                main_aggr_source = aggregates_jdf
+                fallback_aggr_source = None
+            else:
+                main_aggr_source = aggregates_sbc
+                fallback_aggr_source = aggregates_jdf
+
+                # Find the Baumuster for Aggregate
+                aggr_bm = next(filter(lambda x: x.bm == aggr_abm_saa, main_aggr_source.bm_data_list), None)
+                if aggr_bm is None and fallback_aggr_source is not None:  # search in fallback
+                    aggr_bm = next(filter(lambda x: x.bm == aggr_abm_saa, fallback_aggr_source.bm_data_list), None)
+                if aggr_bm is None:
+                    print("Couldn't find Aggregate Baumuster " + aggr_abm_saa)
+                    continue
+
+                # Get SAA/LEG/General from Aggregates
+                for grouping_type in [GroupingType.SAA, GroupingType.LEG, GroupingType.General]:
+                    grouping_name = "Aggr " + grouping_type.name + " " + aggr_abm_saa
+                    valid_regs[grouping_name] = QVVCompositionValidator.validate(aggr_bm, ref_date, grouping_type, qvv_prod.composition)
+
+        # Append data line
+        for grouping, registers in valid_regs.items():
+            for register in registers:
+                data_lines.append([
+                    MonthsHelper.english[monthly_production.month] + '/' + str(production.year),
+                    qvv_prod.qvv,
+                    qvv_prod.bm,
+                    qvv_prod.family,
+                    qvv_prod.bu,
+                    qvv_prod.volume,
                     register.abm_saa,
                     register.anz,
                     register.em_ab,
@@ -62,7 +101,7 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
                     register.em_bis,
                     register.t_b,
                     register.codebedingungen,
-                    code_rule_is_valid
+                    grouping
                 ])
 
 # Write the file
@@ -72,8 +111,8 @@ outputWriter = csv.writer(outputFile)
 # outputWriter.writerow(["sep=,"])  # hack to enforce coma separator
 outputWriter.writerow(["Date", "QVV", "Baumuster", "Vehicle Family", "Business Unit", "Volume",
                        "SAA", "Amount of assembly turns for given SAA",  "Pem AB", "Termin AB",
-                       "Pem BIS", "Termin BIS", "Codebedingungen", "Validity"])
-for data_line in result:
+                       "Pem BIS", "Termin BIS", "Codebedingungen", "Type"])
+for data_line in data_lines:
     outputWriter.writerow(data_line)
 outputFile.close()
 

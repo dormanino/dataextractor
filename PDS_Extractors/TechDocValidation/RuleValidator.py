@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class CodeRuleValidator:
+class RuleValidator:
     
     class Operation(Enum):
         PARENTHESIS = 1
@@ -10,7 +10,7 @@ class CodeRuleValidator:
         ITEM = 4
 
     @staticmethod
-    def validate(rule, qvv_codes):
+    def validate(rule, qvv_composition):
         open_parenthesis = '('
         close_parenthesis = ')'
         or_operator = '/'
@@ -33,26 +33,26 @@ class CodeRuleValidator:
             return True
 
         if open_parenthesis in rule:
-            operation = CodeRuleValidator.Operation.PARENTHESIS
+            operation = RuleValidator.Operation.PARENTHESIS
         elif or_operator in rule:
-            operation = CodeRuleValidator.Operation.OR
+            operation = RuleValidator.Operation.OR
         elif and_operator in rule:
-            operation = CodeRuleValidator.Operation.AND
+            operation = RuleValidator.Operation.AND
         else:
-            operation = CodeRuleValidator.Operation.ITEM
+            operation = RuleValidator.Operation.ITEM
 
-        if operation == CodeRuleValidator.Operation.ITEM:
+        if operation == RuleValidator.Operation.ITEM:
             if rule.startswith(not_operator):
                 rule = rule[1:]
-                return rule not in qvv_codes
-            return rule in qvv_codes
+                return rule not in qvv_composition
+            return rule in qvv_composition
 
         level = 0
         min_index = 0
         lhs = ''
         for index, char in enumerate(rule):
 
-            if operation == CodeRuleValidator.Operation.PARENTHESIS:
+            if operation == RuleValidator.Operation.PARENTHESIS:
                 if char == open_parenthesis:
                     level += 1
                     if level == 1:
@@ -63,32 +63,32 @@ class CodeRuleValidator:
                         max_index = index
 
                         pre_condition = rule[min_index:max_index]
-                        pre_condition_validation = CodeRuleValidator.validate(pre_condition, qvv_codes)
+                        pre_condition_validation = RuleValidator.validate(pre_condition, qvv_composition)
                         symbol = true_result if pre_condition_validation else false_result
 
                         replace_str = open_parenthesis + pre_condition + close_parenthesis
                         rule = rule.replace(replace_str, symbol)
-                        return CodeRuleValidator.validate(rule, qvv_codes)
+                        return RuleValidator.validate(rule, qvv_composition)
                     else:
                         level -= 1
 
-            elif operation == CodeRuleValidator.Operation.OR:
+            elif operation == RuleValidator.Operation.OR:
                 if char == or_operator:
-                    is_left_valid = CodeRuleValidator.validate(lhs, qvv_codes)
+                    is_left_valid = RuleValidator.validate(lhs, qvv_composition)
                     rhs = rule[index + 1:]
-                    is_right_valid = CodeRuleValidator.validate(rhs, qvv_codes)
+                    is_right_valid = RuleValidator.validate(rhs, qvv_composition)
 
                     return is_left_valid or is_right_valid
                 else:
                     lhs += char
 
-            elif operation == CodeRuleValidator.Operation.AND:
+            elif operation == RuleValidator.Operation.AND:
                 if char == and_operator:
-                    is_left_valid = CodeRuleValidator.validate(lhs, qvv_codes)
+                    is_left_valid = RuleValidator.validate(lhs, qvv_composition)
                     if is_left_valid is False:
                         return False
                     else:
                         rhs = rule[index + 1:]
-                        return CodeRuleValidator.validate(rhs, qvv_codes)
+                        return RuleValidator.validate(rhs, qvv_composition)
                 else:
                     lhs += char

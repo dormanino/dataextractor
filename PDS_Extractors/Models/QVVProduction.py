@@ -6,7 +6,7 @@ class QVVProduction:
         self.family = family
         self.volume = volume
         self.composition = composition
-        
+
     @classmethod
     def from_dict(cls, datadict):
         return cls(

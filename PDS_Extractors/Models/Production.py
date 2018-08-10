@@ -1,19 +1,23 @@
+import datetime
 from collections import Counter
 from PDS_Extractors.Models.MonthlyProduction import MonthlyProduction
 
 
 class Production:
-    def __init__(self, monthly_production_list: [MonthlyProduction]):
+    def __init__(self, year: int, monthly_production_list: [MonthlyProduction]):
+        self.year = year
         self.monthly_production_list = monthly_production_list
 
     @classmethod
     def from_dict(cls, datadict):
         monthly_production = list(map(MonthlyProduction.from_dict, datadict[Production.JSONKeys.monthly_production_list]))
         return cls(
-            filter(lambda x: x.month != 'total', monthly_production)  # ignore 'total' month
+            datadict.get(Production.JSONKeys.year, datetime.datetime.now().year),  # fallback to current year
+            list(filter(lambda x: x.month != 'total', monthly_production))  # ignore 'total' month
         )
 
     class JSONKeys:
+        year = "year"
         monthly_production_list = "production"
 
     def total_volume(self) -> int:

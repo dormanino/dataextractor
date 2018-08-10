@@ -3,6 +3,7 @@ class Register:
                  anz, asa, asb, pos,
                  codebedingungen, benennung):
         self.abm_saa = abm_saa
+        self.clean_abm_saa = Register.clean_abm_saa(abm_saa)
         self.em_ab = em_ab
         self.em_bis = em_bis
         self.t_a = t_a
@@ -42,3 +43,10 @@ class Register:
         pos = "pos"
         codebedingungen = "CODEBEDINGUNGEN"  # restricoes de code -- regra de validacao
         benennung = "benennung"  # nome do code
+
+    @staticmethod
+    def clean_abm_saa(abm_saa):
+        clean = abm_saa
+        for char in [' ', '.', '/', ',']:
+            clean = clean.replace(char, "")
+        return clean

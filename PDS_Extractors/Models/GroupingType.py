@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class IDKKind(Enum):
+class GroupingType(Enum):
     SAA = "SAA"
     LEG = "LEG"
     Code = "Code"
@@ -10,11 +10,11 @@ class IDKKind(Enum):
 
     @staticmethod
     def from_str(label):
-        kinds = [IDKKind.SAA,
-                 IDKKind.LEG,
-                 IDKKind.Code,
-                 IDKKind.General,
-                 IDKKind.Aggregate]
+        kinds = [GroupingType.SAA,
+                 GroupingType.LEG,
+                 GroupingType.Code,
+                 GroupingType.General,
+                 GroupingType.Aggregate]
         for kind in kinds:
             if label in kind.value:
                 return kind
