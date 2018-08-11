@@ -31,6 +31,8 @@ JDF_Families = ["Actros"]
 JDF_Aggr_BM = ["D979820", "D979811", "D960840", "D960820", "D943899", "D958860", "D958870", "D958880"]
 
 data_lines = []
+saa_set = set()
+a_pn_set = set()
 # For each month of production
 production_months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 for monthly_production in list(filter(lambda x: x.month in production_months, production.monthly_production_list)):
@@ -85,8 +87,16 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
                     valid_regs[grouping_name] = QVVCompositionValidator.validate(aggr_bm, ref_date, grouping_type, qvv_prod.composition)
 
         # Append data line
+        # append saa's into a set for further analysis
         for grouping, registers in valid_regs.items():
             for register in registers:
+                clean = register.abm_saa
+                for char in [' ', '.', '/', ',']:
+                    clean = clean.replace(char, "")
+                if str(clean)[0] == 'Z':
+                    saa_set.add((register.abm_saa, clean))
+                elif str(clean)[0] == 'A':
+                    a_pn_set.add((register.abm_saa, clean)) # TODO: include json
                 data_lines.append([
                     MonthsHelper.english[monthly_production.month] + '/' + str(production.year),
                     qvv_prod.qvv,
@@ -104,6 +114,12 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
                     grouping
                 ])
 
+
+saa_set_list = list(saa_set)
+saa_set_list = sorted(saa_set_list, key=lambda x: x)
+with open(DataPoint.PATH_DataFiles + '\\saa_set.json', 'w+') as f:
+    json.dump(saa_set_list, f, indent=4, sort_keys=False, ensure_ascii=False)
+
 # Write the file
 filename = DataPoint.PATH_DataFiles + '\\analysis_test.csv'
 outputFile = open(filename, "w", newline="\n")
@@ -112,8 +128,10 @@ outputWriter = csv.writer(outputFile)
 outputWriter.writerow(["Date", "QVV", "Baumuster", "Vehicle Family", "Business Unit", "Volume",
                        "SAA", "Amount of assembly turns for given SAA",  "Pem AB", "Termin AB",
                        "Pem BIS", "Termin BIS", "Codebedingungen", "Type"])
+
 for data_line in data_lines:
     outputWriter.writerow(data_line)
+
 outputFile.close()
 
 print("Done!")

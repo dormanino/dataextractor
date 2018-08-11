@@ -1,5 +1,6 @@
 class QVVProduction:
-    def __init__(self, qvv: str, bm: str, bu: str, family: str, volume: int, composition: [str]):
+    def __init__(self, qvv: str, bm: str, bu: str,
+                 family: str, volume: int, composition: [str]):
         self.qvv = qvv
         self.bm = bm
         self.bu = bu

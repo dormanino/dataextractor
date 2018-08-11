@@ -11,12 +11,13 @@ class DataPoint:
     EXT_json = "json"
 
     # Suffixes
+
     SUFFIX_sbc = "_sbc_"
     SUFFIX_jdf = "_jdf_"
     SUFFIX_data_agrmz = "_PDS_AGRMZ_parsed_final"
     SUFFIX_data_vehicle = str(BaumusterDataKind.Vehicle.value) + SUFFIX_data_agrmz
     SUFFIX_data_aggregate = str(BaumusterDataKind.Aggregate.value) + SUFFIX_data_agrmz
-
+    SUFFIX_data_3ca = 'PDS_3CA'
     # Final Data Points
     production = LatestFileVersion.latest_file_version(EXT_json, 'dictionary_qvvs_by_month', current=PATH_DataFiles)
     data_vehicles_sbc = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_sbc + SUFFIX_data_vehicle, current=PATH_DataFiles)
@@ -41,3 +42,6 @@ class DataPoint:
     data_kgs_agr_aggregates_jdf = LatestFileVersion.latest_file_version(EXT_json, '_jdf_aggregate_PDS_kgs', current=PATH_DataFiles)
     data_agrmz_raw_aggregates_sbc = LatestFileVersion.latest_file_version(EXT_json, '_sbc_aggregate_PDS_agrmz', current=PATH_DataFiles)
     data_agrmz_raw_aggregates_jdf = LatestFileVersion.latest_file_version(EXT_json, '_jdf_aggregate_PDS_agrmz', current=PATH_DataFiles)
+    data_saa = PATH_DataFiles + '\\saa_set.json'
+    data_3ca_sbc = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_sbc + SUFFIX_data_3ca, current=PATH_DataFiles)
+    data_3ca_jdf = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_jdf + SUFFIX_data_3ca, current=PATH_DataFiles)

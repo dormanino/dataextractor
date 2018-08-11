@@ -7,7 +7,7 @@ from PDS_Extractors.Helpers.LatestFileVersion import LatestFileVersion
 class DataProvider:
 
     @staticmethod
-    def agrmz(source):
+    def agrmz(plant, data_type_source, source):
         complete_line = ''
         data_source = []
         curent_reg = ''
@@ -15,12 +15,7 @@ class DataProvider:
         data_type = ''
         kg = ''
         none_flag = False
-
-        lines_list = ""
-        if source is 'vehicle':
-            lines_list = json.load(open(DataPoint.data_agrmz_raw_vehicles))
-        elif source is 'aggregate':
-            lines_list = json.load(open(DataPoint.data_agrmz_raw_aggregates))
+        lines_list = source
 
         for line_counter, line_info_dict in enumerate(lines_list):
             line = line_info_dict['data']
@@ -92,7 +87,7 @@ class DataProvider:
             }
         }
 
-        main_dict = dict(source=source, data=[])
+        main_dict = dict(plant=plant, source=data_type_source, data=[])
         for data in data_source:
 
             # Find/Create Baumuster node
@@ -322,7 +317,7 @@ class DataProvider:
         date = datetime.date.today()
         date_string = date.strftime('%y%m%d')
 
-        final_path = DataPoint.PATH_DataFiles + '\\' + date_string + '_PDS_AGRMZ_parsed_final_' + source + '.json'
+        final_path = DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data_type_source + '_PDS_AGRMZ_parsed_final' + '.json'
         with open(final_path, 'w', encoding='utf-8') as f:
             json.dump(main_dict, f, indent=4, sort_keys=False, ensure_ascii=False)
 
@@ -330,6 +325,7 @@ class DataProvider:
 
     @staticmethod
     def all_codes():
+        #TODO: remove weak file path
         all_codes_file = LatestFileVersion.latest_file_version('json', '_PDS_0E',
                                                                current='C:\\Users\\vravagn\\PycharmProjects\\DataExtractor\\PDS_Extractors')
         data_json = json.load(open(all_codes_file))
@@ -457,5 +453,17 @@ class DataProvider:
             json.dump(register_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
 
-for source in ['vehicle', 'aggregate']:
-    DataProvider.agrmz(source)
+plants = ['sbc', 'jdf']
+data_types = ['vehicle', 'aggregate']
+for plant in plants:
+    list_to_check = []
+    for data_type in data_types:
+        if plant == 'sbc' and data_type == 'vehicle':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
+        elif plant == 'jdf' and data_type == 'vehicle':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
+        elif plant == 'sbc' and data_type == 'aggregate':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
+        elif plant == 'jdf' and data_type == 'aggregate':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
+        DataProvider.agrmz(plant, data_type, list_to_check)

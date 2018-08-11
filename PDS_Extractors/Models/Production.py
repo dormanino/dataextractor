@@ -4,6 +4,7 @@ from PDS_Extractors.Models.MonthlyProduction import MonthlyProduction
 
 
 class Production:
+
     def __init__(self, year: int, monthly_production_list: [MonthlyProduction]):
         self.year = year
         self.monthly_production_list = monthly_production_list

@@ -237,6 +237,91 @@ class PdsNfc:
             self.connection.pds_logout()
         return agrmz_data
 
+    def oper_pds_3ca(self, logout=False):
+        saa_list = object
+        if plant is 'sbc':
+            saa_list = json.load(open(DataPoint.data_saa))
+        elif plant is 'jdf':
+            saa_list = json.load(open(DataPoint.data_saa))
+
+        part_list = []
+        operation = True
+        timeout = time.time() + 60 * 2
+        data_eof_declaration = 'DATEI - ENDE'
+        data_eof_declaration_chng = 'DATEI-ENDE'
+        data_deletion_declaration = 'STAEMME ALS GELOESCHT GEKENNZEICHNET'
+        data_not_availabe_declaration = 'SNR NICHT VORHANDEN'
+        string_trail = ''
+        ntsaa = {}
+        register_chk = False
+        for saa in saa_list:
+            if saa:  # falsy if empty if string
+                operation = True
+                saa_start = saa[1][0:7]  # saa[0[ with spaces and all chars
+                saa_trailing = saa[1][7:9]
+                self.mainframe_connection.send_string('3CA', 1, 30)
+                self.mainframe_connection.send_string(saa_start, 2, 46)
+                self.mainframe_connection.send_enter()
+                self.mainframe_connection.wait_for_field()
+                self.mainframe_connection.move_to(2, 60)
+                self.mainframe_connection.send_eraseEOF()
+                self.mainframe_connection.move_to(2, 65)
+                self.mainframe_connection.send_eraseEOF()
+                self.mainframe_connection.move_to(4, 25)
+                self.mainframe_connection.send_eraseEOF()
+                self.mainframe_connection.send_string(saa_trailing, 4, 25)
+                self.mainframe_connection.move_to(4, 32)
+                self.mainframe_connection.send_eraseEOF()
+                self.mainframe_connection.send_string(saa_trailing, 4, 32)
+                self.mainframe_connection.move_to(24, 80)
+                self.mainframe_connection.send_enter()
+                self.mainframe_connection.wait_for_field()
+                while operation:
+                    if time.time() > timeout:
+                        time.sleep(10)
+                        timeout = time.time() + 60 * 2
+                    for line in range(9, 24):  # range 8-22..23 is not considered in operation
+                        line_data = self.mainframe_connection.string_get_EBCDIC(line, 1, 80)
+                        if not line_data.replace(' ', '') == '':
+                            register_chk = True
+                            if line_data[1] == '_':
+                                string_start = line_data
+                                if string_trail:
+                                    string_complete = string_start + string_trail
+                                    ntsaa[saa[0]] = string_complete
+                                    part_list.append(ntsaa)
+                                    string_trail = ''
+                                    ntsaa = {}
+                            else:
+                                string_trail += line_data
+                        elif line == 9:
+                            if not register_chk:
+                                ntsaa[saa[0]] = None
+                                part_list.append(ntsaa)
+                                string_trail = ''
+                                ntsaa = {}
+                                continue
+
+                    if data_eof_declaration in self.mainframe_connection.string_get_EBCDIC(24, 1, 80):
+                        operation = False
+                        register_chk = False
+                    elif data_eof_declaration_chng in self.mainframe_connection.string_get_EBCDIC(24, 1, 80):
+                        operation = False
+                        register_chk = False
+                    elif data_deletion_declaration in self.mainframe_connection.string_get_EBCDIC(24, 1, 80):
+                        operation = False
+                        register_chk = False
+                    elif data_not_availabe_declaration in self.mainframe_connection.string_get_EBCDIC(24, 1, 80):
+                        operation = False
+                        register_chk = False
+                    else:
+                        self.mainframe_connection.move_to(24, 80)
+                        self.mainframe_connection.send_enter()
+                        self.mainframe_connection.wait_for_field()
+        if logout:
+            self.connection.pds_logout()
+        return part_list
+
 
 plants = ['sbc', 'jdf']
 data_type = ['vehicle', 'aggregate']
@@ -264,14 +349,23 @@ date_string = date.strftime('%y%m%d')
 #         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_kgs.json', 'w+') as f:
 #             json.dump(data_kgs, f, indent=4, sort_keys=True, ensure_ascii=False)
 #     pds_mainframe_connection.connection.pds_logout()
+#
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     for data in data_type:
+#         data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
+#
+#         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
+#             json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+# PdsNfc().mainframe_connection.send_string('exit', 2, 15)
+# sys.exit()
 
 for plant in plants:
     pds_mainframe_connection = PdsNfc(plant)
-    for data in data_type:
-        data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
-
-        with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
-            json.dump(data_agr, f, indent=4, sort_keys=True, ensure_ascii=False)
+    data_parts = pds_mainframe_connection.oper_pds_3ca()
+    with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_3CA.json', 'w+') as f:
+        json.dump(data_parts, f, indent=4, sort_keys=False, ensure_ascii=False)
     pds_mainframe_connection.connection.pds_logout()
 PdsNfc().mainframe_connection.send_string('exit', 2, 15)
 sys.exit()
