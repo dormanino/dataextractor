@@ -68,7 +68,7 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
             if aggr_abm_saa in cabin_bms:
                 first_main_aggr_source = aggregates_jdf
                 second_main_aggr_source = aggregates_sbc
-                code_to_disconsider = 'JZ4'
+                code_to_disconsider = 'ZJ4'
                 first_aggr_bm = next(filter(lambda x: x.bm == aggr_abm_saa, first_main_aggr_source.bm_data_list), None)
                 second_aggr_bm = next(filter(lambda x: x.bm == aggr_abm_saa, second_main_aggr_source.bm_data_list), None)
                 agg_base_list = (first_aggr_bm, first_main_aggr_source), (second_aggr_bm, second_main_aggr_source)
