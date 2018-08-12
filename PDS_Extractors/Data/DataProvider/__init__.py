@@ -28,14 +28,14 @@ class DataProvider:
                     else:
                         bm = line_info_dict['bm']
                         data_type = line_info_dict['data_type']
-                        kg = line_info_dict['kg']
+                        kg = line_info_dict['kg'].strip()
                         none_flag = False
                         complete_line = ''
                     curent_reg = line
                 complete_line += line
                 bm = line_info_dict['bm']
                 data_type = line_info_dict['data_type']
-                kg = line_info_dict['kg']
+                kg = line_info_dict['kg'].strip()
             else:
                 data_source.append((bm, data_type, kg, complete_line))
                 bm = line_info_dict['bm']
@@ -79,11 +79,11 @@ class DataProvider:
                 'code': (25, 80)
             },
             6: {
-                'ZUSTEUERBED': (25, 80)
+                'zusteuerbed': (25, 80)
             },
             7: {
-                'VERW.-ST': (13, 16),
-                'VERW_Info': (16, 80)
+                'verw.-st': (13, 16),
+                'verw_info': (16, 80)
             }
         }
 
