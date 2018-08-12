@@ -87,9 +87,11 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
                     for grouping_type in [GroupingType.SAA, GroupingType.LEG, GroupingType.General]:
                         grouping_name = "Aggr " + grouping_type.name + " " + aggr_abm_saa
                         if grouping_name in valid_regs.keys():
-                            valid_regs[grouping_name].extend(QVVCompositionValidator.validate(item[0], ref_date, grouping_type, qvv_cabin_code_removed))
+                            valid_regs[grouping_name].extend(
+                                QVVCompositionValidator.validate(item[0], ref_date, grouping_type, qvv_cabin_code_removed))
                         else:
-                            valid_regs[grouping_name] = QVVCompositionValidator.validate(item[0], ref_date, grouping_type, qvv_cabin_code_removed)
+                            valid_regs[grouping_name] = \
+                                QVVCompositionValidator.validate(item[0], ref_date, grouping_type, qvv_cabin_code_removed)
                     continue
             else:
                 main_aggr_source = aggregates_sbc
@@ -106,7 +108,8 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
                 # Get SAA/LEG/General from Aggregates
                 for grouping_type in [GroupingType.SAA, GroupingType.LEG, GroupingType.General]:
                     grouping_name = "Aggr " + grouping_type.name + " " + aggr_abm_saa
-                    valid_regs[grouping_name] = QVVCompositionValidator.validate(aggr_bm, ref_date, grouping_type, qvv_prod.composition)
+                    valid_regs[grouping_name] = \
+                        QVVCompositionValidator.validate(aggr_bm, ref_date, grouping_type, qvv_prod.composition)
 
         # Append data line
         # append saa's into a set for further analysis
