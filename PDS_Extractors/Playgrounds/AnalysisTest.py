@@ -12,7 +12,6 @@ from PDS_Extractors.Models.Plant import Plant
 from PDS_Extractors.Models.Production import Production
 from PDS_Extractors.TechDocValidation.QVVCompositionValidator import QVVCompositionValidator
 
-
 production = Production.from_dict(json.load(open(DataPoint.production)))
 vehicles_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_vehicles_sbc)))
 aggregates_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_aggregates_sbc)))
@@ -28,7 +27,7 @@ if (vehicles_sbc.kind is not BaumusterDataKind.Vehicle or vehicles_sbc.plant is 
     sys.exit()
 
 JDF_Families = ["Actros"]
-JDF_Aggr_BM = ["D979820", "D979811", "D960840", "D960820", "D943899", "D958860", "D958870", "D958880"]
+cabin_bms = ["D979820", "D979811", "D960840", "D960820", "D943899", "D958860", "D958870", "D958880"]
 
 data_lines = []
 saa_set = set()
@@ -66,9 +65,32 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
             aggr_abm_saa = aggregate.clean_abm_saa
 
             # Pick the right aggregate data source
-            if aggr_abm_saa in JDF_Aggr_BM:
-                main_aggr_source = aggregates_jdf
-                fallback_aggr_source = None
+            if aggr_abm_saa in cabin_bms:
+                first_main_aggr_source = aggregates_jdf
+                second_main_aggr_source = aggregates_sbc
+                code_to_disconsider = 'JZ4'
+                first_aggr_bm = next(filter(lambda x: x.bm == aggr_abm_saa, first_main_aggr_source.bm_data_list), None)
+                second_aggr_bm = next(filter(lambda x: x.bm == aggr_abm_saa, second_main_aggr_source.bm_data_list), None)
+                agg_base_list = (first_aggr_bm, first_main_aggr_source), (second_aggr_bm, second_main_aggr_source)
+
+                for item in agg_base_list:
+                    if item[0] is not None:
+                        aggr_bm = next(filter(lambda x: x.bm == aggr_abm_saa, item[1].bm_data_list), None)
+                    if item[0] is None:
+                        print("Couldn't find Aggregate Baumuster " + aggr_abm_saa)
+                        continue
+
+                    qvv_cabin_code_removed = qvv_prod.composition
+                    if code_to_disconsider in qvv_cabin_code_removed:
+                        qvv_cabin_code_removed.remove(code_to_disconsider)
+
+                    for grouping_type in [GroupingType.SAA, GroupingType.LEG, GroupingType.General]:
+                        grouping_name = "Aggr " + grouping_type.name + " " + aggr_abm_saa
+                        if grouping_name in valid_regs.keys():
+                            valid_regs[grouping_name].extend(QVVCompositionValidator.validate(item[0], ref_date, grouping_type, qvv_cabin_code_removed))
+                        else:
+                            valid_regs[grouping_name] = QVVCompositionValidator.validate(item[0], ref_date, grouping_type, qvv_cabin_code_removed)
+                    continue
             else:
                 main_aggr_source = aggregates_sbc
                 fallback_aggr_source = aggregates_jdf
@@ -96,7 +118,7 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
                 if str(clean)[0] == 'Z':
                     saa_set.add((register.abm_saa, clean))
                 elif str(clean)[0] == 'A':
-                    a_pn_set.add((register.abm_saa, clean)) # TODO: include json
+                    a_pn_set.add((register.abm_saa, clean))  # TODO: include json
                 data_lines.append([
                     MonthsHelper.english[monthly_production.month] + '/' + str(production.year),
                     qvv_prod.qvv,
@@ -114,7 +136,6 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
                     grouping
                 ])
 
-
 saa_set_list = list(saa_set)
 saa_set_list = sorted(saa_set_list, key=lambda x: x)
 with open(DataPoint.PATH_DataFiles + '\\saa_set.json', 'w+') as f:
@@ -126,8 +147,8 @@ outputFile = open(filename, "w", newline="\n")
 outputWriter = csv.writer(outputFile)
 # outputWriter.writerow(["sep=,"])  # hack to enforce coma separator
 outputWriter.writerow(["Date", "QVV", "Baumuster", "Vehicle Family", "Business Unit", "Volume",
-                       "SAA", "Amount of assembly turns for given SAA",  "Pem AB", "Termin AB",
-                       "Pem BIS", "Termin BIS", "Codebedingungen", "Type"])
+                        "SAA", "Amount of assembly turns for given SAA", "Pem AB", "Termin AB",
+                        "Pem BIS", "Termin BIS", "Codebedingungen", "Type"])
 
 for data_line in data_lines:
     outputWriter.writerow(data_line)
