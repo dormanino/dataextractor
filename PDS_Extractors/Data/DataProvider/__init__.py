@@ -92,7 +92,7 @@ class DataProvider:
 
             # Find/Create Baumuster node
             info_bm = data[0]
-            bm_data = next(filter(lambda i: i['bm'] == info_bm, main_dict["data"]), None)
+            bm_data = next(filter(lambda i: i['bm'] == info_bm, main_dict['data']), None)
             if bm_data is None:
                 bm_data = dict(bm='', data=[])
                 bm_data['bm'] = info_bm
@@ -113,7 +113,7 @@ class DataProvider:
                 info_grouping_input = data[2]
                 grouping_input = next(filter(lambda i: i['kg'] == info_grouping_input, data_input["data"]), None)
                 if grouping_input is None:
-                    grouping_input = dict(kg="", regs=[])
+                    grouping_input = dict(kg='', regs=[])
                     grouping_input['kg'] = info_grouping_input
                     data_input['data'].append(grouping_input)
 
@@ -143,7 +143,7 @@ class DataProvider:
                         next_start_char = next_end_char - 80
                         next_substring = full_line[next_start_char:next_end_char + 1]
 
-                    if '_' in substring[1]:  # if the line is the first register
+                    if '_' in substring[1]:  # if the line is the register marker
                         for q, r in zip(slices[1].keys(), slices[1].values()):
                             data = substring[r[0]:r[1]].strip()
                             if data == '':
@@ -452,18 +452,145 @@ class DataProvider:
         with open('PDS_ACC_final.json', 'w', encoding='utf-8') as f:
             json.dump(register_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
+    @staticmethod
+    def treeca(plant, source):
 
-plants = ['sbc', 'jdf']
-data_types = ['vehicle', 'aggregate']
-for plant in plants:
-    list_to_check = []
-    for data_type in data_types:
-        if plant == 'sbc' and data_type == 'vehicle':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
-        elif plant == 'jdf' and data_type == 'vehicle':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
-        elif plant == 'sbc' and data_type == 'aggregate':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
-        elif plant == 'jdf' and data_type == 'aggregate':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
-        DataProvider.agrmz(plant, data_type, list_to_check)
+        slices = {
+            1: {
+                'part_number': (3, 21),
+                'es1': (21, 25),
+                'es2': (26, 30),
+                'pos': (32, 35),
+                'str': (36, 39),
+                'aa': (40, 42),
+                'l': (43, 45),
+                'r': (46, 47),
+                'li': (47, 49),
+                'hws': (51, 55),
+                'bza': (55, 61),
+                'aesa': (64, 68),
+                'menge': (69, 78),
+                'da': (78, 80)
+            },
+            2: {
+                'benennung': (4, 39),
+                'b': (39, 40),
+                'w': (41, 42),
+                'em-ab': (45, 51),
+                'em-bis': (56, 62),
+                't_a': (66, 72),
+                't_b': (74, 79)
+            },
+            3: {
+                'aesb': (4, 8),
+                'kem-ab': (9, 23),
+                'kem-bis': (24, 38),
+                'ehm': (39, 42),
+                'ag': (43, 45),
+                'pf': (46, 48),
+                'vh': (49, 51),
+                'abs': (52, 56),
+                'rfme': (57, 64),
+                'fz-a': (65, 72),
+                'fz-b': (73, 80)
+            },
+            4: {
+                'ma': (38, 55)
+            }
+        }
+
+        lines_list = json.load(open(source))
+        main_dict = dict(plant=plant, data=[])
+        register = {}
+
+        for line_dict in lines_list:
+            for key, line_dict_content in line_dict.items():
+                # constructs the dictionaries
+                saa_data = next(filter(lambda x: x['source'] == key, main_dict['data']), None)
+                if saa_data is None:
+                    saa_data = dict(source='', regs=[])
+                    saa_data['source'] = key
+                    main_dict['data'].append(saa_data)
+
+                if line_dict_content is not None:
+                    amount_of_chars_in_the_string = int(len(line_dict_content))
+                    amount_of_lines = int(amount_of_chars_in_the_string / 80)
+
+                    full_line = line_dict_content
+                    for line in range(1, amount_of_lines + 1):
+                        end_char = line * 80  # used to specify first char if the line to identify
+                        start_char = end_char - 80  # same idea as former but for the last char
+                        substring = full_line[start_char:end_char + 1]  # establish the sub range to parse
+
+                        if line > 1:
+                            prior_line = line - 1
+                            prior_end_char = prior_line * 80
+                            prior_start_char = prior_end_char - 80
+                            prior_substring = full_line[prior_start_char:prior_end_char + 1]
+
+                        if line < amount_of_lines:
+                            next_line = line + 1
+                            next_end_char = next_line * 80
+                            next_start_char = next_end_char - 80
+                            next_substring = full_line[next_start_char:next_end_char + 1]
+
+                        if line == 1 and '_' in substring[1]:  # if the line is the register marker
+                            for q, r in zip(slices[1].keys(), slices[1].values()):
+                                data = substring[r[0]:r[1]].strip()
+                                if data == '':
+                                    data = None
+                                register.update({q: data})
+                        elif line == 2:
+                            for q, r in zip(slices[2].keys(), slices[2].values()):
+                                data = substring[r[0]:r[1]].strip()
+                                if data == '':
+                                    data = None
+                                register.update({q: data})
+                        elif line == 3:
+                            for q, r in zip(slices[3].keys(), slices[3].values()):
+                                data = substring[r[0]:r[1]].strip()
+                                if data == '':
+                                    data = None
+                                register.update({q: data})
+                        elif line == 4:
+                            for q, r in zip(slices[4].keys(), slices[4].values()):
+                                data = substring[r[0]:r[1]].strip()
+                                if data == '':
+                                    data = None
+                                register.update({q: data})
+                        else:
+                            register.update({'extra_info': substring})
+
+                    saa_data['regs'].append(register)
+                    register = {}
+                else:
+                    saa_data['regs'].append(None)
+                    register = {}
+
+        date = datetime.date.today()
+        date_string = date.strftime('%y%m%d')
+
+        final_path = DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_3ca_parsed_final' + '.json'
+        with open(final_path, 'w', encoding='utf-8') as f:
+            json.dump(main_dict, f, indent=4, sort_keys=False, ensure_ascii=False)
+
+        return print('concluded')
+
+# # agrmz code
+# plants = ['sbc', 'jdf']
+# data_types = ['vehicle', 'aggregate']
+# for plant in plants:
+#     list_to_check = []
+#     for data_type in data_types:
+#         if plant == 'sbc' and data_type == 'vehicle':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
+#         elif plant == 'jdf' and data_type == 'vehicle':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
+#         elif plant == 'sbc' and data_type == 'aggregate':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
+#         elif plant == 'jdf' and data_type == 'aggregate':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
+#         DataProvider.agrmz(plant, data_type, list_to_check)
+
+
+DataProvider.treeca('sbc', DataPoint.data_3ca_sbc)
