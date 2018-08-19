@@ -3,7 +3,7 @@ import time
 import sys
 import datetime
 import json
-import LatestFileVersion
+from PDS_Extractors.Helpers.LatestFileVersion import LatestFileVersion
 from functools import partial
 from collections import OrderedDict
 from B3902V.Data import DataPoint

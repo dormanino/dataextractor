@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 
 class RuleValidator:
@@ -10,7 +11,7 @@ class RuleValidator:
         ITEM = 4
 
     @staticmethod
-    def validate(rule, qvv_composition):
+    def validate(rule: str, qvv_composition: List[str]) -> bool:
         open_parenthesis = '('
         close_parenthesis = ')'
         or_operator = '/'

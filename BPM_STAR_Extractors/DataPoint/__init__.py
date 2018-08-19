@@ -1,5 +1,5 @@
 import os
-import LatestFileVersion
+from PDS_Extractors.Helpers.LatestFileVersion import LatestFileVersion
 
 
 class DataPoint:

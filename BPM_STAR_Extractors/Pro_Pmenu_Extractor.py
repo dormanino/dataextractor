@@ -176,7 +176,6 @@ class MakeFile:
         gen_info = Xyz.load_family_bu_info()
         prog_prod = Xyz.load_12mpp_parsed()
 
-        print(type(qvv_info))
         dicto = {}
         qvv_with_volume_list = [[key, val] for key, val in qvv_info.items()]
         info_a_ver = [[info, bm] for info, bm in gen_info.items()]
@@ -199,10 +198,11 @@ class MakeFile:
 
         with open(os.getcwd() + '\\DataPoint\\' + date_string + 'dict_end.json', 'w') as f:
             json.dump(dicto, f, indent=4, sort_keys=True, ensure_ascii=False)
+    print('dict_end.json concluded')
 
     @staticmethod
     def code_vs_bm_qty_matrix():
-        start_time = time.time ()
+        start_time = time.time()
         input_main = Xyz.load_main_gen_file()
 
         codes = set()
@@ -294,7 +294,7 @@ class MakeFile:
             json.dump(matrix_bm_code, f, sort_keys=True, ensure_ascii=False)
 
 
-MakeFile.parsed_12mpp()
-MakeFile.bmqvvvol()
+#MakeFile.parsed_12mpp()
+#MakeFile.bmqvvvol()
 MakeFile.concatenateinfos()
 # MakeFile.code_vs_bm_qty_matrix()

@@ -21,7 +21,7 @@ class DataProvider:
             line = line_info_dict['data']
             if line is not None:
                 register_char = line[1]
-                if register_char is '_' and line_counter is not 0:  # start of register
+                if register_char is '_' and line_counter is not 0:  # start of component
                     if line != curent_reg and not none_flag:
                         data_source.append((bm, data_type, kg, complete_line))
                         complete_line = ''
@@ -59,7 +59,7 @@ class DataProvider:
                 'em_bis': (72, 79)
             },
             2: {
-                'benennung': (3, 54),
+                'part_description': (3, 54),
                 'asb': (55, 58),
                 'trailing_t_ab': (62, 63),
                 't_a': (63, 69),
@@ -118,7 +118,7 @@ class DataProvider:
                     data_input['data'].append(grouping_input)
 
                 full_line = data[3]
-                amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the register (each line has 80 char)
+                amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the component (each line has 80 char)
                 register = dict()
                 marker = False
                 prior_substring = ''
@@ -143,7 +143,7 @@ class DataProvider:
                         next_start_char = next_end_char - 80
                         next_substring = full_line[next_start_char:next_end_char + 1]
 
-                    if '_' in substring[1]:  # if the line is the register marker
+                    if '_' in substring[1]:  # if the line is the component marker
                         for q, r in zip(slices[1].keys(), slices[1].values()):
                             data = substring[r[0]:r[1]].strip()
                             if data == '':
@@ -151,7 +151,7 @@ class DataProvider:
                             register.update({q: data})
                         analysed_lines.append(line)
 
-                    elif not prior_substring.strip() == '' and '_' in prior_substring[1]:  # defines if you are in between the register header and
+                    elif not prior_substring.strip() == '' and '_' in prior_substring[1]:  # defines if you are in between the component header and
                         for q_1, r_1 in zip(slices[2].keys(), slices[2].values()):
                             data = substring[r_1[0]:r_1[1]].strip()
                             if data == '':
@@ -386,7 +386,7 @@ class DataProvider:
             for full_line in lines:
                 reg_counter += 1
                 register_dict[code][reg_counter] = {}
-                amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the register (each line has 80 char)
+                amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the component (each line has 80 char)
                 marker = False
                 prior_substring = ''
                 next_substring = ''
@@ -421,7 +421,7 @@ class DataProvider:
 
                         analised_lines.append(line)
 
-                    elif not prior_substring.strip() == '' and '_' in prior_substring[1]:  # defines if you are in between the register header and
+                    elif not prior_substring.strip() == '' and '_' in prior_substring[1]:  # defines if you are in between the component header and
 
                         for q_1, r_1 in zip(slices[2].keys(), slices[2].values()):
                             data = substring[r_1[0]:r_1[1]].strip()
@@ -469,17 +469,17 @@ class DataProvider:
                 'hws': (51, 55),
                 'bza': (55, 61),
                 'aesa': (64, 68),
-                'menge': (69, 78),
+                'quantity': (69, 78),
                 'da': (78, 80)
             },
             2: {
-                'benennung': (4, 39),
+                'part_description': (4, 39),
                 'b': (39, 40),
                 'w': (41, 42),
                 'em-ab': (45, 51),
                 'em-bis': (56, 62),
                 't_a': (66, 72),
-                't_b': (74, 79)
+                't_b': (74, 80)
             },
             3: {
                 'aesb': (4, 8),
@@ -534,7 +534,7 @@ class DataProvider:
                             next_start_char = next_end_char - 80
                             next_substring = full_line[next_start_char:next_end_char + 1]
 
-                        if line == 1 and '_' in substring[1]:  # if the line is the register marker
+                        if line == 1 and '_' in substring[1]:  # if the line is the component marker
                             for q, r in zip(slices[1].keys(), slices[1].values()):
                                 data = substring[r[0]:r[1]].strip()
                                 if data == '':
@@ -593,4 +593,5 @@ class DataProvider:
 #         DataProvider.agrmz(plant, data_type, list_to_check)
 
 
-DataProvider.treeca('sbc', DataPoint.data_3ca_sbc)
+#DataProvider.treeca('sbc', DataPoint.data_3ca_sbc)
+DataProvider.treeca('jdf', DataPoint.data_3ca_jdf)

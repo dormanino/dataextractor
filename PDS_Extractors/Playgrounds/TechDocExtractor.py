@@ -11,29 +11,30 @@ from PDS_Extractors.Models.GroupingType import GroupingType
 from PDS_Extractors.Models.Plant import Plant
 from PDS_Extractors.Models.Production import Production
 from PDS_Extractors.TechDocValidation.QVVCompositionValidator import QVVCompositionValidator
+from PDS_Extractors.TechDocValidation.DueDateValidator import DueDateValidator
 
 production = Production.from_dict(json.load(open(DataPoint.production)))
-vehicles_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_vehicles_sbc)))
-aggregates_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_aggregates_sbc)))
-vehicles_jdf = BaumusterCollection.from_dict(json.load(open(DataPoint.data_vehicles_jdf)))
-aggregates_jdf = BaumusterCollection.from_dict(json.load(open(DataPoint.data_aggregates_jdf)))
+vehicles_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_vehicles)))
+aggregates_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_aggregates)))
+vehicles_jdf = BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_vehicles)))
+aggregates_jdf = BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_aggregates)))
 
 # Safe checks
 if (vehicles_sbc.kind is not BaumusterDataKind.Vehicle or vehicles_sbc.plant is not Plant.SBC) \
         or (aggregates_sbc.kind is not BaumusterDataKind.Aggregate or aggregates_sbc.plant is not Plant.SBC) \
         or (vehicles_jdf.kind is not BaumusterDataKind.Vehicle or vehicles_jdf.plant is not Plant.JDF) \
         or (aggregates_jdf.kind is not BaumusterDataKind.Aggregate or aggregates_jdf.plant is not Plant.JDF):
-    print("Bad data!")
+    print('Bad data!')
     sys.exit()
 
-JDF_Families = ["Actros"]
+JDF_Families = ['Actros']
 cabin_bms = ["D979820", "D979811", "D960840", "D960820", "D943899", "D958860", "D958870", "D958880"]
 
 data_lines = []
 saa_set = set()
 a_pn_set = set()
-# For each month of production
-production_months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+# For each month_year of production
+production_months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 for monthly_production in list(filter(lambda x: x.month in production_months, production.monthly_production_list)):
     year = production.year
     month = MonthsHelper.numeric[monthly_production.month]
@@ -62,7 +63,7 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
 
         # Find the Aggregates for Vehicle
         for aggregate in QVVCompositionValidator.validate(vehicle_bm, ref_date, GroupingType.Aggregate, qvv_prod.composition):
-            aggr_abm_saa = aggregate.clean_abm_saa
+            aggr_abm_saa = aggregate.clean_component_id
 
             # Pick the right aggregate data source
             if aggr_abm_saa in cabin_bms:
@@ -107,7 +108,7 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
 
                 # Get SAA/LEG/General from Aggregates
                 for grouping_type in [GroupingType.SAA, GroupingType.LEG, GroupingType.General]:
-                    grouping_name = "Aggr " + grouping_type.name + " " + aggr_abm_saa
+                    grouping_name = 'Aggr ' + grouping_type.name + ' ' + aggr_abm_saa
                     valid_regs[grouping_name] = \
                         QVVCompositionValidator.validate(aggr_bm, ref_date, grouping_type, qvv_prod.composition)
 
@@ -117,45 +118,46 @@ for monthly_production in list(filter(lambda x: x.month in production_months, pr
             for register in registers:
                 clean = register.abm_saa
                 for char in [' ', '.', '/', ',']:
-                    clean = clean.replace(char, "")
+                    clean = clean.replace(char, '')
                 if str(clean)[0] == 'Z':
-                    saa_set.add((register.abm_saa, clean))
-                elif str(clean)[0] == 'A':
-                    a_pn_set.add((register.abm_saa, clean))  # TODO: include json
-                data_lines.append([
-                    MonthsHelper.english[monthly_production.month] + '/' + str(production.year),
-                    qvv_prod.qvv,
-                    qvv_prod.bm,
-                    qvv_prod.family,
-                    qvv_prod.bu,
-                    qvv_prod.volume,
-                    register.abm_saa,
-                    register.anz,
-                    register.em_ab,
-                    register.t_a,
-                    register.em_bis,
-                    register.t_b,
-                    register.codebedingungen,
-                    grouping
-                ])
+                    # saa_set.add((component.abm_saa, clean))
+                # elif str(clean)[0] == 'A':
+                #     a_pn_set.add((component.abm_saa, clean))  # TODO: include json
+                    if DueDateValidator.saa_status_between_dates(register, datetime.date(2018, 4, 1), datetime.date(2018, 7, 30)):
+                        data_lines.append([
+                            MonthsHelper.english[monthly_production.month] + '/' + str(production.year),
+                            qvv_prod.qvv,
+                            qvv_prod.bm,
+                            qvv_prod.family,
+                            qvv_prod.bu,
+                            qvv_prod.volume,
+                            register.abm_saa,
+                            register.anz,
+                            register.em_ab,
+                            register.t_a,
+                            register.em_bis,
+                            register.t_b,
+                            register.codebedingungen,
+                            grouping
+                        ])
 
-saa_set_list = list(saa_set)
-saa_set_list = sorted(saa_set_list, key=lambda x: x)
-with open(DataPoint.PATH_DataFiles + '\\saa_set.json', 'w+') as f:
-    json.dump(saa_set_list, f, indent=4, sort_keys=False, ensure_ascii=False)
+# saa_set_list = list(saa_set)
+# saa_set_list = sorted(saa_set_list, key=lambda x: x)
+# with open(DataPoint.PATH_DataFiles + '\\saa_set.json', 'w+') as f:
+#     json.dump(saa_set_list, f, indent=4, sort_keys=False, ensure_ascii=False)
 
 # Write the file
-filename = DataPoint.PATH_DataFiles + '\\analysis_test.csv'
-outputFile = open(filename, "w", newline="\n")
+filename = DataPoint.PATH_DataFiles + '\\changes_analysis_test.csv'
+outputFile = open(filename, 'w', newline='\n')
 outputWriter = csv.writer(outputFile)
-# outputWriter.writerow(["sep=,"])  # hack to enforce coma separator
+# output_writer.writerow(["sep=,"])  # hack to enforce coma separator
 outputWriter.writerow(["Date", "QVV", "Baumuster", "Vehicle Family", "Business Unit", "Volume",
-                        "SAA", "Amount of assembly turns for given SAA", "Pem AB", "Termin AB",
-                        "Pem BIS", "Termin BIS", "Codebedingungen", "Type"])
+                       "SAA", "Amount of assembly turns for given SAA", "Pem AB", "Termin AB",
+                       "Pem BIS", "Termin BIS", "Codebedingungen", "Type"])
 
 for data_line in data_lines:
     outputWriter.writerow(data_line)
 
 outputFile.close()
 
-print("Done!")
+print('Done!')

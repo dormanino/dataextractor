@@ -6,7 +6,7 @@ class Plant(Enum):
     JDF = "jdf"
 
     @staticmethod
-    def from_str(label):
+    def from_str(label: str):
         sources = [Plant.SBC,
                    Plant.JDF]
         for source in sources:

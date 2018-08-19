@@ -19,7 +19,7 @@ class Makover:
     def vartiant_model_gen(self, months):
         qvvs_data_dict = {'production': []}
         for month in months:
-            monthly_production = {'month': '',
+            monthly_production = {'month_year': '',
                                   'data': []}
             swap_list = []
 
@@ -28,12 +28,12 @@ class Makover:
                     main_dict = OrderedDict()
                     main_dict['qvv'] = key
                     main_dict['bm'] = values[0][0][0]
-                    main_dict['bu'] = values[0][0][1][0]
+                    main_dict['business_unit'] = values[0][0][1][0]
                     main_dict['family'] = values[0][0][1][1]
                     main_dict['composition'] = [i['code'] for i in values[1]]
                     main_dict['volume'] = int(values[0][1][month])
                     swap_list.append(main_dict)
-                monthly_production['month'] = month
+                monthly_production['month_year'] = month
                 monthly_production['data'] = swap_list
             qvvs_data_dict['production'].append(monthly_production)
         return qvvs_data_dict

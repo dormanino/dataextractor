@@ -1,13 +1,14 @@
+from typing import List
 from PDS_Extractors.Models.BaumusterData import BaumusterData
 from PDS_Extractors.Models.BaumusterDataKind import BaumusterDataKind
 from PDS_Extractors.Models.Plant import Plant
 
 
 class BaumusterCollection:
-    def __init__(self, kind: BaumusterDataKind, plant: Plant, bm_data_list: [BaumusterData]):
-        self.kind = kind
-        self.plant = plant
-        self.bm_data_list = bm_data_list
+    def __init__(self, kind: int, plant: Plant, bm_data_list: List[BaumusterData]):
+        self.kind: BaumusterDataKind = kind
+        self.plant: Plant = plant
+        self.bm_data_list: List[BaumusterData] = bm_data_list
 
     @classmethod
     def from_dict(cls, datadict):

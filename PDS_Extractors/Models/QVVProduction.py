@@ -1,19 +1,23 @@
+from typing import List
+
+
 class QVVProduction:
-    def __init__(self, qvv: str, bm: str, bu: str,
-                 family: str, volume: int, composition: [str]):
-        self.qvv = qvv
-        self.bm = bm
-        self.bu = bu
-        self.family = family
-        self.volume = volume
-        self.composition = composition
+
+    def __init__(self, qvv: str, baumuster_id: str, business_unit: str,
+                 family: str, volume: int, composition: List[str]):
+        self.qvv: str = qvv
+        self.baumuster_id: str = baumuster_id
+        self.business_unit: str = business_unit
+        self.family: str = family
+        self.volume: int = volume
+        self.composition: List[str] = composition
 
     @classmethod
     def from_dict(cls, datadict):
         return cls(
             datadict[QVVProduction.JSONKeys.qvv],
-            datadict[QVVProduction.JSONKeys.bm],
-            datadict[QVVProduction.JSONKeys.bu],
+            datadict[QVVProduction.JSONKeys.baumuster_id],
+            datadict[QVVProduction.JSONKeys.business_unit],
             datadict[QVVProduction.JSONKeys.family],
             datadict[QVVProduction.JSONKeys.volume],
             datadict[QVVProduction.JSONKeys.composition]
@@ -21,8 +25,8 @@ class QVVProduction:
 
     class JSONKeys:
         qvv = "qvv"
-        bm = "bm"
-        bu = "bu"
+        baumuster_id = "bm"
+        business_unit = "bu"
         family = "family"
         volume = "volume"
         composition = "composition"

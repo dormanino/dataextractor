@@ -9,7 +9,7 @@ class GroupingType(Enum):
     Aggregate = "Aggregate"
 
     @staticmethod
-    def from_str(label):
+    def from_str(label: str):
         kinds = [GroupingType.SAA,
                  GroupingType.LEG,
                  GroupingType.Code,
