@@ -69,7 +69,7 @@ class DueDateValidator:
 
         elif from_date > (int_ref_date + days_offset):
             if apa_to is None:
-                return DueDateAnalysis(DueDateStatus.Invalid, "Modificacao valida a partir de " + apa_from + " e " + str(from_date))
+                return DueDateAnalysis(DueDateStatus.Invalid, "Modificacao futura com prazo vide APA " + apa_from + " e " + str(to_date))
             else:
                 if to_date == no_deadline:
                     return DueDateAnalysis(DueDateStatus.Invalid, "Modificao com alteracao futura sem prazo vide APA" + apa_to)
