@@ -26,55 +26,35 @@ production_months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "se
 num_months = []
 
 data_lines = []
+saa_set = set()
+# a_pn_set = set()
+
+
 for month, qvv_prod_components_list in production_analysis.qvv_prod_components_by_month(num_months).items():
     for qvv_prod_components in qvv_prod_components_list:
         qvv_prod = qvv_prod_components.qvv_production
         for grouping, components in qvv_prod_components.components.items():
             for component in components:
-                data_lines.append([
-                    month,
-                    qvv_prod.qvv,
-                    qvv_prod.baumuster_id,
-                    qvv_prod.family,
-                    qvv_prod.business_unit,
-                    qvv_prod.volume,
-                    component.kg,
-                    component.component_id,
-                    component.anz,
-                    component.em_ab,
-                    component.t_a,
-                    component.em_bis,
-                    component.t_b,
-                    component.validation_rule,
-                    grouping
-                ])
+                if component.em_ab[0] == "U":
+                    clean = component.component_id
+                    for char in [' ', '.', '/', ',']:
+                        clean = clean.replace(char, "")
+                    if str(clean)[0] == 'Z':
+                        saa_set.add((component.component_id, clean))
+                # elif str(clean)[0] == 'A':
+                #     a_pn_set.add((component.abm_saa, clean))  # TODO: include json
 
-# Parameters
-# saa_set = set()
-# a_pn_set = set()
-# clean = component.abm_saa
-#             for char in [' ', '.', '/', ',']:
-#                 clean = clean.replace(char, "")
-#             if str(clean)[0] == 'Z':
-#                 saa_set.add((component.abm_saa, clean))
-#             elif str(clean)[0] == 'A':
-#                 a_pn_set.add((component.abm_saa, clean))  # TODO: include json
+saa_set_list = list(saa_set)
+saa_set_list = sorted(saa_set_list, key=lambda x: x)
 
-# # OTHER STUFF
-# saa_set_list = list(saa_set)
-# saa_set_list = sorted(saa_set_list, key=lambda x: x)
-# with open(DataPoint.PATH_DataFiles + '\\saa_set.json', 'w+') as f:
-#     json.dump(saa_set_list, f, indent=4, sort_keys=False, ensure_ascii=False)
-
-# Write the file
-filename = DataPoint.PATH_DataFiles + '\\analysis_test.csv'
+data_lines = saa_set_list
+filename = DataPoint.PATH_DataFiles + '\\SAA_SBC_set_test.csv'
 output_file = open(filename, "w", newline="\n")
 output_writer = csv.writer(output_file)
 # output_writer.writerow(["sep=,"])  # hack to enforce coma separator
-output_writer.writerow(["Date", "QVV", "Baumuster", "Vehicle Family", "Business Unit", "Volume",
-                        "KG", "SAA", "Amount of assembly turns for given SAA", "Pem AB", "Termin AB",
-                        "Pem BIS", "Termin BIS", "Codebedingungen", "Type"])  # headers
+output_writer.writerow(["SAA", "SAA2"])  # headers
 for data_line in data_lines:
     output_writer.writerow(data_line)
 output_file.close()
+
 print("Done!")

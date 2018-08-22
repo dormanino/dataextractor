@@ -25,7 +25,7 @@ production_analysis = ProductionAnalysis(Production.from_dict(json.load(open(Dat
 
 production_months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 # num_months = list(map(lambda x: MonthsHelper.numeric[x], production_months))
-num_months = [1]
+num_months = []
 
 data_lines = []
 for month_year, qvv_prod_components_list in production_analysis.qvv_prod_components_by_month(num_months).items():
