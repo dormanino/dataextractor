@@ -72,7 +72,7 @@ output_file = open(filename, "w", newline="\n")
 output_writer = csv.writer(output_file)
 # output_writer.writerow(["sep=,"])  # hack to enforce coma separator
 output_writer.writerow(["Date", "QVV", "Baumuster", "Vehicle Family", "Business Unit", "Volume",
-                        "SAA", "Amount of assembly turns for given SAA", "Pem AB", "Termin AB",
+                        "KG", "SAA", "Amount of assembly turns for given SAA", "Pem AB", "Termin AB",
                         "Pem BIS", "Termin BIS", "Codebedingungen", "Type"])  # headers
 for data_line in data_lines:
     output_writer.writerow(data_line)
