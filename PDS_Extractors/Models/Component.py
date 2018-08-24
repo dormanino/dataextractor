@@ -2,11 +2,12 @@ from PDS_Extractors.Models.GroupingType import GroupingType
 
 
 class Component:
-    def __init__(self, component_id: str, component_description: str, grouping_type: GroupingType, kg: str, validation_rule: str,
+    def __init__(self, component_id: str, component_description: str, bg: str, grouping_type: GroupingType, kg: str, validation_rule: str,
                  em_ab, em_bis, t_a, t_b, anz, asa, asb, pos):
         self.component_id: str = component_id
         self.clean_component_id: str = Component.clean_component_id(component_id)
         self.component_description: str = component_description
+        self.bg = bg
         self.grouping_type: GroupingType = grouping_type
         self.kg: str = kg
         self.validation_rule: str = validation_rule
@@ -24,6 +25,7 @@ class Component:
         return cls(
             datadict[Component.JSONKeys.component_id],
             datadict.get(Component.JSONKeys.component_description, "(No Description)"),
+            datadict.get(Component.JSONKeys.bg, None),
             datadict[Component.JSONKeys.grouping_type],
             datadict[Component.JSONKeys.kg],
             datadict.get(Component.JSONKeys.validation_rule, None),
@@ -40,6 +42,7 @@ class Component:
     class JSONKeys:
         component_id = "abm_saa"
         component_description = "benennung"
+        bg = "bg_codebedingungen"
         grouping_type = "grouping_type"
         kg = "kg"
         validation_rule = "CODEBEDINGUNGEN"

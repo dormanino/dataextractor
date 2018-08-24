@@ -4,7 +4,7 @@ import json
 from PDS_Extractors.Analysis.AnalysisDataSource import AnalysisDataSource
 from PDS_Extractors.Analysis.ProductionAnalysis import ProductionAnalysis
 from PDS_Extractors.Data.DataPoint import DataPoint
-from PDS_Extractors.Helpers.MonthsHelper import MonthsHelper
+# from PDS_Extractors.Helpers.MonthsHelper import MonthsHelper
 from PDS_Extractors.Models.BaumusterCollection import BaumusterCollection
 from PDS_Extractors.Models.ComponentsCollection import ComponentsCollection
 from PDS_Extractors.Models.Production import Production
@@ -35,12 +35,16 @@ for month, qvv_prod_components_list in production_analysis.qvv_prod_components_b
         qvv_prod = qvv_prod_components.qvv_production
         for grouping, components in qvv_prod_components.components.items():
             for component in components:
-                if component.em_ab[0] == "U":
-                    clean = component.component_id
-                    for char in [' ', '.', '/', ',']:
-                        clean = clean.replace(char, "")
-                    if str(clean)[0] == 'Z':
-                        saa_set.add((component.component_id, clean))
+                bg_data = component.bg
+                if bg_data is None or "N" not in bg_data:
+                    if component.em_ab[0] == "U":
+                        clean = component.component_id
+                        for char in [' ', '.', '/', ',']:
+                            clean = clean.replace(char, "")
+                        if str(clean)[0] == 'Z':
+                            saa_set.add((component.component_id, clean))
+                else:
+                    print(component.component_id)
                 # elif str(clean)[0] == 'A':
                 #     a_pn_set.add((component.abm_saa, clean))  # TODO: include json
 

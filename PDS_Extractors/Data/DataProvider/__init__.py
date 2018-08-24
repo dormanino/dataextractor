@@ -71,11 +71,11 @@ class DataProvider:
                 'anz': (55, 58)
             },
             4: {
-                'bg': (24, 26),
+                'bg': (24, 26),  # bg para Code
                 'code': (28, 62)
             },
             5: {
-                'bg': (23, 25),
+                'bg': (24, 26),  # bg para SAA
                 'code': (25, 80)
             },
             6: {
