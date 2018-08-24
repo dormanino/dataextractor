@@ -201,3 +201,6 @@ venv.bak/
 
 # End of https://www.gitignore.io/api/python,pycharm
 .json
+BPM_STAR_Extractors/DataPoint/old (chk and delete)/180730_final_variant_data.json
+*.json
+*.xlsx
