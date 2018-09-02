@@ -204,3 +204,4 @@ venv.bak/
 BPM_STAR_Extractors/DataPoint/old (chk and delete)/180730_final_variant_data.json
 *.json
 *.xlsx
+DataFiles/B3902V.TXT
