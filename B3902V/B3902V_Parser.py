@@ -1,18 +1,18 @@
 import datetime
 import json
 from collections import OrderedDict
-from B3902V.Data import DataPoint
+from B3902V.Data.DataPoint import DataPoint
 
 
 def parse_b3902v_raw_data():
-    b3902v_file = DataPoint.data_b3902v
+
     slices = [(0, 3), (3, 24), (24, 45), (45, 53), (53, 61), (61, 62), (62, 64), (64, 83),
               (83, 85), (85, 115), (115, 145), (145, 146)]
     data_list = sorted(
         [tuple
          (line
           [slice(start, end)].strip() for start, end in [part for part in slices]
-          ) for line in open(b3902v_file, 'r')], key=lambda x: x[1])
+          ) for line in open(DataPoint.data_b3902v, 'r')], key=lambda x: x[1])
 
     # file = json.load(open(LatestFileVersion.latest_file_version('json', 'variant_data_raw')))
 
@@ -70,10 +70,10 @@ def parse_b3902v_raw_data():
     date = datetime.date.today()
     date_string = date.strftime('%y%m%d')
 
-    with open(date_string + '_' + 'variant_data_raw.json', 'w') as f:
+    with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_variant_data_raw.json', 'w') as f:
         json.dump(data_list, f, sort_keys=True, ensure_ascii=False)
 
-    with open(date_string + '_' + 'final_variant_data.json', 'w') as f:
+    with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_final_variant_data.json', 'w') as f:
         json.dump(final_data_list, f, indent=4, sort_keys=True, ensure_ascii=False)
 
 
