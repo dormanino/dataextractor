@@ -1,10 +1,10 @@
 class Part:
-    def __init__(self, part_number: str, part_description: str, quantity: int,
+    def __init__(self, part_number: str, part_description: str, quantity: str,
                  es1: str, es2: str, pos: str, aesa: str, aesb: str, structure_index: str,
                  bza: str, da: str, w: str, em_ab: str, em_bis: str, t_a: str, t_b: str, ehm: str):
         self.part_number: str = part_number
         self.part_description: str = part_description
-        self.quantity: int = quantity
+        self.quantity: str = quantity.replace(",", ".")
         self.es1 = es1
         self.es2 = es2
         self.pos = pos

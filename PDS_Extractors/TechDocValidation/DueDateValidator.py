@@ -76,7 +76,8 @@ class DueDateValidator:
                 elif from_date > to_date:
                     return DueDateAnalysis(DueDateStatus.Invalid, "Inversao de sequencia futura")
                 elif (int_ref_date - days_offset) <= to_date <= (int_ref_date + days_offset):
-                    return DueDateAnalysis(DueDateStatus.Invalid, "Modificao com alteracao futura sem efeito vide APAs" + apa_from + " e " + apa_to)
+                    return DueDateAnalysis(DueDateStatus.Invalid,
+                                           "Modificao com alteracao futura sem efeito vide APAs" + apa_from + " e " + apa_to)
                 elif to_date > (int_ref_date + days_offset):
                     return DueDateAnalysis(DueDateStatus.Invalid, "Modificacao com prazo em " + str(to_date) + " vide APA " + apa_to)
                 elif to_date < (int_ref_date - days_offset):
@@ -92,7 +93,8 @@ class DueDateValidator:
                 if to_date == no_deadline:
                     return DueDateAnalysis(DueDateStatus.Valid, "Modificao com alteracao futura sem prazo vide APA" + apa_to)
                 if (int_ref_date - days_offset) <= to_date <= (int_ref_date + days_offset):
-                    return DueDateAnalysis(DueDateStatus.Invalid, "Modificao com alteracao futura sem efeito vide APAs" + apa_from + " e " + apa_to)
+                    return DueDateAnalysis(DueDateStatus.Invalid,
+                                           "Modificao com alteracao futura sem efeito vide APAs" + apa_from + " e " + apa_to)
                 elif to_date > (int_ref_date + days_offset):
                     return DueDateAnalysis(DueDateStatus.Valid, "Modificacao com prazo em " + str(to_date) + " vide APA " + apa_to)
                 elif to_date < (int_ref_date - days_offset):

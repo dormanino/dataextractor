@@ -44,6 +44,6 @@ class DataPoint:
     data_kgs_agr_aggregates_jdf = LatestFileVersion.latest_file_version(EXT_json, '_jdf_aggregate_PDS_kgs', current=PATH_DataFiles)
     data_agrmz_raw_aggregates_sbc = LatestFileVersion.latest_file_version(EXT_json, '_sbc_aggregate_PDS_agrmz', current=PATH_DataFiles)
     data_agrmz_raw_aggregates_jdf = LatestFileVersion.latest_file_version(EXT_json, '_jdf_aggregate_PDS_agrmz', current=PATH_DataFiles)
-    data_saa = PATH_DataFiles + '\\saa_set.json'
+    data_saa = str(PATH_DataFiles + '\\saa_set.json')
     data_3ca_sbc = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_sbc + SUFFIX_data_parts, current=PATH_DataFiles)
     data_3ca_jdf = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_jdf + SUFFIX_data_parts, current=PATH_DataFiles)

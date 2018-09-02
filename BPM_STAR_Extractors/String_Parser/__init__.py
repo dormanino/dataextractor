@@ -3,7 +3,7 @@ class Parse:
     def parse(string):
         sub_str = ''
         sub_str_lst = []
-        for char_index , i in enumerate(string):
+        for char_index, i in enumerate(string):
             if i != ' ':
                 sub_str += i
             if char_index != (len(string)-1):

@@ -1,61 +1,9 @@
 import json
+import csv
 import datetime
+from collections import OrderedDict
 from BPM_STAR_Extractors.DataPoint import DataPoint
 from BPM_STAR_Extractors.String_Parser import Parse
-import time
-
-
-class Xyz:
-
-    @staticmethod
-    def load_12mpp_raw():
-        return json.load(open(DataPoint.data_12mpp))
-
-    @staticmethod
-    def load_b3902v_raw():
-        return json.load(open(DataPoint.data_variant_final_data))
-
-    @staticmethod
-    def load_12mpp_parsed():
-        return json.load(open(DataPoint.data_12mpp_parsed))
-
-    @staticmethod
-    def load_qvvs_with_volume():
-        return json.load(open(DataPoint.data_qvv_bm_vol))
-
-    @staticmethod
-    def load_family_bu_info():
-        return json.load(open(DataPoint.data_info_bm))
-
-    @staticmethod
-    def load_main_gen_file():
-        return json.load(open(DataPoint.data_final_dict))
-
-    @staticmethod
-    def string_divide(string, div):
-        l = []
-        strp = ''
-        i = 0
-        while i < len(string):
-            strp = string[i:i + div].strip().replace(" ", "")
-            if strp != '':
-                if Xyz.is_float_try(strp):
-                    strp = int(strp)
-                l.append(strp)
-            i += div
-        return l
-
-    @staticmethod
-    def is_float_try(string):
-        try:
-            float(string)
-            return True
-        except ValueError:
-            return False
-
-    @staticmethod
-    def zyx():
-        return Xyz.load_b3902v_raw()
 
 
 class MakeFile:
@@ -63,7 +11,7 @@ class MakeFile:
     @staticmethod
     def parsed_12mpp():
         # generates file xxxxxx12mpp_parsed based on xxxxxx12mpp.json('raw')
-        x = Xyz.load_12mpp_raw()
+        x = json.load(open(DataPoint.data_12mpp))
         nd = {}
         lista = []
         month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
@@ -81,9 +29,9 @@ class MakeFile:
             json.dump(nd, f, indent=4, sort_keys=True, ensure_ascii=False)
 
     @staticmethod
-    def bmqvvvol():
-        b3902v = Xyz.zyx()
-        dozempp = Xyz.load_12mpp_parsed()
+    def bm_qvv_vol():
+        b3902v = json.load(open(DataPoint.data_variant_final_data))
+        dozempp = json.load(open(DataPoint.data_12mpp_parsed))
         # TODO: dict comprehension
         dicto_tst = {}
         for b in b3902v:
@@ -128,11 +76,11 @@ class MakeFile:
             json.dump(dict_tst, f, sort_keys=True, ensure_ascii=False)
 
     @staticmethod
-    def concatenateinfos():
-        qvv_info = Xyz.load_qvvs_with_volume()
-        b3902v_info = Xyz.load_b3902v_raw()
-        gen_info = Xyz.load_family_bu_info()
-        prog_prod = Xyz.load_12mpp_parsed()
+    def concatenate_infos():
+        qvv_info = json.load(open(DataPoint.data_qvv_bm_vol))
+        b3902v_info = json.load(open(DataPoint.data_variant_final_data))
+        gen_info = json.load(open(DataPoint.data_info_bm))
+        prog_prod = json.load(open(DataPoint.data_12mpp_parsed))
 
         dicto = {}
         qvv_with_volume_list = [[key, val] for key, val in qvv_info.items()]
@@ -141,6 +89,7 @@ class MakeFile:
             for bm_info in info_a_ver:
                 if bm_info[0] == bm_qvv[1][0]:
                     dicto[bm_qvv[0]] = bm_info
+
         for key_dicto, val_dicto in dicto.items():
             if key_dicto in prog_prod:
                 dicto[key_dicto] = [dicto[key_dicto], prog_prod[key_dicto]]
@@ -159,6 +108,58 @@ class MakeFile:
     print('dict_end.json concluded')
 
 
+class MakeFinalDict:
+    def __init__(self):
+        self.qvv_data = json.load(open(DataPoint.data_final_dict))
+
+    def variant_info_gen(self, month_data):
+
+        qvvs_data = list((key, values[0][0][0], values[0][0][1][0],
+                          values[0][0][1][1], [i['code'] for i in values[1]], int(values[0][1][month_data]))
+                         for key, values in self.qvv_data.items() if values[0][1][month_data] is not '0')
+
+        return qvvs_data
+
+    def variant_model_gen(self, months):
+        qvvs_data_dict = {'production': []}
+        for month in months:
+            monthly_production = {'month_year': '',
+                                  'data': []}
+            swap_list = []
+
+            for key, values in self.qvv_data.items():
+                if values[0][1][month] is not '0':
+                    main_dict = OrderedDict()
+                    main_dict['qvv'] = key
+                    main_dict['bm'] = values[0][0][0]
+                    main_dict['business_unit'] = values[0][0][1][0]
+                    main_dict['family'] = values[0][0][1][1]
+                    main_dict['composition'] = [i['code'] for i in values[1]]
+                    main_dict['volume'] = int(values[0][1][month])
+                    swap_list.append(main_dict)
+                monthly_production['month_year'] = month
+                monthly_production['data'] = swap_list
+            qvvs_data_dict['production'].append(monthly_production)
+        return qvvs_data_dict
+
+
 MakeFile.parsed_12mpp()
-MakeFile.bmqvvvol()
-MakeFile.concatenateinfos()
+MakeFile.bm_qvv_vol()
+MakeFile.concatenate_infos()
+
+month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
+
+date = datetime.date.today()
+date_string = date.strftime('%y%m%d')
+
+for month in month_list:
+    total_qvv_list = MakeFinalDict().variant_info_gen(month)
+
+    with open(DataPoint.PATH_DataFiles + "\\" + date_string + "_" + month + '_qvvs.csv', 'w', newline='\n') as csvfile:
+        wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+        for line in total_qvv_list:
+            wr.writerow(line)
+
+total_qvv_dict = MakeFinalDict().variant_model_gen(month_list)
+with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dictionary_qvvs_by_month.json', 'w') as f:
+    json.dump(total_qvv_dict, f, indent=4, sort_keys=True, ensure_ascii=False)

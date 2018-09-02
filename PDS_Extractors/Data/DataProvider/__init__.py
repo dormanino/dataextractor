@@ -100,7 +100,6 @@ class DataProvider:
 
             info_data_input = data[1]
             if info_data_input is not None:
-                print(data)
 
                 # Find/Create Data Input node
                 data_input = next(filter(lambda i: i['type'] == info_data_input, bm_data["data"]), None)

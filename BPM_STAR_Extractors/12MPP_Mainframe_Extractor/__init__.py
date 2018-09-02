@@ -1,4 +1,5 @@
 from MainframeMainConnections import MainframeMainConections as Connection
+from BPM_STAR_Extractors.DataPoint import DataPoint
 import json
 import datetime
 import time
@@ -35,7 +36,6 @@ class ProPresum:
         time.sleep(1)
 
         #  TODO: implement query options from mainframe application screen i.e. 'Periodicidade' and other options
-
         oper_eof = True
         page_number = 1
         data_eof_declaration = ''
@@ -48,7 +48,7 @@ class ProPresum:
         while oper_eof:
             if start:  # the first item determines the end of the full cycle of data
                 data_eof_declaration = self.mainframe.string_get(4, 1, 80)
-            for line in range(7, 18, 2):  # range 7-18 in steps of 2 lines copy the variant informations
+            for line in range(7, 18, 2):  # range 7-18 in steps of 2 lines copy the variant information's
                 line_data = self.mainframe.string_get(line, 1, 80)
                 if line_data.strip() != '':
                     # TODO: implement header main copy (months, etc)
@@ -87,7 +87,5 @@ d = ProPresum().pro_presum_main()
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 
-path = 'C:\\Users\\vravagn\\PycharmProjects\\dataextractor\\BPM_STAR_Extractors\\DataPoint\\'
-
-with open(path + date_string + '12mpp_raw.json', 'w') as f:
+with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_12mpp_raw.json', 'w') as f:
     json.dump(d, f, indent=4, sort_keys=True, ensure_ascii=False)
