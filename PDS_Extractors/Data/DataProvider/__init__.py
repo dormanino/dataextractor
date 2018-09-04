@@ -89,6 +89,7 @@ class DataProvider:
 
         main_dict = dict(plant=plant, source=data_type_source, data=[])
         for data in data_source:
+            print(data)
 
             # Find/Create Baumuster node
             info_bm = data[0]
@@ -210,7 +211,7 @@ class DataProvider:
                         restriction_codebedingungen = restriction_codebedingungen.replace(' ', '')
 
                         register.update({'bg_codebedingungen': bg_codebedingungen})
-                        register.update({'CODEBEDINGUNGEN': restriction_codebedingungen})
+                        register.update({'codebedingungen': restriction_codebedingungen})
                         analysed_lines.append(line)
 
                     elif 'BG/BAUBARKEITSBED' in substring:
@@ -252,12 +253,12 @@ class DataProvider:
                                 restriction_baubarkeitsbed = restriction_baubarkeitsbed.replace(' ', '')
 
                         register.update({'bg_baubarkeitsbed': bg_baubarkeitsbed})
-                        register.update({'BAUBARKEITSBED': restriction_baubarkeitsbed})
+                        register.update({'baubarkeitsbed': restriction_baubarkeitsbed})
                         analysed_lines.append(line)
 
                     elif 'PB/ZUSTEUERBED' in substring:
                         dicto_zusteuerbed = slices[6]
-                        dicto_data_zusteuerbed = dicto_zusteuerbed['ZUSTEUERBED']  # tuple
+                        dicto_data_zusteuerbed = dicto_zusteuerbed['zusteuerbed']  # tuple
                         data_zusteuerbed = substring[dicto_data_zusteuerbed[0]:dicto_data_zusteuerbed[1]]  # codes data
                         next_line_zusteuerbed = line
 
@@ -285,13 +286,13 @@ class DataProvider:
                                 eof_zusteuerbed = True
 
                         restriction_zusteuerbed = restriction_zusteuerbed.replace(' ', '')
-                        register.update({'ZUSTEUERBED': restriction_zusteuerbed})
+                        register.update({'zusteuerbed': restriction_zusteuerbed})
                         analysed_lines.append(line)
 
                     elif 'VERW.-ST.:' in substring:
                         dicto_verw = slices[7]
-                        dicto_0_data_verw = dicto_verw['VERW.-ST']  # tuple
-                        dicto_1_data_verw = dicto_verw['VERW_Info']  # tuple
+                        dicto_0_data_verw = dicto_verw['verw.-st']  # tuple
+                        dicto_1_data_verw = dicto_verw['verw_info']  # tuple
                         data_0_verw = substring[dicto_0_data_verw[0]:dicto_0_data_verw[1]].strip()
                         data_1_verw = substring[dicto_1_data_verw[0]:dicto_1_data_verw[1]].strip()
                         next_line_VERW = line
@@ -301,8 +302,8 @@ class DataProvider:
                             if data_1_verw == '':
                                 data_1_verw = None
 
-                            register.update({'VERW.-ST': data_0_verw})
-                            register.update({'VERW_Info': data_1_verw})
+                            register.update({'verw.-st': data_0_verw})
+                            register.update({'verw_info': data_1_verw})
                         else:
                             x = 1
                             pass  # TODO: make logic for
@@ -318,7 +319,7 @@ class DataProvider:
 
         final_path = DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data_type_source + '_PDS_AGRMZ_parsed_final' + '.json'
         with open(final_path, 'w', encoding='utf-8') as f:
-            json.dump(main_dict, f, indent=4, sort_keys=False, ensure_ascii=False)
+            json.dump(main_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
         return print('concluded')
 
@@ -575,22 +576,23 @@ class DataProvider:
 
         return print('concluded')
 
-# # agrmz code
-# plants = ['sbc', 'jdf']
-# data_types = ['vehicle', 'aggregate']
-# for plant in plants:
-#     list_to_check = []
-#     for data_type in data_types:
-#         if plant == 'sbc' and data_type == 'vehicle':
-#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
-#         elif plant == 'jdf' and data_type == 'vehicle':
-#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
-#         elif plant == 'sbc' and data_type == 'aggregate':
-#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
-#         elif plant == 'jdf' and data_type == 'aggregate':
-#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
-#         DataProvider.agrmz(plant, data_type, list_to_check)
+
+# agrmz code
+plants = ['sbc', 'jdf']
+data_types = ['vehicle', 'aggregate']
+for plant in plants:
+    list_to_check = []
+    for data_type in data_types:
+        if plant == 'sbc' and data_type == 'vehicle':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
+        elif plant == 'jdf' and data_type == 'vehicle':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
+        elif plant == 'sbc' and data_type == 'aggregate':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
+        elif plant == 'jdf' and data_type == 'aggregate':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
+        DataProvider.agrmz(plant, data_type, list_to_check)
 
 
-#DataProvider.treeca('sbc', DataPoint.data_3ca_sbc)
-DataProvider.treeca('jdf', DataPoint.data_3ca_jdf)
+# DataProvider.treeca('sbc', DataPoint.data_3ca_sbc)
+# DataProvider.treeca('jdf', DataPoint.data_3ca_jdf)

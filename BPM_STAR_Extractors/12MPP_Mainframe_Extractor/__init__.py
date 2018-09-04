@@ -1,4 +1,4 @@
-from MainframeMainConnections import MainframeMainConections as Connection
+from MainframeMainConnections import LogInMBBrasTN3270BPMSTAR
 from BPM_STAR_Extractors.DataPoint import DataPoint
 import json
 import datetime
@@ -7,7 +7,7 @@ import time
 
 class ProPresum:
     def __init__(self):
-        m = Connection.LogInMBBrasTN3270BPMSTAR()
+        m = LogInMBBrasTN3270BPMSTAR()
         self.mainframe = m.mainframe_connection()
 
     def pro_presum_main(self, resume_type='ptfm', main_option='a', periodicity='m', presentation=' '):

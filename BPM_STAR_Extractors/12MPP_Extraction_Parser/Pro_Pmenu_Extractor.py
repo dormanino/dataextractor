@@ -77,6 +77,10 @@ class MakeFile:
 
     @staticmethod
     def concatenate_infos():
+
+        while open(DataPoint.data_qvv_bm_vol):
+            qvv_info = json.load(open(DataPoint.data_qvv_bm_vol))
+
         qvv_info = json.load(open(DataPoint.data_qvv_bm_vol))
         b3902v_info = json.load(open(DataPoint.data_variant_final_data))
         gen_info = json.load(open(DataPoint.data_info_bm))

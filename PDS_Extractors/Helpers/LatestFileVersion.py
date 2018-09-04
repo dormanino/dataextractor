@@ -24,6 +24,8 @@ class LatestFileVersion:
                         if swap_date_time > file_date_delta:
                             swap_date_time = file_date_delta
                             final_file_name = filename
+                        else:
+                            final_file_name = filename  # forced repetition since error occured ina alternate case
 
         if not final_file_name == '':
             return current + '\\' + final_file_name

@@ -120,7 +120,7 @@ class LogInMBBrasTN3270PDS(LogInMBBrasTN3270):
 
 
 class LogInMBBrasTN3270BPMSTAR(LogInMBBrasTN3270):
-
+    # TODO: implement expired password logic
     def mainframe_connection(self):
         self.emulator.send_string('3', 2, 15)  # 3 is BMP-Star's Mainframe access number
         self.emulator.move_to(24, 80)
