@@ -45,8 +45,8 @@ class Part:
     class JSONKeys:
         saa = 'saa'
         part_number = 'part_number'
-        part_description = 'benennung'
-        quantity = 'menge'
+        part_description = 'part_description'
+        quantity = 'quantity'
         es1 = 'es1'
         es2 = 'es2'
         pos = 'pos'

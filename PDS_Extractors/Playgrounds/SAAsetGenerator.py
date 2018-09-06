@@ -23,15 +23,15 @@ production_analysis = ProductionAnalysis(Production.from_dict(json.load(open(Dat
                                          analysis_data_source)
 
 production_months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
-num_months = list(map(lambda x: MonthsHelper.numeric[x], production_months))
-# num_months = []
+# num_months = list(map(lambda x: MonthsHelper.numeric[x], production_months))
+num_months = []
 
 data_lines = []
 saa_set = set()
 # a_pn_set = set()
 
 
-for month_year, qvv_prod_components_list in production_analysis.qvv_prod_components_by_month(num_months).items():
+for month, qvv_prod_components_list in production_analysis.qvv_prod_components_by_month(num_months).items():
     for qvv_prod_components in qvv_prod_components_list:
         qvv_prod = qvv_prod_components.qvv_production
         for grouping, components in qvv_prod_components.components.items():
@@ -53,7 +53,7 @@ saa_set_list = list(saa_set)
 saa_set_list = sorted(saa_set_list, key=lambda x: x)
 
 data_lines = saa_set_list
-filename = DataPoint.PATH_DataFiles + '\\SAA_SBC_set_test.csv'
+filename = DataPoint.PATH_DataFiles + '\\SAA_SET.csv'
 output_file = open(filename, "w", newline="\n")
 output_writer = csv.writer(output_file)
 # output_writer.writerow(["sep=,"])  # hack to enforce coma separator

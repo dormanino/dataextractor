@@ -238,11 +238,15 @@ class PdsNfc:
         return agrmz_data
 
     def oper_pds_3ca(self, logout=False):
-        saa_list = object
-        if plant is 'sbc':
-            saa_list = json.load(open(DataPoint.data_saa))
-        elif plant is 'jdf':
-            saa_list = json.load(open(DataPoint.data_saa))
+        saa_list = []
+        if plant is 'sbc' or plant is 'jdf':
+            file_csv = open(DataPoint.data_saa, encoding='utf-8')
+            saa_swap_list = file_csv.readlines()
+            for saa_line_index, saa_line in enumerate(saa_swap_list):
+                if not saa_line_index == 0:
+                    saa_rpl_line = saa_line.replace('\n', '')
+                    saa_split = saa_rpl_line.split(',')
+                    saa_list.append(saa_split)
 
         part_list = []
         operation = True
@@ -257,7 +261,7 @@ class PdsNfc:
         for saa in saa_list:
             if saa:  # falsy if empty if string
                 operation = True
-                saa_start = saa[1][0:7]  # saa[0[ with spaces and all chars
+                saa_start = saa[1][0:7]  # saa[0] with spaces and all chars
                 saa_trailing = saa[1][7:9]
                 self.mainframe_connection.send_string('3CA', 1, 30)
                 self.mainframe_connection.send_string(saa_start, 2, 46)
@@ -323,42 +327,42 @@ class PdsNfc:
         return part_list
 
 
-plants = ['sbc', 'jdf']
+plants = ['jdf']  # 'sbc',
 data_type = ['vehicle', 'aggregate']
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 
-for plant in plants:
-    pds_mainframe_connection = PdsNfc(plant)
-    data_02 = pds_mainframe_connection.oper_pds_02()
-
-    with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_02.json', 'w+') as f:
-        json.dump(data_02, f, indent=4, sort_keys=True, ensure_ascii=False)
-
-    data_03 = pds_mainframe_connection.oper_pds_03()
-
-    with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_03.json', 'w+') as f:
-        json.dump(data_03, f, indent=4, sort_keys=True, ensure_ascii=False)
-    pds_mainframe_connection.connection.pds_logout()
-
-for plant in plants:
-    pds_mainframe_connection = PdsNfc(plant)
-    for data in data_type:
-        data_kgs = pds_mainframe_connection.oper_pds_agr_for_kgs(data)
-
-        with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_kgs.json', 'w+') as f:
-            json.dump(data_kgs, f, indent=4, sort_keys=True, ensure_ascii=False)
-    pds_mainframe_connection.connection.pds_logout()
-
-for plant in plants:
-    pds_mainframe_connection = PdsNfc(plant)
-    for data in data_type:
-        data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
-
-        with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
-            json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
-    pds_mainframe_connection.connection.pds_logout()
-PdsNfc().mainframe_connection.send_string('exit', 2, 15)
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     data_02 = pds_mainframe_connection.oper_pds_02()
+#
+#     with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_02.json', 'w+') as f:
+#         json.dump(data_02, f, indent=4, sort_keys=True, ensure_ascii=False)
+#
+#     data_03 = pds_mainframe_connection.oper_pds_03()
+#
+#     with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_03.json', 'w+') as f:
+#         json.dump(data_03, f, indent=4, sort_keys=True, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+#
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     for data in data_type:
+#         data_kgs = pds_mainframe_connection.oper_pds_agr_for_kgs(data)
+#
+#         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_kgs.json', 'w+') as f:
+#             json.dump(data_kgs, f, indent=4, sort_keys=True, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+#
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     for data in data_type:
+#         data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
+#
+#         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
+#             json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+# PdsNfc().mainframe_connection.send_string('exit', 2, 15)
 
 for plant in plants:
     pds_mainframe_connection = PdsNfc(plant)

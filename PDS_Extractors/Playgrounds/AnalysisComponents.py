@@ -10,13 +10,17 @@ from PDS_Extractors.Models.ComponentsCollection import ComponentsCollection
 from PDS_Extractors.Models.Production import Production
 
 
+print(DataPoint.data_sbc_vehicles, DataPoint.data_sbc_aggregates)
+print(DataPoint.production)
+
 # Data Points
 analysis_data_source = AnalysisDataSource(BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_vehicles))),
                                           BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_vehicles))),
                                           BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_aggregates))),
                                           BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_aggregates))),
-                                          ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_sbc, encoding="utf-8"))),
-                                          ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_jdf, encoding="utf-8"))))
+                                          # ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_sbc, encoding="utf-8"))),
+                                          # ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_jdf, encoding="utf-8")))
+                                          )
 
 production_analysis = ProductionAnalysis(Production.from_dict(json.load(open(DataPoint.production))),
                                          analysis_data_source)
@@ -31,9 +35,10 @@ for month, qvv_prod_components_list in production_analysis.qvv_prod_components_b
         qvv_prod = qvv_prod_components.qvv_production
         for grouping, components in qvv_prod_components.components.items():
             for component in components:
-                data_lines.append([
+                split_mont_year = month.split('/')
 
-                    "01/" + month,
+                data_lines.append([
+                    split_mont_year[0] + '.01.' + split_mont_year[1],
                     qvv_prod.qvv,
                     qvv_prod.baumuster_id,
                     qvv_prod.family,

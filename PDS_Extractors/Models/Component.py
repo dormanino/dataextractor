@@ -41,11 +41,11 @@ class Component:
 
     class JSONKeys:
         component_id = "abm_saa"
-        component_description = "benennung"
+        component_description = "part_description"
         bg = "bg_codebedingungen"
         grouping_type = "grouping_type"
         kg = "kg"
-        validation_rule = "CODEBEDINGUNGEN"
+        validation_rule = "codebedingungen"
         em_ab = "em_ab"  # aviso de aplicacao a partir de
         em_bis = "em_bis"  # aviso de aplicacao ate
         t_a = "t_a"  # prazo a partir de

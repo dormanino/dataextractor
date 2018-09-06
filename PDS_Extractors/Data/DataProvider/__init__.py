@@ -500,8 +500,10 @@ class DataProvider:
         }
 
         lines_list = json.load(open(source))
+        # lines_list = dict_lines_list_file['data']
         main_dict = dict(plant=plant, data=[])
         register = {}
+        # print(type(lines_list))
 
         for line_dict in lines_list:
             for key, line_dict_content in line_dict.items():
@@ -578,21 +580,21 @@ class DataProvider:
 
 
 # agrmz code
-plants = ['sbc', 'jdf']
-data_types = ['vehicle', 'aggregate']
-for plant in plants:
-    list_to_check = []
-    for data_type in data_types:
-        if plant == 'sbc' and data_type == 'vehicle':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
-        elif plant == 'jdf' and data_type == 'vehicle':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
-        elif plant == 'sbc' and data_type == 'aggregate':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
-        elif plant == 'jdf' and data_type == 'aggregate':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
-        DataProvider.agrmz(plant, data_type, list_to_check)
+# plants = ['sbc', 'jdf']
+# data_types = ['vehicle', 'aggregate']
+# for plant in plants:
+#     list_to_check = []
+#     for data_type in data_types:
+#         if plant == 'sbc' and data_type == 'vehicle':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
+#         elif plant == 'jdf' and data_type == 'vehicle':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
+#         elif plant == 'sbc' and data_type == 'aggregate':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
+#         elif plant == 'jdf' and data_type == 'aggregate':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
+#         DataProvider.agrmz(plant, data_type, list_to_check)
 
 
-# DataProvider.treeca('sbc', DataPoint.data_3ca_sbc)
-# DataProvider.treeca('jdf', DataPoint.data_3ca_jdf)
+DataProvider.treeca('sbc', DataPoint.data_3ca_raw_sbc)
+DataProvider.treeca('jdf', DataPoint.data_3ca_raw_jdf)

@@ -14,12 +14,13 @@ class DataPoint:
     SUFFIX_sbc = "_sbc_"
     SUFFIX_jdf = "_jdf_"
     SUFFIX_data_agrmz = "_PDS_AGRMZ_parsed_final"
+    SUFFIX_data_parts_raw = "PDS_3CA"
     SUFFIX_data_parts = '3ca_parsed_final'
     SUFFIX_data_vehicles = str(BaumusterDataKind.Vehicle.value) + SUFFIX_data_agrmz
     SUFFIX_data_aggregates = str(BaumusterDataKind.Aggregate.value) + SUFFIX_data_agrmz
 
     # Final Data Points
-    production = LatestFileVersion.latest_file_version(EXT_json, 'dictionary_qvvs_by_month', current=PATH_DataFiles)
+    production = LatestFileVersion.latest_file_version(EXT_json, '_dictionary_qvvs_by_month', current=PATH_DataFiles)
     data_sbc_vehicles = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_sbc + SUFFIX_data_vehicles, current=PATH_DataFiles)
     data_jdf_vehicles = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_jdf + SUFFIX_data_vehicles, current=PATH_DataFiles)
     data_sbc_aggregates = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_sbc + SUFFIX_data_aggregates, current=PATH_DataFiles)
@@ -44,6 +45,8 @@ class DataPoint:
     data_kgs_agr_aggregates_jdf = LatestFileVersion.latest_file_version(EXT_json, '_jdf_aggregate_PDS_kgs', current=PATH_DataFiles)
     data_agrmz_raw_aggregates_sbc = LatestFileVersion.latest_file_version(EXT_json, '_sbc_aggregate_PDS_agrmz', current=PATH_DataFiles)
     data_agrmz_raw_aggregates_jdf = LatestFileVersion.latest_file_version(EXT_json, '_jdf_aggregate_PDS_agrmz', current=PATH_DataFiles)
-    data_saa = str(PATH_DataFiles + '\\saa_set.json')
+    data_saa = str(PATH_DataFiles + '\\SAA_SET.csv')
+    data_3ca_raw_sbc = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_sbc + SUFFIX_data_parts_raw, current=PATH_DataFiles)
+    data_3ca_raw_jdf = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_jdf + SUFFIX_data_parts_raw, current=PATH_DataFiles)
     data_3ca_sbc = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_sbc + SUFFIX_data_parts, current=PATH_DataFiles)
     data_3ca_jdf = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_jdf + SUFFIX_data_parts, current=PATH_DataFiles)

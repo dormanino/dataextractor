@@ -1,7 +1,9 @@
 import json
 import csv
 import datetime
+import time
 from collections import OrderedDict
+from GeneralHelpers import CheckFileExists
 from BPM_STAR_Extractors.DataPoint import DataPoint
 from BPM_STAR_Extractors.String_Parser import Parse
 
@@ -30,7 +32,20 @@ class MakeFile:
 
     @staticmethod
     def bm_qvv_vol():
-        b3902v = json.load(open(DataPoint.data_variant_final_data))
+
+        while not CheckFileExists.Check.open_file(DataPoint.data_variant_final_data):
+            print('fst pass final variant data not available')
+        print('fst pass final variant data available')
+
+        while not CheckFileExists.Check.open_file(DataPoint.data_12mpp_parsed):
+            print('fst pass 12 mpp data not available')
+        print('fst pass 12 mpp data available')
+
+        b3902v = json. load(open(DataPoint.data_variant_final_data))
+        print(type(b3902v))
+        for item in b3902v:
+            if 'QVV81503113B' in item['variant']:
+                print('yes')
         dozempp = json.load(open(DataPoint.data_12mpp_parsed))
         # TODO: dict comprehension
         dicto_tst = {}
@@ -46,6 +61,8 @@ class MakeFile:
         for f in final_dict:
             for b in dicto_tst:
                 if f == b:
+                    if f == 'QVV81503113B':
+                        print(f)
                     volume = final_dict[f]
                     final_dict[f] = dicto_tst[b], volume
                     break
@@ -72,14 +89,28 @@ class MakeFile:
         with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_qvv_bmvol.json', 'w') as f:
             json.dump(final_dict, f, indent=2, sort_keys=True, ensure_ascii=False)
 
+            time.sleep(3)
+            while not CheckFileExists.Check.open_file(DataPoint.PATH_DataFiles + "\\" + date_string + '_qvv_bmvol.json'):
+                print('not ready')
+                time.sleep(3)
+            print('ready')
+
         with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_bmvol_tot.json', 'w') as f:
             json.dump(dict_tst, f, sort_keys=True, ensure_ascii=False)
 
     @staticmethod
     def concatenate_infos():
 
-        while open(DataPoint.data_qvv_bm_vol):
-            qvv_info = json.load(open(DataPoint.data_qvv_bm_vol))
+        while not CheckFileExists.Check.open_file(DataPoint.data_qvv_bm_vol):
+            print('qvv_bm_vol not available')
+            time.sleep(5)
+        print('qvv_bm_vol available')
+        CheckFileExists.Check.open_file(DataPoint.data_variant_final_data)
+        print('variant final data available')
+        CheckFileExists.Check.open_file(DataPoint.data_info_bm)
+        print('info bm available')
+        CheckFileExists.Check.open_file(DataPoint.data_12mpp_parsed)
+        print('12mpp parsed available')
 
         qvv_info = json.load(open(DataPoint.data_qvv_bm_vol))
         b3902v_info = json.load(open(DataPoint.data_variant_final_data))
@@ -95,8 +126,12 @@ class MakeFile:
                     dicto[bm_qvv[0]] = bm_info
 
         for key_dicto, val_dicto in dicto.items():
+            if 'QVV81503113B' == key_dicto:
+                print('yes')
+
             if key_dicto in prog_prod:
                 dicto[key_dicto] = [dicto[key_dicto], prog_prod[key_dicto]]
+        print('not found')
 
         data_prev = {val['variant']: val['codes'] for val in b3902v_info}
 
@@ -114,6 +149,8 @@ class MakeFile:
 
 class MakeFinalDict:
     def __init__(self):
+        if CheckFileExists.Check.open_file(DataPoint.data_final_dict):
+            print('dict end available')
         self.qvv_data = json.load(open(DataPoint.data_final_dict))
 
     def variant_info_gen(self, month_data):
@@ -127,7 +164,7 @@ class MakeFinalDict:
     def variant_model_gen(self, months):
         qvvs_data_dict = {'production': []}
         for month in months:
-            monthly_production = {'month_year': '',
+            monthly_production = {'month': '',  # change to `month_year` and pass year along
                                   'data': []}
             swap_list = []
 
@@ -136,19 +173,21 @@ class MakeFinalDict:
                     main_dict = OrderedDict()
                     main_dict['qvv'] = key
                     main_dict['bm'] = values[0][0][0]
-                    main_dict['business_unit'] = values[0][0][1][0]
+                    main_dict['bu'] = values[0][0][1][0]
                     main_dict['family'] = values[0][0][1][1]
                     main_dict['composition'] = [i['code'] for i in values[1]]
                     main_dict['volume'] = int(values[0][1][month])
                     swap_list.append(main_dict)
-                monthly_production['month_year'] = month
+                monthly_production['month'] = month
                 monthly_production['data'] = swap_list
             qvvs_data_dict['production'].append(monthly_production)
         return qvvs_data_dict
 
 
 MakeFile.parsed_12mpp()
+time.sleep(5)  # TODO:routine to analise if the new file is ready for next analisys
 MakeFile.bm_qvv_vol()
+time.sleep(5)  # TODO:routine to analise if the new file is ready for next analisys
 MakeFile.concatenate_infos()
 
 month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
