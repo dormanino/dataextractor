@@ -4,7 +4,6 @@ from GeneralHelpers import PartitionStringinDigitsandNonDigits
 import json
 import datetime
 import time
-from collections import OrderedDict
 
 
 class ProPresum:
@@ -67,6 +66,7 @@ class ProPresum:
             part the data from the returned list from split method/function 
         """
         dates_header_list = self.mainframe.string_get(6, 1, 80).strip().split(' ')
+        dates_header_list[:] = [item for item in dates_header_list if item != '']
         dates_from_header = []
         for dates in dates_header_list:
             month, year = PartitionStringinDigitsandNonDigits.Partition.partition(dates)
@@ -74,17 +74,19 @@ class ProPresum:
 
         TOTALS_DECLARATION = 'TOTAL FINAL'
         oper_eof = True
+        start = True
+        data_eof_declaration = ''
         data_line_list = []
         totals_line_list = []
         dicto = {}
-        main_operation_dict = {}
+        main_operation_dict = {'variant_data': []}
         full_volume_data = {}
         months_volume_dict = {}
 
-        # the first item determines the end of the full cycle of data
-        data_eof_declaration = self.mainframe.string_get(4, 1, 80)
-
         while oper_eof:
+            if start:
+                # the first item determines the end of the full cycle of data
+                data_eof_declaration = self.mainframe.string_get(4, 1, 80)
 
             for line in range(7, 18, 2):  # range 7-18 in steps of 2 lines copy the variant information's
                 if self.mainframe.string_get(line, 1, 80).strip() != '':
@@ -102,32 +104,38 @@ class ProPresum:
                 # second dict (test)
 
                 totals_volume = totals_line.strip().split(' ')
+                totals_volume[:] = [item for item in totals_volume if item != '']
                 # dates_from_header[0] is only the month in the string
-                months_from_header = dates_from_header[0]
-                years_from_header = set(dates_from_header[1])
+                months_from_header = [month for month, year in [data for data in dates_from_header]]
+                years_from_header = set(year for month, year in [data for data in dates_from_header] if year != '')
                 volume_dict = dict(zip(months_from_header, totals_volume))
-                period_totals = {key: value for key, value in volume_dict.items() if key.capitalize() != "TOTALS"}
+                period_totals = {"TOTAL": volume_dict["TOTAL"]}
                 if len(years_from_header) == 1:
-                    months_volume_dict = {key: value for key, value in volume_dict.items() if key.capitalize() == "TOTALS"}
+                    volume_dict.pop("TOTAL")
+                    months_volume_dict = volume_dict
                     volume_data = {'months': months_volume_dict, 'totals': period_totals}
                     full_volume_data = {"year": years_from_header, "data": volume_data}
                 else:
-                    for month, year in dates_from_header:
-                        if month in volume_dict.keys():
-                            months_volume_dict = {'key': month, 'value': volume_dict[month]}
-                        volume_data = {'months': months_volume_dict, 'totals': period_totals}
-                        full_volume_data = {"year": year, "data": volume_data}
+                    volume_dict.pop("TOTAL")
+                    swap_volume_dict = volume_dict
+                    for year_from_header in years_from_header:
+                        for month, year in dates_from_header:
+                            if month in swap_volume_dict.keys() and year == year_from_header:
+                                months_volume_dict = {'key': month, 'value': volume_dict[month]}
+                        volume_data = {'months': months_volume_dict, 'totals': volume_dict["TOTAL"]}
+                        full_volume_data = {"year": year_from_header, "data": volume_data}
 
                 main_data_str = self.mainframe.string_get(4, 1, 80)
-                variant_representation = main_data_str[29, 58]
+                variant_representation = main_data_str[29:58]
 
-                main_operation_dict = {'variant': main_data_str[1, 29].replace(' ', ''),
-                                       'variant_representation': variant_representation,
-                                       'volume_data': full_volume_data
-                                       }
+                main_operation_dict['variant_data'].append({'variant': main_data_str[1:29].replace(' ', ''),
+                                                            'variant_representation': variant_representation.strip(),
+                                                            'volume_data': full_volume_data
+                                                            })
 
-            if data_eof_declaration in self.mainframe.string_get(4, 1, 80):
+            if data_eof_declaration in self.mainframe.string_get(4, 1, 80) and not start:
                 oper_eof = False
+                start = False
 
             self.mainframe.move_to(24, 80)
             self.mainframe.send_enter()
