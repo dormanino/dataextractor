@@ -1,8 +1,10 @@
 from MainframeMainConnections import LogInMBBrasTN3270BPMSTAR
 from BPM_STAR_Extractors.DataPoint import DataPoint
+from GeneralHelpers import PartitionStringinDigitsandNonDigits
 import json
 import datetime
 import time
+from collections import OrderedDict
 
 
 class ProPresum:
@@ -11,9 +13,34 @@ class ProPresum:
         self.mainframe = m.mainframe_connection()
 
     def pro_presum_main(self, resume_type='ptfm', main_option='a', periodicity='m', presentation=' '):
+        """
+            schematics for screen matrix function
+                1) rows starts on char 1 and ends on char 80 (80 columns)
+                2) amount of rows on screen starts on 1 and ends on 24
+                3) screen complete matrix represented as row x column (1,1 / 24, 80) integers
+        """
+
+        """
+            method pro_presum_main emulates the screen data and fields to choose and therefore receives variables as options
+            as follows:
+                1sr screen of dialog:
+                    main_option:
+                        'a' represents the individual choice by type option (20, 28) position
+                    periodicity:
+                        'm' represents the choice of periodicity to analise as months. 'd' - daily and 'a' - annual also
+                        available (21, 17) position
+                2nd screen of dialog:
+                    resume_type:
+                        there are several possibilities but the PTFM has the volumes from Sao Bernardo and Juiz de Fora plants
+                3rd screen of dialog:
+                    presentation:
+                        ' ' - blank -> used to remove the way the data is presented to show the most complete data (also with
+                        export figures) (16, 49) position
+        """
         #  TODO: implement query options from mainframe application screen i.e. 'Periodicidade'
+
         self.mainframe.send_string('pro-presum', 24, 32)
-        time.sleep(1)
+        time.sleep(1)  # sleeps because the connection may fail in between processes
         self.mainframe.move_to(24, 80)
         self.mainframe.send_enter()
         self.mainframe.wait_for_field()
@@ -35,47 +62,73 @@ class ProPresum:
         self.mainframe.wait_for_field()
         time.sleep(1)
 
-        #  TODO: implement query options from mainframe application screen i.e. 'Periodicidade' and other options
+        """
+            get the full header on 6,1,80 (consider row, column, amount of chars) and strip string, split by spaces (chain of methods) and
+            part the data from the returned list from split method/function 
+        """
+        dates_header_list = self.mainframe.string_get(6, 1, 80).strip().split(' ')
+        dates_from_header = []
+        for dates in dates_header_list:
+            month, year = PartitionStringinDigitsandNonDigits.Partition.partition(dates)
+            dates_from_header.append((month, year))
+
+        TOTALS_DECLARATION = 'TOTAL FINAL'
         oper_eof = True
-        page_number = 1
-        data_eof_declaration = ''
-        start = True
-        # TODO: implement query options from mainframe application screen i.e. 'Periodicidade'
         data_line_list = []
         totals_line_list = []
         dicto = {}
-        line_data = ''
-        while oper_eof:
-            if start:  # the first item determines the end of the full cycle of data
-                data_eof_declaration = self.mainframe.string_get(4, 1, 80)
-            for line in range(7, 18, 2):  # range 7-18 in steps of 2 lines copy the variant information's
-                line_data = self.mainframe.string_get(line, 1, 80)
-                if line_data.strip() != '':
-                    # TODO: implement header main copy (months, etc)
-                    data_line = (self.mainframe.string_get(line, 1, 80), self.mainframe.string_get(line + 1, 1, 80))
-                    data_line_list.append(data_line)
-                    # line_list = OrderedDict()
-                    # line_list['page'] = page_number
-                    # line_list['data'] = self.mainframe.string_get(4, 1, 80)
-                    # line_list['head'] = self.mainframe.string_get(line, 1, 80)
-                    # line_list['body'] = self.mainframe.string_get(line + 1, 1, 80)
+        main_operation_dict = {}
+        full_volume_data = {}
+        months_volume_dict = {}
 
-            if self.mainframe.string_get(19, 2, 11) == 'TOTAL FINAL':
-                # TODO: implement header main copy (months, etc)
+        # the first item determines the end of the full cycle of data
+        data_eof_declaration = self.mainframe.string_get(4, 1, 80)
+
+        while oper_eof:
+
+            for line in range(7, 18, 2):  # range 7-18 in steps of 2 lines copy the variant information's
+                if self.mainframe.string_get(line, 1, 80).strip() != '':
+                    data_line_list.append((self.mainframe.string_get(line, 1, 80), self.mainframe.string_get(line + 1, 1, 80)))
+
+            # the data has partial data in the screen
+            if TOTALS_DECLARATION in self.mainframe.string_get(19, 1, 80):
+                # first dict
                 totals_line = (self.mainframe.string_get(20, 1, 80))
                 totals_line_list.append(totals_line)
-                # totals_line_list = OrderedDict()
-                # totals_line_list['data'] = self.mainframe.string_get(4, 1, 80)
-                # totals_line_list['body'] = self.mainframe.string_get(20, 1, 80)
                 dicto[self.mainframe.string_get(4, 1, 80)] = data_line_list, totals_line_list
                 totals_line_list = []
                 data_line_list = []
 
-            if data_eof_declaration in self.mainframe.string_get(4, 1, 80) and not start:
+                # second dict (test)
+
+                totals_volume = totals_line.strip().split(' ')
+                # dates_from_header[0] is only the month in the string
+                months_from_header = dates_from_header[0]
+                years_from_header = set(dates_from_header[1])
+                volume_dict = dict(zip(months_from_header, totals_volume))
+                period_totals = {key: value for key, value in volume_dict.items() if key.capitalize() != "TOTALS"}
+                if len(years_from_header) == 1:
+                    months_volume_dict = {key: value for key, value in volume_dict.items() if key.capitalize() == "TOTALS"}
+                    volume_data = {'months': months_volume_dict, 'totals': period_totals}
+                    full_volume_data = {"year": years_from_header, "data": volume_data}
+                else:
+                    for month, year in dates_from_header:
+                        if month in volume_dict.keys():
+                            months_volume_dict = {'key': month, 'value': volume_dict[month]}
+                        volume_data = {'months': months_volume_dict, 'totals': period_totals}
+                        full_volume_data = {"year": year, "data": volume_data}
+
+                main_data_str = self.mainframe.string_get(4, 1, 80)
+                variant_representation = main_data_str[29, 58]
+
+                main_operation_dict = {'variant': main_data_str[1, 29].replace(' ', ''),
+                                       'variant_representation': variant_representation,
+                                       'volume_data': full_volume_data
+                                       }
+
+            if data_eof_declaration in self.mainframe.string_get(4, 1, 80):
                 oper_eof = False
-            else:
-                start = False
-            page_number += 1
+
             self.mainframe.move_to(24, 80)
             self.mainframe.send_enter()
             self.mainframe.wait_for_field()
