@@ -126,6 +126,7 @@ class LogInMBBrasTN3270BPMSTAR(LogInMBBrasTN3270):
         self.emulator.move_to(24, 80)
         self.emulator.send_enter()
         self.emulator.wait_for_field()
+        time.sleep(3)
 
         if self.emulator.string_get(1, 1, 80).replace(' ', '') == '':  # check if the header is empty to ensure connection
             self.emulator.terminate()
@@ -144,15 +145,6 @@ class LogInMBBrasTN3270BPMSTAR(LogInMBBrasTN3270):
                     time.sleep(3)
                     self.emulator.send_pf4()
                     self.emulator.wait_for_field()
-
-            screencopy = str(self.emulator.exec_command('EBCDIC'))
-            # copy the screen info to chech if after the request it changed)
-            screendata = ''
-            while screencopy == screendata:  # included because the socket is lost after keyboard not unloked
-                self.emulator.wait_for_field()
-                screendata = str(self.emulator.exec_command('EBCDIC'))
-                self.emulator.send_pf4()
-                self.emulator.wait_for_field()
 
         if self.emulator.string_get(12, 57, 6) == 'DBSTAR':  # if DBSTAR available and ready
             pass
