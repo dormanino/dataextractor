@@ -1,6 +1,7 @@
 from MainframeMainConnections import LogInMBBrasTN3270BPMSTAR
 from BPM_STAR_Extractors.DataPoint import DataPoint
 from GeneralHelpers import PartitionStringinDigitsandNonDigits
+from GeneralHelpers import MonthsHelper
 import json
 import datetime
 import time
@@ -65,6 +66,7 @@ class ProPresum:
             get the full header on 6,1,80 (consider row, column, amount of chars) and strip string, split by spaces (chain of methods) and
             part the data from the returned list from split method/function 
         """
+
         dates_header_list = self.mainframe.string_get(6, 1, 80).strip().split(' ')
         dates_header_list[:] = [item for item in dates_header_list if item != '']
         dates_from_header = []
@@ -74,6 +76,26 @@ class ProPresum:
         months_from_header = [month for month, year in [data for data in dates_from_header]]
         years_from_header = list(set(year for month, year in [data for data in dates_from_header] if year != ''))
 
+        main_operation_dict = dict(extraction_date=datetime.date.today().strftime('%y%m%d'),
+                                   ref_date=dt_ref,
+                                   resume_type=resume_type,
+                                   header=months_from_header,
+                                   main_option=main_option,
+                                   periodicity=periodicity,
+                                   variant='',
+                                   variant_data=[]
+                                   )
+
+        partials_main_operation_dict = dict(extraction_date=datetime.date.today().strftime('%y%m%d'),
+                                            ref_date=dt_ref,
+                                            resume_type=resume_type,
+                                            header=months_from_header,
+                                            main_option=main_option,
+                                            periodicity=periodicity,
+                                            variant='',
+                                            data=[]
+                                            )
+
         totals_declaration = 'TOTAL FINAL'
         oper_eof = True
         start = True
@@ -81,11 +103,10 @@ class ProPresum:
         data_line_list = []
         totals_line_list = []
         dicto = {}
-        main_operation_dict = {'variant_data': []}
-        partials_main_operation_dict = {'variant_data': []}
-        full_volume_data = []
+
+        variant_data = []
         months_volume_dict = {}
-        year_from_header = ''
+
         while oper_eof:
             if start:
                 # the first item determines the end of the full cycle of data
@@ -95,59 +116,73 @@ class ProPresum:
                 if self.mainframe.string_get(line, 1, 80).strip() != '':
                     data_line_list.append((self.mainframe.string_get(line, 1, 80), self.mainframe.string_get(line + 1, 1, 80)))
 
-            data = []
-            for line in range(7, 18, 2):  # range 7-18 in steps of 2 lines copy the variant information's
+            # range 7-18 in steps/blocks of 2 lines copy the variant information's
+            for line in range(7, 18, 2):
                 if not self.mainframe.string_get(line, 1, 80).strip() == '' and\
                         not self.mainframe.string_get(line + 1, 1, 80).strip() == '':
 
+                    # get information from screen and strip trailing spaces and split by spaces
+                    # returns a list of volume by month with int as str inside
                     partial_volume = self.mainframe.string_get(line + 1, 1, 80).strip().split(' ')
+
+                    # with list of volume data by month, remove spaces / empty data from list for consistency
+                    # returns 'consistent' list with volume by month
                     partial_volume[:] = [item for item in partial_volume if item != '']
+
+                    # unpacking the months informed in the header (fixed and constant information) including
+                    # 'column' with totals for the chosen period
+                    # returns dictionary with months in the header with appropriate volume for that month
                     partials_volume_dict = dict(zip(months_from_header, partial_volume))
+
+                    # collect the totals information in a separate dictionary
                     partials_period_totals = {"TOTAL": partials_volume_dict["TOTAL"]}
+
+                    # remove information of totals from the volume dictionary
+                    partials_volume_dict.pop("TOTAL")
+
+                    # strip the line of information to strip variant info and values given by sales department
+                    # returns swap variable
                     partials_main_data_str = self.mainframe.string_get(line, 1, 80).strip()
-                    partials_register_information = partials_main_data_str[1:25].strip().split('-')
-                    partials_order_lacation_information = partials_main_data_str[25:80].strip().split('-')
 
-                    if len(years_from_header) == 1:
+                    # slice string and split
+                    # returns register information
+                    register_information = partials_main_data_str[0:25].strip().split('-')
+
+                    # slice string and split
+                    # returns main orders internal sales/country/'for stock' information
+                    sales_destination = partials_main_data_str[25:80].strip().split('-')
+
+                    # if the amount of years in the header are one according to the reference date choose
+
+                    variant_data = []
+                    for year_from_header in years_from_header:
                         data = []
-                        full_volume_data = []
-                        partials_volume_dict.pop("TOTAL")
-                        months_volume_dict = partials_volume_dict
-                        volume_data = {'order_location_number_cerep': partials_order_lacation_information[0],
-                                       'order_location_name': partials_order_lacation_information[1],
-                                       'register_number': partials_register_information[0],
-                                       'register_name': partials_register_information[1],
-                                       'months': months_volume_dict,
-                                       'totals': partials_period_totals}
-                        data.append(volume_data)
-                        full_volume_data.append({"year": str(years_from_header[0]), "data": data})
+                        volume_data = {}
+                        for month, year in dates_from_header:
+                            if month in partials_volume_dict.keys() and year == year_from_header:
+                                month_numeric = next(map(lambda x: MonthsHelper.MonthsHelper.numeric[x], month))
+                                months_volume_dict[month] = partials_volume_dict[month]
+                                months_volume_dict[month_numeric] = partials_volume_dict[month]
 
-                    else:
-                        partials_volume_dict.pop("TOTAL")
-                        swap_volume_dict = partials_volume_dict
-                        full_volume_data = []
-                        for year_from_header in years_from_header:
-                            data = []
-                            for month, year in dates_from_header:
-                                if month in swap_volume_dict.keys() and year == year_from_header:
-                                    months_volume_dict[month] = partials_volume_dict[month]
-                            volume_data = {'register_number': partials_register_information[0],
-                                           'register_name': partials_register_information[1],
-                                           'order_location_number_cerep': partials_order_lacation_information[0],
-                                           'order_location_name': partials_order_lacation_information[1],
-                                           'months': months_volume_dict,
+                            volume_data = {'months': months_volume_dict,
                                            'totals': partials_period_totals}
-                            data.append(volume_data)
-                            full_volume_data.append({"year": year_from_header, "data": data})
+
+                        data.append(volume_data)
+                        variant_data.append({'year': year_from_header,
+                                             'order_location_number_cerep': sales_destination[0],
+                                             'order_location_name': sales_destination[1],
+                                             'register_number': register_information[0],
+                                             'register_name': register_information[1],
+                                             'data': data})
 
             main_data_str = self.mainframe.string_get(4, 1, 80)
-            variant = main_data_str[1:29]
-            variant_representation = main_data_str[29:58]
+            variant = main_data_str[1:29].replace(' ', '')
+            sales_name_for_variant = main_data_str[29:58].strip()
 
-            partials_main_operation_dict['variant_data'].append({'variant': variant.replace(' ', ''),
-                                                                 'variant_representation': variant_representation.strip(),
-                                                                 'volume_data': full_volume_data
-                                                                 })
+            partials_main_operation_dict['variant'] = variant
+            partials_main_operation_dict['data'].append({'variant_representation': sales_name_for_variant,
+                                                         'volume_data': variant_data
+                                                         })
 
             # the data has partial data in the screen
             if totals_declaration in self.mainframe.string_get(19, 1, 80):
@@ -167,26 +202,25 @@ class ProPresum:
                     volume_dict.pop("TOTAL")
                     months_volume_dict = volume_dict
                     volume_data = [{'months': months_volume_dict, 'totals': period_totals}]
-                    full_volume_data.append({"year": str(years_from_header[0]), "data": volume_data})
+                    variant_data.append({"year": str(years_from_header[0]), "data": volume_data})
                 else:
                     volume_dict.pop("TOTAL")
                     swap_volume_dict = volume_dict
-                    full_volume_data = []
+                    variant_data = []
                     for year_from_header in years_from_header:
-                        data = []
                         for month, year in dates_from_header:
                             if month in swap_volume_dict.keys() and year == year_from_header:
                                 months_volume_dict = {'key': month, 'value': volume_dict[month]}
                         volume_data = [{'months': months_volume_dict, 'totals': period_totals}]
 
-                        full_volume_data.append({"year": year_from_header, "data": volume_data})
+                        variant_data.append({"year": year_from_header, "data": volume_data})
 
                 main_data_str = self.mainframe.string_get(4, 1, 80)
                 variant_representation = main_data_str[29:58]
 
                 main_operation_dict['variant_data'].append({'variant': main_data_str[1:29].replace(' ', ''),
                                                             'variant_representation': variant_representation.strip(),
-                                                            'volume_data': full_volume_data
+                                                            'volume_data': variant_data
                                                             })
 
             if data_eof_declaration in self.mainframe.string_get(4, 1, 80) and start:
