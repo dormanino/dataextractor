@@ -12,6 +12,22 @@ class ProPresum:
         m = LogInMBBrasTN3270BPMSTAR()
         self.mainframe = m.mainframe_connection()
 
+    @staticmethod
+    def create_volume_dict(months, year):
+        volume_data = dict(year=year,
+                           months=months)
+        return volume_data
+
+    @staticmethod
+    def create_variant_data(order_location_number_cerep,order_location_name,register_number,register_name,total_volume,data):
+        variant_data = dict(order_location_number_cerep = order_location_number_cerep,
+                            order_location_name=order_location_name,
+                            register_number=register_number,
+                            register_name=register_name,
+                            total_volume=total_volume,
+                            data=data)
+        return variant_data
+
     def pro_presum_main(self, dt_ref, resume_type='ptfm', main_option='a', periodicity='m', presentation=' '):
         """
             schematics for screen matrix function
@@ -82,7 +98,6 @@ class ProPresum:
                                    header=months_from_header,
                                    main_option=main_option,
                                    periodicity=periodicity,
-                                   variant='',
                                    variant_data=[]
                                    )
 
@@ -92,8 +107,7 @@ class ProPresum:
                                             header=months_from_header,
                                             main_option=main_option,
                                             periodicity=periodicity,
-                                            variant='',
-                                            data=[]
+                                            variant_data=[]
                                             )
 
         totals_declaration = 'TOTAL FINAL'
@@ -105,6 +119,7 @@ class ProPresum:
         dicto = {}
 
         variant_data = []
+        variant_complete_data = []
         months_volume_dict = {}
 
         while oper_eof:
@@ -121,6 +136,18 @@ class ProPresum:
                 if not self.mainframe.string_get(line, 1, 80).strip() == '' and\
                         not self.mainframe.string_get(line + 1, 1, 80).strip() == '':
 
+                    # strip the line of information to strip variant info and values given by sales department
+                    # returns swap variable
+                    partials_main_data_str = self.mainframe.string_get(line, 1, 80).strip()
+
+                    # slice string and split
+                    # returns register information
+                    register_information = partials_main_data_str[0:25].strip().split('-')
+
+                    # slice string and split
+                    # returns main orders internal sales/country/'for stock' information
+                    sales_destination = partials_main_data_str[25:80].strip().split('-')
+
                     # get information from screen and strip trailing spaces and split by spaces
                     # returns a list of volume by month with int as str inside
                     partial_volume = self.mainframe.string_get(line + 1, 1, 80).strip().split(' ')
@@ -135,54 +162,42 @@ class ProPresum:
                     partials_volume_dict = dict(zip(months_from_header, partial_volume))
 
                     # collect the totals information in a separate dictionary
-                    partials_period_totals = {"TOTAL": partials_volume_dict["TOTAL"]}
+                    partials_period_totals = partials_volume_dict["TOTAL"]
 
                     # remove information of totals from the volume dictionary
                     partials_volume_dict.pop("TOTAL")
 
-                    # strip the line of information to strip variant info and values given by sales department
-                    # returns swap variable
-                    partials_main_data_str = self.mainframe.string_get(line, 1, 80).strip()
-
-                    # slice string and split
-                    # returns register information
-                    register_information = partials_main_data_str[0:25].strip().split('-')
-
-                    # slice string and split
-                    # returns main orders internal sales/country/'for stock' information
-                    sales_destination = partials_main_data_str[25:80].strip().split('-')
-
                     # if the amount of years in the header are one according to the reference date choose
-
-                    variant_data = []
+                    volume_data = []
                     for year_from_header in years_from_header:
-                        data = []
-                        volume_data = {}
+
                         for month, year in dates_from_header:
                             if month in partials_volume_dict.keys() and year == year_from_header:
-                                month_numeric = next(map(lambda x: MonthsHelper.MonthsHelper.numeric[x], month))
+                                # month_numeric = list(map(lambda x: MonthsHelper.MonthsHelper.numeric[x], month))
                                 months_volume_dict[month] = partials_volume_dict[month]
-                                months_volume_dict[month_numeric] = partials_volume_dict[month]
+                                #  months_volume_dict[month_numeric] = partials_volume_dict[month]
 
-                            volume_data = {'months': months_volume_dict,
-                                           'totals': partials_period_totals}
+                        volume_data.append(ProPresum.create_volume_dict(year=year_from_header, months=months_volume_dict))
+                        months_volume_dict = dict()
 
-                        data.append(volume_data)
-                        variant_data.append({'year': year_from_header,
-                                             'order_location_number_cerep': sales_destination[0],
-                                             'order_location_name': sales_destination[1],
-                                             'register_number': register_information[0],
-                                             'register_name': register_information[1],
-                                             'data': data})
+                    variant_data.append(ProPresum.create_variant_data(sales_destination[0],
+                                                                      sales_destination[1],
+                                                                      register_information[0],
+                                                                      register_information[1],
+                                                                      partials_period_totals,
+                                                                      volume_data))
 
-            main_data_str = self.mainframe.string_get(4, 1, 80)
-            variant = main_data_str[1:29].replace(' ', '')
-            sales_name_for_variant = main_data_str[29:58].strip()
+            if totals_declaration in self.mainframe.string_get(19, 1, 80):
+                variant_complete_data.append(variant_data)
+                main_data_str = self.mainframe.string_get(4, 1, 80)
+                variant = main_data_str[1:29].replace(' ', '')
+                sales_name_for_variant = main_data_str[29:58].strip()
 
-            partials_main_operation_dict['variant'] = variant
-            partials_main_operation_dict['data'].append({'variant_representation': sales_name_for_variant,
-                                                         'volume_data': variant_data
-                                                         })
+                partials_main_operation_dict['variant_data'].append(dict(variant=variant,
+                                                                         variant_representation=sales_name_for_variant,
+                                                                         volume_data=variant_complete_data))
+                variant_complete_data = []
+                variant_data = []
 
             # the data has partial data in the screen
             if totals_declaration in self.mainframe.string_get(19, 1, 80):
@@ -193,35 +208,35 @@ class ProPresum:
                 totals_line_list = []
                 data_line_list = []
 
-                # second dict (test)
-                totals_volume = totals_line.strip().split(' ')
-                totals_volume[:] = [item for item in totals_volume if item != '']
-                volume_dict = dict(zip(months_from_header, totals_volume))
-                period_totals = {"TOTAL": volume_dict["TOTAL"]}
-                if len(years_from_header) == 1:
-                    volume_dict.pop("TOTAL")
-                    months_volume_dict = volume_dict
-                    volume_data = [{'months': months_volume_dict, 'totals': period_totals}]
-                    variant_data.append({"year": str(years_from_header[0]), "data": volume_data})
-                else:
-                    volume_dict.pop("TOTAL")
-                    swap_volume_dict = volume_dict
-                    variant_data = []
-                    for year_from_header in years_from_header:
-                        for month, year in dates_from_header:
-                            if month in swap_volume_dict.keys() and year == year_from_header:
-                                months_volume_dict = {'key': month, 'value': volume_dict[month]}
-                        volume_data = [{'months': months_volume_dict, 'totals': period_totals}]
-
-                        variant_data.append({"year": year_from_header, "data": volume_data})
-
-                main_data_str = self.mainframe.string_get(4, 1, 80)
-                variant_representation = main_data_str[29:58]
-
-                main_operation_dict['variant_data'].append({'variant': main_data_str[1:29].replace(' ', ''),
-                                                            'variant_representation': variant_representation.strip(),
-                                                            'volume_data': variant_data
-                                                            })
+                # # second dict (test)
+                # totals_volume = totals_line.strip().split(' ')
+                # totals_volume[:] = [item for item in totals_volume if item != '']
+                # volume_dict = dict(zip(months_from_header, totals_volume))
+                # period_totals = volume_dict["TOTAL"]
+                # if len(years_from_header) == 1:
+                #     volume_dict.pop("TOTAL")
+                #     months_volume_dict = volume_dict
+                #     volume_data = [{'months': months_volume_dict, 'totals': period_totals}]
+                #     variant_data.append({"year": str(years_from_header[0]), "data": volume_data})
+                # else:
+                #     volume_dict.pop("TOTAL")
+                #     swap_volume_dict = volume_dict
+                #     variant_data = []
+                #     for year_from_header in years_from_header:
+                #         for month, year in dates_from_header:
+                #             if month in swap_volume_dict.keys() and year == year_from_header:
+                #                 months_volume_dict = {'key': month, 'value': volume_dict[month]}
+                #         volume_data = [{'months': months_volume_dict, 'totals': period_totals}]
+                #
+                #         variant_data.append({"year": year_from_header, "data": volume_data})
+                #
+                # main_data_str = self.mainframe.string_get(4, 1, 80)
+                # variant_representation = main_data_str[29:58]
+                #
+                # main_operation_dict['variant_data'].append({'variant': main_data_str[1:29].replace(' ', ''),
+                #                                             'variant_representation': variant_representation.strip(),
+                #                                             'volume_data': variant_data
+                #                                             })
 
             if data_eof_declaration in self.mainframe.string_get(4, 1, 80) and start:
                 start = False
@@ -232,10 +247,10 @@ class ProPresum:
             self.mainframe.send_enter()
             self.mainframe.wait_for_field()
 
-        return dicto, main_operation_dict, partials_main_operation_dict
+        return dicto, partials_main_operation_dict #, main_operation_dict
 
 
-d = ProPresum().pro_presum_main('0618')
+d = ProPresum().pro_presum_main('0118')
 
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
@@ -243,8 +258,8 @@ date_string = date.strftime('%y%m%d')
 with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_12mpp_raw.json', 'w') as f:
     json.dump(d[0], f, indent=4, sort_keys=True, ensure_ascii=False)
 
-with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_main_operation_dict.json', 'w') as f:
-    json.dump(d[1], f, indent=4, sort_keys=True, ensure_ascii=False)
+# with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_main_operation_dict.json', 'w') as f:
+#     json.dump(d[1], f, indent=4, sort_keys=True, ensure_ascii=False)
 
 with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_partials_operation.json', 'w') as f:
-    json.dump(d[2], f, indent=4, sort_keys=True, ensure_ascii=False)
+    json.dump(d[1], f, indent=4, sort_keys=True, ensure_ascii=False)

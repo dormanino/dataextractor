@@ -10,9 +10,6 @@ from PDS_Extractors.Models.ComponentsCollection import ComponentsCollection
 from PDS_Extractors.Models.Production import Production
 
 
-print(DataPoint.data_sbc_vehicles, DataPoint.data_sbc_aggregates)
-print(DataPoint.production)
-
 # Data Points
 analysis_data_source = AnalysisDataSource(BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_vehicles))),
                                           BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_vehicles))),
