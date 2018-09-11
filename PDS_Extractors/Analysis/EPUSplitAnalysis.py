@@ -61,13 +61,13 @@ for month_year, qvv_prod_components_list in production_analysis.qvv_prod_compone
                 for part in valid_parts:
 
                     # GROUP LINES BY PART NUMBER, BAUMUSTER, SAA
-                    line_key = (part.part_number + qvv_prod.baumuster_id + component.component_id).replace(" ", "")
+                    line_key = (part.part_number + qvv_prod.baumuster_id + component.component_id+qvv_prod.qvv).replace(" ", "")
 
                     if line_key not in lines.keys():
                         print("NEW " + line_key)
                         line_data = [part.part_number, part.quantity, part.bza, part.da, part.w, part.ehm,
                                      qvv_prod.business_unit, qvv_prod.family, qvv_prod.baumuster_id,
-                                     component.component_id, component.kg, component.anz, grouping]
+                                     component.component_id, component.kg, component.anz, grouping, qvv_prod.qvv]
                         lines[line_key] = Xablau(line_data)
                     else:
                         print("FOUND " + line_key)

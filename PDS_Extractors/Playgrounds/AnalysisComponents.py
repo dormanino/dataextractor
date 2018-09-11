@@ -32,10 +32,10 @@ for month, qvv_prod_components_list in production_analysis.qvv_prod_components_b
         qvv_prod = qvv_prod_components.qvv_production
         for grouping, components in qvv_prod_components.components.items():
             for component in components:
-                split_mont_year = month.split('/')
+                split_month_year = month.split('/')
 
                 data_lines.append([
-                    split_mont_year[0] + '.01.' + split_mont_year[1],
+                    split_month_year[0] + '.01.' + split_month_year[1],
                     qvv_prod.qvv,
                     qvv_prod.baumuster_id,
                     qvv_prod.family,

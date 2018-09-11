@@ -10,10 +10,10 @@ class QVVPartialVolumeData:
 
     @classmethod
     def from_dict(cls, datadict):
+        info = list(map(QVVPartialSalesData.from_dict, datadict[QVVPartialVolumeData.JSONKeys.qvv_partial_volume_data]))
         return cls(
-            list(map(QVVPartialSalesData.from_dict, datadict[QVVPartialVolumeData.JSONKeys.qvv_partial_volume_data])),
-            datadict[QVVPartialVolumeData.JSONKeys.months],
-            datadict[QVVPartialVolumeData.JSONKeys.year]
+            datadict.get(list(map(info, datadict[QVVPartialVolumeData.JSONKeys.months]))),
+            list(map(info, datadict[QVVPartialVolumeData.JSONKeys.year]))
         )
 
     class JSONKeys:

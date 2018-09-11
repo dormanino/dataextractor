@@ -118,6 +118,7 @@ class ProPresum:
         totals_line_list = []
         dicto = {}
 
+        volume_data = []
         variant_data = []
         variant_complete_data = []
         months_volume_dict = {}
@@ -168,7 +169,7 @@ class ProPresum:
                     partials_volume_dict.pop("TOTAL")
 
                     # if the amount of years in the header are one according to the reference date choose
-                    volume_data = []
+
                     for year_from_header in years_from_header:
 
                         for month, year in dates_from_header:
@@ -178,7 +179,8 @@ class ProPresum:
                                 #  months_volume_dict[month_numeric] = partials_volume_dict[month]
 
                         volume_data.append(ProPresum.create_volume_dict(year=year_from_header, months=months_volume_dict))
-                        months_volume_dict = dict()
+
+                        months_volume_dict = {}
 
                     variant_data.append(ProPresum.create_variant_data(sales_destination[0],
                                                                       sales_destination[1],
@@ -186,17 +188,16 @@ class ProPresum:
                                                                       register_information[1],
                                                                       partials_period_totals,
                                                                       volume_data))
+                    volume_data = []
 
             if totals_declaration in self.mainframe.string_get(19, 1, 80):
-                variant_complete_data.append(variant_data)
                 main_data_str = self.mainframe.string_get(4, 1, 80)
                 variant = main_data_str[1:29].replace(' ', '')
                 sales_name_for_variant = main_data_str[29:58].strip()
 
                 partials_main_operation_dict['variant_data'].append(dict(variant=variant,
                                                                          variant_representation=sales_name_for_variant,
-                                                                         volume_data=variant_complete_data))
-                variant_complete_data = []
+                                                                         volume_data=variant_data))
                 variant_data = []
 
             # the data has partial data in the screen
