@@ -1,4 +1,4 @@
-from BPM_STAR_Extractors.Models.QVVPartialVariantData import QVVPartialVariantData
+from BPM_STAR_Extractors.Models.QVVPartialVolumeData import QVVPartialVolumeData
 
 
 class QVVPartialSalesData:
@@ -15,7 +15,7 @@ class QVVPartialSalesData:
     @classmethod
     def from_dict(cls, datadict):
         return cls(
-            list(map(QVVPartialVariantData.from_dict, datadict[QVVPartialSalesData.JSONKeys.volume_data])),
+            list(map(QVVPartialVolumeData.from_dict, datadict[QVVPartialSalesData.JSONKeys.data])),
             datadict[QVVPartialSalesData.JSONKeys.order_location_name],
             datadict[QVVPartialSalesData.JSONKeys.order_location_number_cerep],
             datadict[QVVPartialSalesData.JSONKeys.register_name],
@@ -24,7 +24,7 @@ class QVVPartialSalesData:
         )
 
     class JSONKeys:
-        volume_data = "volume_data"
+        data = "data"
         order_location_name = "order_location_name"
         order_location_number_cerep = "order_location_number_cerep"
         register_name = "register_name"
