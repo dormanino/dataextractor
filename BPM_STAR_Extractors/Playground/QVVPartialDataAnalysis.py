@@ -7,3 +7,4 @@ from BPM_STAR_Extractors.DataPoint import DataPoint
 
 data = json.load(open(DataPoint.data_12mpp_partial))
 data_for_analisys = QVVPartialVolumeData.from_dict(data)
+
