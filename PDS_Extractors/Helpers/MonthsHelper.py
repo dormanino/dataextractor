@@ -1,3 +1,5 @@
+import calendar
+import locale
 from typing import Dict
 
 
@@ -21,3 +23,17 @@ class MonthsHelper:
                                    out="oct",
                                    nov="nov",
                                    dez="dec")
+
+    @staticmethod
+    def get_ordinal_from_short_name(short_name: str, locale_code: str = "") -> int:
+        # locale.setlocale(locale.LC_ALL, locale_code)
+        ordinal = list(map(lambda ma: ma.lower(), list(calendar.month_abbr))).index(short_name)
+        # locale.setlocale(locale.getdefaultlocale())
+        return ordinal
+
+    @staticmethod
+    def get_short_name_from_ordinal(ordinal: int, locale_code: str = "") -> str:
+        locale.setlocale(locale.LC_ALL, locale_code)
+        short_name = calendar.month_abbr[ordinal]
+        locale.setlocale(locale.getdefaultlocale())
+        return short_name

@@ -1,6 +1,6 @@
 import Settings
 from PDS_Extractors.Helpers.LatestFileVersion import LatestFileVersion
-from PDS_Extractors.Models.BaumusterDataKind import BaumusterDataKind
+from PDS_Extractors.Models.Baumuster.BaumusterDataKind import BaumusterDataKind
 
 
 class DataPoint:

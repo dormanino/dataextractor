@@ -1,3 +1,4 @@
+from BPM_STAR_Extractors.Models.QVVPartialVariantData import QVVPartialVariantData
 
 
 class QVVPartialMainData:
@@ -21,7 +22,7 @@ class QVVPartialMainData:
             datadict[QVVPartialMainData.JSONKeys.periodicity],
             datadict[QVVPartialMainData.JSONKeys.ref_date],
             datadict[QVVPartialMainData.JSONKeys.resume_type],
-            datadict[QVVPartialMainData.JSONKeys.variant_data]
+            list(map(QVVPartialVariantData.from_dict, datadict[QVVPartialMainData.JSONKeys.variant_data]))
         )
 
     class JSONKeys:
