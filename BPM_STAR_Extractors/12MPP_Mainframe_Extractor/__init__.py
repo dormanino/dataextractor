@@ -1,7 +1,6 @@
 from MainframeMainConnections import LogInMBBrasTN3270BPMSTAR
 from BPM_STAR_Extractors.DataPoint import DataPoint
 from GeneralHelpers import PartitionStringinDigitsandNonDigits
-from GeneralHelpers import MonthsHelper
 import json
 import datetime
 import time
@@ -19,8 +18,9 @@ class ProPresum:
         return volume_data
 
     @staticmethod
-    def create_variant_data(order_location_number_cerep,order_location_name,register_number,register_name,total_volume,data):
-        variant_data = dict(order_location_number_cerep = order_location_number_cerep,
+    def create_variant_data(order_location_number_cerep, order_location_name, register_number, register_name,
+                            total_volume, data):
+        variant_data = dict(order_location_number_cerep=order_location_number_cerep,
                             order_location_name=order_location_name,
                             register_number=register_number,
                             register_name=register_name,
@@ -34,9 +34,7 @@ class ProPresum:
                 1) rows starts on char 1 and ends on char 80 (80 columns)
                 2) amount of rows on screen starts on 1 and ends on 24
                 3) screen complete matrix represented as row x column (1,1 / 24, 80) integers
-        """
 
-        """
             method pro_presum_main emulates the screen data and fields to choose and therefore receives variables as options
             as follows:
                 1sr screen of dialog:
@@ -241,12 +239,13 @@ class ProPresum:
 
             if data_eof_declaration in self.mainframe.string_get(4, 1, 80) and start:
                 start = False
-            elif data_eof_declaration in self.mainframe.string_get(4, 1, 80) and not start:
-                oper_eof = False
 
             self.mainframe.move_to(24, 80)
             self.mainframe.send_enter()
             self.mainframe.wait_for_field()
+
+            if data_eof_declaration in self.mainframe.string_get(4, 1, 80) and not start:
+                oper_eof = False
 
         return dicto, partials_main_operation_dict #, main_operation_dict
 
