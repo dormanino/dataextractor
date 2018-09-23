@@ -1,6 +1,7 @@
 from typing import List, Optional
+
 from PDS_Extractors.Models.Baumuster.BaumusterCollection import BaumusterCollection
-from PDS_Extractors.Models.Parts.ComponentsCollection import ComponentsCollection
+from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
 
 
 class TechDocDataSource:
@@ -9,8 +10,8 @@ class TechDocDataSource:
                  jdf_vehicles_source: BaumusterCollection,
                  sbc_aggregates_collection: BaumusterCollection,
                  jdf_aggregates_collection: BaumusterCollection,
-                 sbc_component_parts_collection: Optional[ComponentsCollection] = None,
-                 jdf_component_parts_collection: Optional[ComponentsCollection] = None):
+                 sbc_component_parts_collection: ComponentsCollection,
+                 jdf_component_parts_collection: ComponentsCollection):
         self.sbc_vehicles_source: BaumusterCollection = sbc_vehicles_source
         self.jdf_vehicles_source: BaumusterCollection = jdf_vehicles_source
         self.sbc_aggregates_collection: BaumusterCollection = sbc_aggregates_collection

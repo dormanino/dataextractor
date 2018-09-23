@@ -1,5 +1,6 @@
 from datetime import datetime
-from PDS_Extractors.Models.Parts.Part import Part
+
+from PDS_Extractors.Models.Part.Part import Part
 from PDS_Extractors.TechDocValidation.DueDate.DueDateAnalysis import DueDateAnalysis
 
 

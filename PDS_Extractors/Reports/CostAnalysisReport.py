@@ -7,14 +7,13 @@ from PDS_Extractors.Models.Production.Production import Production
 from PDS_Extractors.Reporting.ReportTrigger import ReportOutput
 
 
-class TechDocStatusReport:
+class CostAnalysisReport:
     fixed_headers = [
         "Month/Year",
         "Business Unit", "Family", "Baumuster", "QVV",  "Volume",
         "Component ID", "KG", "ANZ",
         "Pem AB", "Termin AB", "Pem BIS", "Termin BIS",
-        "Grouping", "Component Description", "Codebedingungen",
-        "Status", "Comment"
+        "Grouping", "Component Description", "Codebedingungen"
     ]
     part_headers = [
         "Part Number", "Part Quantity", "Part BZA"
@@ -24,13 +23,13 @@ class TechDocStatusReport:
         self.production = production
         self.qvv_components_analyzer = qvv_components_analyzer
 
-    def run(self, month_years: List[MonthYear], include_parts: bool, status_filter) -> ReportOutput:
+    def run(self, month_years: List[MonthYear], include_parts: bool) -> ReportOutput:
         all_data = []
         for month_year in month_years:
             try:
-                month_data = self.run_month(month_year, include_parts, status_filter)
+                month_data = self.run_month(month_year, include_parts)
                 all_data.extend(month_data)
-            except Exception as error:
+            except ValueError as error:
                 print(error)
                 continue
         final_headers = self.fixed_headers
@@ -38,12 +37,11 @@ class TechDocStatusReport:
             final_headers.extend(self.part_headers)
         return ReportOutput(final_headers, all_data)
 
-    def run_month(self, month_year: MonthYear, include_parts: bool, status_filter):
+    def run_month(self, month_year: MonthYear, include_parts: bool):
         data_rows = []
         monthly_production = ProductionAnalyzer.extract_monthly_production(month_year, self.production)
         for qvv in monthly_production.qvv_production_list:
-            analyzed_qvv = self.qvv_components_analyzer.analyzed_qvv_components(qvv, month_year.to_date(), include_parts,
-                                                                                status_filter)
+            analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), include_parts)
             for grouping, analyzed_components in analyzed_qvv.components.items():
                 for analyzed_component in analyzed_components:
                     data_row = [
@@ -62,9 +60,7 @@ class TechDocStatusReport:
                         analyzed_component.component.t_b,
                         grouping,
                         analyzed_component.component.component_description,
-                        analyzed_component.component.validation_rule,
-                        analyzed_component.due_date_analysis.status.value,
-                        analyzed_component.due_date_analysis.comment
+                        analyzed_component.component.validation_rule
                     ]
 
                     if include_parts:

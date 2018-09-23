@@ -7,7 +7,7 @@ from PDS_Extractors.OLD.ProductionAnalysis import ProductionAnalysis
 from PDS_Extractors.Data.DataPoint import DataPoint
 from PDS_Extractors.Helpers.MonthsHelper import MonthsHelper
 from PDS_Extractors.Models.Baumuster.BaumusterCollection import BaumusterCollection
-from PDS_Extractors.Models.Parts.ComponentsCollection import ComponentsCollection
+from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
 from PDS_Extractors.Models.Production.Production import Production
 from PDS_Extractors.TechDocValidation.DueDate.DueDateValidator import DueDateValidator
 

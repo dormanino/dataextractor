@@ -5,7 +5,7 @@ import json
 from PDS_Extractors.Models.DataSource.TechDocDataSource import TechDocDataSource
 from PDS_Extractors.Data.DataPoint import DataPoint
 from PDS_Extractors.Models.Baumuster.BaumusterCollection import BaumusterCollection
-from PDS_Extractors.Models.Parts.ComponentsCollection import ComponentsCollection
+from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
 from PDS_Extractors.TechDocValidation.DueDate.DueDateAnalysis import DueDateStatus
 from PDS_Extractors.TechDocValidation.DueDate.DueDateValidator import DueDateValidator
 

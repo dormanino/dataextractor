@@ -2,6 +2,9 @@ from enum import Enum
 
 
 class ReportType(Enum):
+    CostAnalysisComponents = "Analise de Custo - Componentes"
+    CostAnalysisComponentsAndParts = "Analise de Custo - Componentes e Partes"
+    EPUSplit = "EPU Split"
     TechDocDeltaComponents = "TechDoc - Delta Tecnico - Componentes"
     TechDocDeltaComponentsAndParts = "TechDoc - Delta Tecnico - Componentes e Pecas"
     TechDocInvertedSequenceComponents = "Tech Doc - Inversoes de Sequencia - Componentes"

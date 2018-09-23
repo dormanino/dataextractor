@@ -10,9 +10,3 @@ class DueDateAnalysis:
         return self.status in (DueDateStatus.Valid,
                                DueDateStatus.Modified_Valid,
                                DueDateStatus.New)
-
-    def should_cross_aggregates(self) -> bool:
-        return self.status in (DueDateStatus.Valid,
-                               DueDateStatus.Modified_Valid,
-                               DueDateStatus.Modified_Invalid,
-                               DueDateStatus.New)
