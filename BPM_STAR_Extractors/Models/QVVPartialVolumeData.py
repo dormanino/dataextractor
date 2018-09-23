@@ -1,4 +1,5 @@
-from BPM_STAR_Extractors.Models.QVVPartialSalesData import QVVPartialSalesData
+
+
 class QVVPartialVolumeData:
 
     def __init__(self, months, year): # , qvv_partial_volume_data
@@ -9,7 +10,7 @@ class QVVPartialVolumeData:
     @classmethod
     def from_dict(cls, datadict):
         return cls(
-            datadict[QVVPartialVolumeData.JSONKeys.months],
+            datadict.get(QVVPartialVolumeData.JSONKeys.months, None),
             datadict[QVVPartialVolumeData.JSONKeys.year]
         )
 
