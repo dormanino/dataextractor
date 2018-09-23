@@ -10,7 +10,7 @@ class QVVPartialSalesData:
         self.order_location_number_cerep = order_location_number_cerep
         self.register_name = register_name
         self.register_number = register_number
-        self.total_volume = total_volume
+        self.total_volume = int(total_volume)
 
     @classmethod
     def from_dict(cls, datadict):
