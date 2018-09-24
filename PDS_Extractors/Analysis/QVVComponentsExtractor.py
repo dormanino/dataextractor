@@ -96,6 +96,7 @@ class QVVComponentsExtractor:
             aggregate_components = self.grouped_aggregate_components(qvv, vehicle_aggregates)
 
             for key in aggregate_components.keys():
+
                 if key in valid_rule_vehicle_components.keys():
                     valid_rule_vehicle_components[key].extend(aggregate_components[key])
                 else:

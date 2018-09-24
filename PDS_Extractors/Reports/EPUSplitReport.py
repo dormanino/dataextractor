@@ -10,7 +10,7 @@ from PDS_Extractors.Reporting.ReportTrigger import ReportOutput
 class PartVolumeData:
     def __init__(self, line_data):
         self.line_data = line_data
-        self.monthyear_vol = dict()
+        self.month_year_vol = dict()
 
 
 class EPUSplitReport:
@@ -60,10 +60,10 @@ class EPUSplitReport:
                                 data_rows[line_key] = PartVolumeData(line_data)
 
                             part_volume_data = data_rows[line_key]
-                            if month_year not in part_volume_data.monthyear_vol.keys():
-                                part_volume_data.monthyear_vol[month_year] = 0
+                            if month_year not in part_volume_data.month_year_vol.keys():
+                                part_volume_data.month_year_vol[month_year] = 0
 
-                            part_volume_data.monthyear_vol[month_year] = part_volume_data.monthyear_vol[month_year] + qvv.volume
+                            part_volume_data.month_year_vol[month_year] = part_volume_data.month_year_vol[month_year] + qvv.volume
 
         final_headers = self.headers.copy()
         month_years_str = list(map(lambda my: my.to_str(), month_years))
@@ -74,8 +74,8 @@ class EPUSplitReport:
             part_volume_data_data = data_rows[part_volume_data_key]
             line_output = part_volume_data_data.line_data.copy()
             for month_year in month_years:
-                if month_year in part_volume_data_data.monthyear_vol.keys():
-                    line_output.append(part_volume_data_data.monthyear_vol[month_year])
+                if month_year in part_volume_data_data.month_year_vol.keys():
+                    line_output.append(part_volume_data_data.month_year_vol[month_year])
                 else:
                     line_output.append(0)
             all_data.append(line_output)
