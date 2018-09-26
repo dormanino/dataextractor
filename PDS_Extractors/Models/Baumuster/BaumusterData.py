@@ -11,6 +11,7 @@ class BaumusterData:
 
     @classmethod
     def from_dict(cls, datadict):
+        baumuster_id = datadict[BaumusterData.JSONKeys.baumuster_id]
 
         # Flatten Grouping and KG data from json into Component
         components_list = []
@@ -19,12 +20,13 @@ class BaumusterData:
             for kg_dict in grouping_dict[BaumusterData.JSONKeys.grouping_kg_list]:
                 kg = kg_dict[BaumusterData.JSONKeys.kg_name]
                 for reg_dict in kg_dict[BaumusterData.JSONKeys.kg_reg_list]:
+                    reg_dict[Component.JSONKeys.baumuster_id] = baumuster_id
                     reg_dict[Component.JSONKeys.grouping_type] = grouping_type
                     reg_dict[Component.JSONKeys.kg] = kg.strip()
                     components_list.append(Component.from_dict(reg_dict))
 
         return cls(
-            datadict[BaumusterData.JSONKeys.baumuster_id],
+            baumuster_id,
             components_list
         )
 

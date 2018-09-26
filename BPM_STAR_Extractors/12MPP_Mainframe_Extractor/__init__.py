@@ -250,12 +250,14 @@ class ProPresum:
         return dicto, partials_main_operation_dict #, main_operation_dict
 
 
-d = ProPresum().pro_presum_main('0118')
+# data_for_12mpp_volume_data_extraction = '0118'
+data_for_12mpp_volume_data_extraction = '0119'
+d = ProPresum().pro_presum_main(data_for_12mpp_volume_data_extraction)
 
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 
-with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_12mpp_raw.json', 'w') as f:
+with open(DataPoint.PATH_DataFiles + "\\" + date_string + "_" + data_for_12mpp_volume_data_extraction + "_12mpp_raw.json", "w") as f:
     json.dump(d[0], f, indent=4, sort_keys=True, ensure_ascii=False)
 
 # with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_main_operation_dict.json', 'w') as f:

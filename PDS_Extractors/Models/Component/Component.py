@@ -2,11 +2,13 @@ from PDS_Extractors.Models.Component.ComponentGroupingType import ComponentGroup
 
 
 class Component:
-    def __init__(self, component_id: str, component_description: str, bg: str, grouping_type: ComponentGroupingType, kg: str,
-                 validation_rule: str, em_ab, em_bis, t_a, t_b, anz, asa, asb, pos):
+    def __init__(self, component_id: str, component_description: str, baumuster_id: str,
+                 bg: str, grouping_type: ComponentGroupingType, kg: str, validation_rule: str,
+                 em_ab, em_bis, t_a, t_b, anz, asa, asb, pos):
         self.component_id: str = component_id
         self.clean_component_id: str = Component.clean_component_id(component_id)
         self.component_description: str = component_description
+        self.baumuster_id: str = baumuster_id
         self.bg = bg
         self.grouping_type: ComponentGroupingType = grouping_type
         self.kg: str = kg
@@ -25,6 +27,7 @@ class Component:
         return cls(
             datadict[Component.JSONKeys.component_id],
             datadict.get(Component.JSONKeys.component_description, "(No Description)"),
+            datadict[Component.JSONKeys.baumuster_id],
             datadict.get(Component.JSONKeys.bg, None),
             datadict[Component.JSONKeys.grouping_type],
             datadict[Component.JSONKeys.kg],
@@ -42,6 +45,7 @@ class Component:
     class JSONKeys:
         component_id = "abm_saa"
         component_description = "part_description"
+        baumuster_id = "baumuster_id"
         bg = "bg_codebedingungen"
         grouping_type = "grouping_type"
         kg = "kg"
@@ -61,3 +65,25 @@ class Component:
         for char in [' ', '.', '/', ',']:
             clean = clean.replace(char, "")
         return clean
+
+    def __eq__(self, other):
+        return self.component_id == other.component_id \
+               and self.baumuster_id == other.baumuster_id \
+               and self.kg == other.kg \
+               and self.pos == other.pos \
+               and self.asa == other.asa \
+               and self.asb == other.asb \
+               and self.em_ab == other.em_ab \
+               and self.em_bis == other.em_bis
+
+    def __hash__(self):
+        return hash((
+            self.component_id,
+            self.baumuster_id,
+            self.kg,
+            self.pos,
+            self.asa,
+            self.asb,
+            self.em_ab,
+            self.em_bis
+        ))

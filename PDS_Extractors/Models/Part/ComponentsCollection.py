@@ -19,3 +19,9 @@ class ComponentsCollection:
     class JSONKeys:
         plant = "plant"
         componment_parts_list = "data"
+
+    def __eq__(self, other):
+        return self.plant == other.plant
+
+    def __hash__(self):
+        return hash(self.plant.name)

@@ -9,11 +9,11 @@ from PDS_Extractors.TechDocValidation.DueDate.DueDateStatus import DueDateStatus
 
 class DueDateValidator:
     @staticmethod
-    def component_status_on_date(component: Component, date: datetime.date, days_offset: int = 5) -> DueDateAnalysis:
+    def component_status_on_date(component: Component, date: datetime.date, days_offset: int = 0) -> DueDateAnalysis:
         return DueDateValidator.reg_status_on_date(component.t_a, component.t_b, component.em_ab, component.em_bis, date, days_offset)
 
     @staticmethod
-    def part_status_on_date(part: Part, date: datetime.date, days_offset: int = 5) -> DueDateAnalysis:
+    def part_status_on_date(part: Part, date: datetime.date, days_offset: int = 0) -> DueDateAnalysis:
         return DueDateValidator.reg_status_on_date(part.t_a, part.t_b, part.em_ab, part.em_bis, date, days_offset)
 
     @staticmethod

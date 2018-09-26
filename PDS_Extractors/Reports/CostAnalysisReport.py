@@ -13,10 +13,12 @@ class CostAnalysisReport:
         "Business Unit", "Family", "Baumuster", "QVV",  "Volume",
         "Component ID", "KG", "ANZ",
         "Pem AB", "Termin AB", "Pem BIS", "Termin BIS",
-        "Grouping", "Component Description", "Codebedingungen"
+        "Grouping", "Component Description", "Codebedingungen",
+        "Status", "Comment"
     ]
     part_headers = [
-        "Part Number", "Part Quantity", "Part BZA"
+        "Part Number", "Part Description", "Part Quantity", "Part BZA",
+        "Status", "Comment"
     ]
 
     def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsAnalyzer):
@@ -60,18 +62,26 @@ class CostAnalysisReport:
                         analyzed_component.component.t_b,
                         grouping,
                         analyzed_component.component.component_description,
-                        analyzed_component.component.validation_rule
+                        analyzed_component.component.validation_rule,
+                        analyzed_component.due_date_analysis.status.name,
+                        analyzed_component.due_date_analysis.comment
                     ]
 
                     if include_parts:
                         for analyzed_part in analyzed_component.parts:
                             part_data = [
                                 analyzed_part.part.part_number,
+                                analyzed_part.part.part_description,
                                 analyzed_part.part.quantity,
-                                analyzed_part.part.bza
+                                analyzed_part.part.bza,
+                                analyzed_part.due_date_analysis.status.name,
+                                analyzed_part.due_date_analysis.comment
                             ]
-                            data_row.extend(part_data)
+                            extended_data_row = data_row.copy()
+                            extended_data_row.extend(part_data)
+                            data_rows.append(extended_data_row)
 
-                    data_rows.append(data_row)
+                    else:
+                        data_rows.append(data_row)
 
         return data_rows

@@ -7,6 +7,7 @@ from PDS_Extractors.Data.DataPoint import DataPoint
 # from PDS_Extractors.Helpers.MonthsHelper import MonthsHelper
 from PDS_Extractors.Models.Baumuster.BaumusterCollection import BaumusterCollection
 from PDS_Extractors.Models.Production.Production import Production
+from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
 
 
 # Data Points
@@ -14,8 +15,8 @@ analysis_data_source = TechDocDataSource(BaumusterCollection.from_dict(json.load
                                          BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_vehicles))),
                                          BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_aggregates))),
                                          BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_aggregates))),
-                                         # ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_sbc, encoding="utf-8"))),
-                                         # ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_jdf, encoding="utf-8")))
+                                         ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_sbc, encoding="utf-8"))),
+                                         ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_jdf, encoding="utf-8")))
                                          )
 
 production_analysis = ProductionAnalysis(Production.from_dict(json.load(open(DataPoint.production))),

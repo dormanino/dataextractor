@@ -154,7 +154,7 @@ class MakeFinalDict:
             print('dict end available')
         self.qvv_data = json.load(open(DataPoint.data_final_dict))
 
-    def variant_info_gen(self, month_data):
+    def variant_info_gen(self, month_data, year):
 
         qvvs_data = list((key, values[0][0][0], values[0][0][1][0],
                           values[0][0][1][1], [i['code'] for i in values[1]], int(values[0][1][month_data]))
@@ -180,30 +180,32 @@ class MakeFinalDict:
                     main_dict['volume'] = int(values[0][1][month])
                     swap_list.append(main_dict)
                 monthly_production['month'] = month
+                monthly_production['year'] = year
                 monthly_production['data'] = swap_list
             qvvs_data_dict['production'].append(monthly_production)
         return qvvs_data_dict
 
 
-MakeFile.parsed_12mpp()
+# MakeFile.parsed_12mpp()
 # time.sleep(5)  # TODO:routine to analise if the new file is ready for next analisys
 # MakeFile.bm_qvv_vol()
 # time.sleep(5)  # TODO:routine to analise if the new file is ready for next analisys
-# MakeFile.concatenate_infos()
+#MakeFile.concatenate_infos()
 #
-# month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
-#
-# date = datetime.date.today()
-# date_string = date.strftime('%y%m%d')
-#
-# for month in month_list:
-#     total_qvv_list = MakeFinalDict().variant_info_gen(month)
-#
-#     with open(DataPoint.PATH_DataFiles + "\\" + date_string + "_" + month + '_qvvs.csv', 'w', newline='\n') as csvfile:
-#         wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-#         for line in total_qvv_list:
-#             wr.writerow(line)
-#
-# total_qvv_dict = MakeFinalDict().variant_model_gen(month_list)
-# with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dictionary_qvvs_by_month.json', 'w') as f:
-#     json.dump(total_qvv_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
+month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
+year = 2019
+
+date = datetime.date.today()
+date_string = date.strftime('%y%m%d')
+
+for month in month_list:
+    total_qvv_list = MakeFinalDict().variant_info_gen(month, year)
+
+    with open(DataPoint.PATH_DataFiles + "\\" + date_string + "_" + month + '_qvvs.csv', 'w', newline='\n') as csvfile:
+        wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+        for line in total_qvv_list:
+            wr.writerow(line)
+
+total_qvv_dict = MakeFinalDict().variant_model_gen(month_list)
+with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dictionary_qvvs_by_month.json', 'w') as f:
+    json.dump(total_qvv_dict, f, indent=4, sort_keys=True, ensure_ascii=False)

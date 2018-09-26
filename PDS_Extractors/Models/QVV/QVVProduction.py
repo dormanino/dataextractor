@@ -3,10 +3,9 @@ from typing import List
 
 class QVVProduction:
 
-    def __init__(self, qvv: str, baumuster_id: str, business_unit: str,
+    def __init__(self, qvv_id: str, baumuster_id: str, business_unit: str,
                  family: str, volume: int, composition: List[str]):
-        self.qvv: str = qvv
-        self.qvv_id: str = qvv
+        self.qvv_id: str = qvv_id
         self.baumuster_id: str = baumuster_id
         self.business_unit: str = business_unit
         self.family: str = family

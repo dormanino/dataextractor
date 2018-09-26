@@ -17,8 +17,7 @@ class QVVComponentsAnalyzer:
         self.qvv_components_extractor = QVVComponentsExtractor(tech_data_source, self.components_parts_analyzer)
         self.cache_valid_components_for_qvv = dict()
 
-    def analyzed_qvv_components(self, qvv: QVVProduction, ref_date: datetime.date, include_parts: bool,
-                                status_filter: Optional[List[DueDateStatus]] = None) -> AnalyzedQVVComponents:
+    def analyzed_qvv_components(self, qvv: QVVProduction, ref_date: datetime.date, include_parts: bool) -> AnalyzedQVVComponents:
         analyzed_groupings = dict()
         grouped_components = self.qvv_components_extractor.grouped_components_for_qvv(qvv)
         for grouping, components in grouped_components.items():
@@ -33,18 +32,13 @@ class QVVComponentsAnalyzer:
                         continue
                 analyzed_component = self.components_parts_analyzer.analyze_component(component, analyzed_parts, ref_date)
                 analyzed_components.append(analyzed_component)
-
-            if status_filter is None or not status_filter:
                 analyzed_groupings[grouping] = analyzed_components
-            else:
-                analyzed_groupings[grouping] = list(filter(lambda ac: ac.due_date_analysis.status in status_filter, analyzed_components))
         return AnalyzedQVVComponents(qvv, analyzed_groupings)
 
     def valid_qvv_components(self, qvv: QVVProduction, ref_date: datetime.date, include_parts: bool) -> AnalyzedQVVComponents:
-        cache_key = ref_date.strftime("%d%m%y") + qvv.baumuster_id + qvv.qvv_id
-        cached = self.cache_valid_components_for_qvv.get(cache_key, None)
-        if cached is None:
-
+        # cache_key = ref_date.strftime("%d%m%y") + qvv.baumuster_id + qvv.qvv_id
+        # cached = self.cache_valid_components_for_qvv.get(cache_key, None)
+        # if cached is None:
             valid_groupings = dict()
             for grouping, components in self.analyzed_qvv_components(qvv, ref_date, include_parts).components.items():
                 if grouping == ComponentGroupingType.Aggregate.name:
@@ -52,16 +46,18 @@ class QVVComponentsAnalyzer:
 
                 # for each valid component, rectify parts list
                 valid_components = []
-                for component in list(filter(lambda ac: ac.due_date_analysis.is_valid(), components)):
-                    valid_parts = list(filter(lambda ap: ap.due_date_analysis.is_valid(), component.parts))
-                    valid_component = AnalyzedComponent(component.component, valid_parts, component.ref_date, component.due_date_analysis)
+                for analyzed_component in list(filter(lambda ac: ac.due_date_analysis.is_valid(), components)):
+                    valid_parts = list(filter(lambda ap: ap.due_date_analysis.is_valid(), analyzed_component.parts))
+                    valid_component = AnalyzedComponent(analyzed_component.component,
+                                                        valid_parts,
+                                                        analyzed_component.ref_date,
+                                                        analyzed_component.due_date_analysis)
                     valid_components.append(valid_component)
 
                 valid_groupings[grouping] = valid_components
 
             valid_qvv_components = AnalyzedQVVComponents(qvv, valid_groupings)
-            self.cache_valid_components_for_qvv[cache_key] = valid_qvv_components
+            # self.cache_valid_components_for_qvv[cache_key] = valid_qvv_components
             return valid_qvv_components
-
-        else:
-            return cached
+        # else:
+        #     return cached

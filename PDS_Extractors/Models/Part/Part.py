@@ -1,9 +1,10 @@
 class Part:
-    def __init__(self, part_number: str, part_description: str, quantity: str,
-                 es1: str, es2: str, pos: str, aesa: str, aesb: str, structure_index: str,
+    def __init__(self, part_number: str, part_description: str, component_id: str,
+                 quantity: str, es1: str, es2: str, pos: str, aesa: str, aesb: str, structure_index: str,
                  bza: str, da: str, w: str, em_ab: str, em_bis: str, t_a: str, t_b: str, ehm: str):
         self.part_number: str = part_number
         self.part_description: str = part_description
+        self.component_id: str = component_id
         self.quantity: str = quantity.replace(",", ".")
         self.es1 = es1
         self.es2 = es2
@@ -25,6 +26,7 @@ class Part:
         return cls(
             datadict[Part.JSONKeys.part_number],
             datadict[Part.JSONKeys.part_description],
+            datadict[Part.JSONKeys.component_id],
             datadict[Part.JSONKeys.quantity],
             datadict[Part.JSONKeys.es1],
             datadict[Part.JSONKeys.es2],
@@ -43,9 +45,9 @@ class Part:
         )
 
     class JSONKeys:
-        saa = 'saa'
         part_number = 'part_number'
         part_description = 'part_description'
+        component_id = 'component_id'
         quantity = 'quantity'
         es1 = 'es1'
         es2 = 'es2'
@@ -61,3 +63,23 @@ class Part:
         t_a = 't_a'
         t_b = 't_b'
         ehm = 'ehm'
+
+    def __eq__(self, other):
+        return self.part_number == other.part_number \
+               and self.component_id == other.component_id \
+               and self.pos == other.pos \
+               and self.aesa == other.aesa \
+               and self.aesb == other.aesb \
+               and self.em_ab == other.em_ab \
+               and self.em_bis == other.em_bis
+
+    def __hash__(self):
+        return hash((
+            self.part_number,
+            self.component_id,
+            self.pos,
+            self.aesa,
+            self.aesb,
+            self.em_ab,
+            self.em_bis
+        ))

@@ -23,3 +23,13 @@ class BaumusterCollection:
         kind = "source"
         plant = "plant"
         bm_data_list = "data"
+
+    def __eq__(self, other):
+        return self.kind == other.kind \
+               and self.plant == other.plant
+
+    def __hash__(self):
+        return hash((
+            self.kind.name,
+            self.plant.name
+        ))

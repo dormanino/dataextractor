@@ -1,4 +1,3 @@
-import datetime
 from collections import Counter
 from typing import List, Dict
 
@@ -13,7 +12,7 @@ class Production:
 
     @classmethod
     def from_dict(cls, datadict):
-        year = datadict.get(Production.JSONKeys.year, datetime.datetime.now().year)  # fallback to current year
+        year = datadict[Production.JSONKeys.year]
 
         monthly_production = []
         for mp_dict in datadict[Production.JSONKeys.monthly_production_list]:

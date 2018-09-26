@@ -10,13 +10,16 @@ class ComponentParts:
 
     @classmethod
     def from_dict(cls, datadict):
+        component_id = datadict[ComponentParts.JSONKeys.component]
+
         parts_list = []
         for part_dict in datadict[ComponentParts.JSONKeys.parts_list]:
             if part_dict is not None:  # ignore 'null' inside parts list
+                part_dict[Part.JSONKeys.component_id] = component_id
                 parts_list.append(Part.from_dict(part_dict))
 
         return cls(
-            datadict[ComponentParts.JSONKeys.component],
+            component_id,
             parts_list
         )
 

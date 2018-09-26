@@ -5,15 +5,14 @@ from PDS_Extractors.Reporting.ReportType import ReportType
 
 path = DataPoint.PATH_DataFiles
 
-year = 2018
-months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-# months = [9, 10]
+year = 2019
+months = [1]
+# months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 month_years = list(map(lambda m: MonthYear(m, year), months))
 
 reports = {
-    # "EPU_Split_test_2": ReportType.EPUSplit,
-    "2018_cost_analysis_components": ReportType.CostAnalysisComponents,
-    # "2018_cost_analysis_components+parts": ReportType.CostAnalysisComponentsAndParts,
+    "2019_1_cost_analysis_components": ReportType.CostAnalysisComponents,
+    # "NEW_EPU_Split_test": ReportType.EPUSplit
 }
 
 trigger = ReportTrigger()

@@ -17,7 +17,8 @@ class TechDocStatusReport:
         "Status", "Comment"
     ]
     part_headers = [
-        "Part Number", "Part Quantity", "Part BZA"
+        "Part Number", "Part Description", "Part Quantity", "Part BZA",
+        "Status", "Comment"
     ]
 
     def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsAnalyzer):
@@ -42,10 +43,15 @@ class TechDocStatusReport:
         data_rows = []
         monthly_production = ProductionAnalyzer.extract_monthly_production(month_year, self.production)
         for qvv in monthly_production.qvv_production_list:
-            analyzed_qvv = self.qvv_components_analyzer.analyzed_qvv_components(qvv, month_year.to_date(), include_parts,
-                                                                                status_filter)
+            analyzed_qvv = self.qvv_components_analyzer.analyzed_qvv_components(qvv, month_year.to_date(), include_parts)
             for grouping, analyzed_components in analyzed_qvv.components.items():
-                for analyzed_component in analyzed_components:
+
+                if status_filter is None or not status_filter:
+                    filtered_components = analyzed_components
+                else:
+                    filtered_components = list(filter(lambda ac: ac.due_date_analysis.status in status_filter, analyzed_components))
+
+                for analyzed_component in filtered_components:
                     data_row = [
                         month_year.to_str(),
                         qvv.business_unit,
@@ -68,14 +74,26 @@ class TechDocStatusReport:
                     ]
 
                     if include_parts:
-                        for analyzed_part in analyzed_component.parts:
+
+                        if status_filter is None or not status_filter:
+                            filtered_parts = analyzed_component.parts
+                        else:
+                            filtered_parts = list(filter(lambda ac: ac.due_date_analysis.status in status_filter, analyzed_component.parts))
+
+                        for analyzed_part in filtered_parts:
                             part_data = [
                                 analyzed_part.part.part_number,
+                                analyzed_part.part.part_description,
                                 analyzed_part.part.quantity,
-                                analyzed_part.part.bza
+                                analyzed_part.part.bza,
+                                analyzed_part.due_date_analysis.status.name,
+                                analyzed_part.due_date_analysis.comment
                             ]
-                            data_row.extend(part_data)
+                            extended_data_row = data_row.copy()
+                            extended_data_row.extend(part_data)
+                            data_rows.append(extended_data_row)
 
-                    data_rows.append(data_row)
+                    else:
+                        data_rows.append(data_row)
 
         return data_rows

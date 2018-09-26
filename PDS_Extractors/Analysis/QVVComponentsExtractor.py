@@ -43,7 +43,7 @@ class QVVComponentsExtractor:
             return self.tech_doc_data_source.jdf_component_parts_collection
 
     def find_baumuster_for_id_in_source(self, baumuster_id: str, source: BaumusterCollection) -> BaumusterData:
-        cache_key = source.plant.name + source.kind.name + baumuster_id
+        cache_key = str(hash(source)) + baumuster_id
         not_found_value = "not_found"
         not_found_error = "Couldn't find Baumuster " + baumuster_id
 
@@ -62,7 +62,7 @@ class QVVComponentsExtractor:
             return cached_baumuster
 
     def find_parts_for_component_in_source(self, component: Component, source: ComponentsCollection) -> ComponentParts:
-        cache_key = source.plant.name + component.component_id
+        cache_key = str(hash(source)) + str(hash(component))
         not_found_value = "not_found"
         not_found_error = "Couldn't find parts for Component " + component.component_id
 
@@ -89,21 +89,20 @@ class QVVComponentsExtractor:
             vehicle_bm = self.find_baumuster_for_id_in_source(qvv.baumuster_id, vehicles_source)
 
             vehicle_components = self.grouped_vehicle_components(vehicle_bm)
-            valid_rule_vehicle_components = dict()
+            valid_vehicle_components = dict()
             for grouping, components in vehicle_components.items():
-                valid_rule_vehicle_components[grouping] = list(filter(lambda ac: self.components_parts_analyzer.validate_code_rule(ac, qvv), components))
+                valid_vehicle_components[grouping] = list(filter(lambda ac: self.components_parts_analyzer.validate_code_rule(ac, qvv), components))
             vehicle_aggregates = vehicle_components[ComponentGroupingType.Aggregate.name]
             aggregate_components = self.grouped_aggregate_components(qvv, vehicle_aggregates)
 
             for key in aggregate_components.keys():
-
-                if key in valid_rule_vehicle_components.keys():
-                    valid_rule_vehicle_components[key].extend(aggregate_components[key])
+                if key in valid_vehicle_components.keys():
+                    valid_vehicle_components[key].extend(aggregate_components[key])
                 else:
-                    valid_rule_vehicle_components[key] = aggregate_components[key]
+                    valid_vehicle_components[key] = aggregate_components[key]
 
-            self.cache_grouped_components_for_qvv[cache_key] = valid_rule_vehicle_components
-            return valid_rule_vehicle_components
+            self.cache_grouped_components_for_qvv[cache_key] = valid_vehicle_components
+            return valid_vehicle_components
 
         else:
             return cached
@@ -114,7 +113,7 @@ class QVVComponentsExtractor:
 
     def grouped_aggregate_components(self, qvv: QVVProduction,
                                      vehicle_aggregates: List[Component]) -> Dict[str, List[Component]]:
-        valid_rule_aggregate_components = dict()
+        valid_aggregate_components = dict()
         for component in vehicle_aggregates:
             main, secondary = self.aggregates_source_for_aggregate_component(component)
 
@@ -125,17 +124,17 @@ class QVVComponentsExtractor:
                     aggregate_components = self.grouped_non_cabin_aggr_components(component, main, secondary)
 
                 for grouping, components in aggregate_components.items():
-                    valid_rule_components = list(filter(lambda c: self.components_parts_analyzer.validate_code_rule(c, qvv), components))
-                    if grouping in valid_rule_aggregate_components.keys():
-                        valid_rule_aggregate_components[grouping].extend(valid_rule_components)
+                    valid_components = list(filter(lambda c: self.components_parts_analyzer.validate_code_rule(c, qvv), components))
+                    if grouping in valid_aggregate_components.keys():
+                        valid_aggregate_components[grouping].extend(valid_components)
                     else:
-                        valid_rule_aggregate_components[grouping] = valid_rule_components
+                        valid_aggregate_components[grouping] = valid_components
 
             except Exception as error:
                 print(error)
                 continue
 
-        return valid_rule_aggregate_components
+        return valid_aggregate_components
 
     def grouped_cabin_aggr_components(self, component: Component, qvv: QVVProduction,
                                       main_aggr_src: BaumusterCollection,
