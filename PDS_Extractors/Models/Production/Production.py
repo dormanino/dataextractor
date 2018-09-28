@@ -2,6 +2,7 @@ from collections import Counter
 from typing import List, Dict
 
 from PDS_Extractors.Helpers.MonthsHelper import MonthsHelper
+from PDS_Extractors.Models.MonthYear import MonthYear
 from PDS_Extractors.Models.Production.MonthlyProduction import MonthlyProduction
 
 
@@ -43,3 +44,11 @@ class Production:
         for monthly_family_volume in monthly_family_volumes:
             volume_by_family = Counter(volume_by_family) + Counter(monthly_family_volume)
         return volume_by_family
+
+    def extract_monthly_production(self, month_year: MonthYear) -> MonthlyProduction:
+        month = month_year.month
+        year = month_year.year
+        found = next(filter(lambda mp: mp.month == month and mp.year == year, self.monthly_production_list), None)
+        if found is None:
+            raise ValueError(month_year.to_str() + " not found in Production data")
+        return found

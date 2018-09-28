@@ -2,9 +2,9 @@ from datetime import datetime
 from PDS_Extractors.Helpers.MainframeDateConverter import MainframeDateConverter
 from PDS_Extractors.Models.Component.Component import Component
 from PDS_Extractors.Models.Part.Part import Part
-from PDS_Extractors.TechDocValidation.DueDate.DueDateAnalysis import DueDateAnalysis
-from PDS_Extractors.TechDocValidation.DueDate.DueDateComment import DueDateComment
-from PDS_Extractors.TechDocValidation.DueDate.DueDateStatus import DueDateStatus
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateAnalysis import DueDateAnalysis
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateComment import DueDateComment
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateStatus import DueDateStatus
 
 
 class DueDateValidator:

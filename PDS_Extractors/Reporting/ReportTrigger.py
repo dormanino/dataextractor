@@ -1,6 +1,9 @@
 import json
 
-from PDS_Extractors.Analysis.QVVComponentsAnalyzer import QVVComponentsAnalyzer
+from PDS_Extractors.Models.Baumuster.BaumusterInfo import BaumusterInfo
+from PDS_Extractors.Reports.FamilyParts import FamilyPartsReport
+from PDS_Extractors.TechDoc.Extraction.BaumusterComponentsExtractor import BaumusterComponentsExtractor
+from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
 from PDS_Extractors.Data.DataPoint import DataPoint
 from PDS_Extractors.Models.Baumuster.BaumusterCollection import BaumusterCollection
 from PDS_Extractors.Models.DataSource.TechDocDataSource import TechDocDataSource
@@ -12,11 +15,17 @@ from PDS_Extractors.Reporting.ReportType import ReportType
 from PDS_Extractors.Reports.CostAnalysisReport import CostAnalysisReport
 from PDS_Extractors.Reports.EPUSplitReport import EPUSplitReport
 from PDS_Extractors.Reports.TechDocStatusReport import TechDocStatusReport
-from PDS_Extractors.TechDocValidation.DueDate.DueDateStatus import DueDateStatus
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateStatus import DueDateStatus
 
 
 class ReportTrigger:
     def __init__(self):
+        baumusters_dict = json.load(open(DataPoint.data_info_bm))
+        self.baumusters_list = []
+        for key, value in baumusters_dict.items():
+            if key[0] == "C":
+                self.baumusters_list.append(BaumusterInfo(key, value[0], value[1]))
+
         self.production = Production.from_dict(json.load(open(DataPoint.production)))
         self.tech_doc_data_source = TechDocDataSource(BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_vehicles))),
                                                       BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_vehicles))),
@@ -24,7 +33,8 @@ class ReportTrigger:
                                                       BaumusterCollection.from_dict(json.load(open(DataPoint.data_jdf_aggregates))),
                                                       ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_sbc, encoding="utf-8"))),
                                                       ComponentsCollection.from_dict(json.load(open(DataPoint.data_3ca_jdf, encoding="utf-8"))))
-        self.qvv_components_analyzer = QVVComponentsAnalyzer(self.tech_doc_data_source)
+        self.qvv_components_extractor = QVVComponentsExtractor(self.tech_doc_data_source)
+        self.baumuster_components_extractor = BaumusterComponentsExtractor(self.tech_doc_data_source)
 
     @staticmethod
     def write_csv(filename, report_output, path):
@@ -38,12 +48,22 @@ class ReportTrigger:
 
         # COST ANALYSIS
         if report_type in ReportGroupings.cost_analysis_reports:
-            report = CostAnalysisReport(self.production, self.qvv_components_analyzer)
+            report = CostAnalysisReport(self.production, self.qvv_components_extractor)
             return report.run(month_years, include_parts)
 
         # EPU SPLIT
         if report_type == ReportType.EPUSplit:
-            report = EPUSplitReport(self.production, self.qvv_components_analyzer)
+            report = EPUSplitReport(self.production, self.qvv_components_extractor)
+            return report.run(month_years)
+
+        # FAMILY EXCLUSIVE PARTS
+        if report_type == ReportType.FamilyExclusiveParts:
+            report = FamilyPartsReport(self.baumusters_list, self.baumuster_components_extractor)
+            return report.run(month_years)
+
+        # FAMILY PARTS
+        if report_type == ReportType.FamilyParts:
+            report = FamilyPartsReport(self.baumusters_list, self.baumuster_components_extractor)
             return report.run(month_years)
 
         # TECH DOC
@@ -57,5 +77,5 @@ class ReportTrigger:
             elif report_type in ReportGroupings.tech_doc_no_conclusion_reports:
                 status_filter = [DueDateStatus.NoConclusion]
 
-            report = TechDocStatusReport(self.production, self.qvv_components_analyzer)
+            report = TechDocStatusReport(self.production, self.qvv_components_extractor)
             return report.run(month_years, include_parts, status_filter)

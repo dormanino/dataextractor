@@ -4,6 +4,8 @@ from PDS_Extractors.Reporting.ReportType import ReportType
 class ReportGroupings:
     parts_reports = [
         ReportType.EPUSplit,
+        ReportType.FamilyParts,
+        ReportType.FamilyExclusiveParts,
         ReportType.CostAnalysisComponentsAndParts,
         ReportType.TechDocDeltaComponentsAndParts,
         ReportType.TechDocInvertedSequenceComponentsAndParts,

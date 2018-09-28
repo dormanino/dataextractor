@@ -9,7 +9,7 @@ from PDS_Extractors.Helpers.MonthsHelper import MonthsHelper
 from PDS_Extractors.Models.Baumuster.BaumusterCollection import BaumusterCollection
 from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
 from PDS_Extractors.Models.Production.Production import Production
-from PDS_Extractors.TechDocValidation.DueDate.DueDateValidator import DueDateValidator
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateValidator import DueDateValidator
 
 
 class Xablau:

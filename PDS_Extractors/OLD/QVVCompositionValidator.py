@@ -3,8 +3,8 @@ from typing import List
 from PDS_Extractors.Models.Baumuster.BaumusterData import BaumusterData
 from PDS_Extractors.Models.Component.Component import Component
 from PDS_Extractors.Models.Component.ComponentGroupingType import ComponentGroupingType
-from PDS_Extractors.TechDocValidation.DueDate.DueDateValidator import DueDateValidator
-from PDS_Extractors.TechDocValidation.CodeRuleValidator import CodeRuleValidator
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateValidator import DueDateValidator
+from PDS_Extractors.TechDoc.Validation.CodeRuleValidator import CodeRuleValidator
 
 
 class QVVCompositionValidator:

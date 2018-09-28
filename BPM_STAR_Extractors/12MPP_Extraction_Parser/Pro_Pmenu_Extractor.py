@@ -6,7 +6,7 @@ from collections import OrderedDict
 from GeneralHelpers import CheckFileExists
 from BPM_STAR_Extractors.DataPoint import DataPoint
 from BPM_STAR_Extractors.String_Parser import Parse
-
+from collections import namedtuple
 
 class MakeFile:
 
@@ -43,10 +43,6 @@ class MakeFile:
         print('fst pass 12 mpp data available')
 
         b3902v = json. load(open(DataPoint.data_variant_final_data))
-        print(type(b3902v))
-        for item in b3902v:
-            if 'QVV81503113B' in item['variant']:
-                print('yes')
         dozempp = json.load(open(DataPoint.data_12mpp_parsed))
         # TODO: dict comprehension
         dicto_tst = {}
@@ -98,6 +94,53 @@ class MakeFile:
 
         with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_bmvol_tot.json', 'w') as f:
             json.dump(dict_tst, f, sort_keys=True, ensure_ascii=False)
+
+    @staticmethod
+    def bm_qvv():
+
+        b3902v = json. load(open(DataPoint.data_variant_final_data))
+        dozempp = json.load(open(DataPoint.data_12mpp_parsed))
+        bm_dict = json.load(open(DataPoint.data_info_bm))
+
+        swap_dict = {}
+        for item in b3902v:
+            if item['baumuster'][0] == 'C' and item['validity_index'] == 'S' and item['variant_plausibility'] == '1':
+                if item['baumuster'][0:7] in bm_dict:
+                    info_bm = bm_dict[item['baumuster'][0:7]]
+                else:
+                    info_bm = ['notfound', 'notfound']
+
+                swap_dict[item['variant']] = {'description': item['aggregate_description'],
+                                              'baumuster': item['baumuster'],
+                                              'family': info_bm[1]
+                                              }
+
+        with open(DataPoint.PATH_DataFiles + "\\" + 'qvv_by_bm_by_family.csv', 'w', newline='\n') as csvfile:
+            wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+            for variant, info in swap_dict.items():
+                line = variant, info['description'], info['baumuster'], info['family']
+                wr.writerow(line)
+
+        return print('done')
+
+        # for variant in swap_dict:
+        #     for data in bm_dict:
+        #         if variant['baumuster'][0:7] == data:
+        #             for dozempp_item in dozempp:
+        #                 if item['baumuster'][0] == 'C' and item['validity_index'] == 'S' and item['variant_plausibility'] == '1':
+        #                     if item['variant'] == dozempp_item:
+        #                         swap_dict[item['variant']] = [namedtuple('description', item['aggregate_description']),
+        #                                                       namedtuple('baumuster', item['baumuster']),
+        #                                                       namedtuple('family', data[1]),
+        #                                                       namedtuple('volume', dozempp_item['total'])
+        #                                                       ]
+        #                     else:
+        #                         volume = 0
+        #                         swap_dict[item['variant']] = [namedtuple('description', item['aggregate_description']),
+        #                                                       namedtuple('baumuster', item['baumuster']),
+        #                                                       namedtuple('family', data[1]),
+        #                                                       namedtuple('volume', str(volume))
+        #                                                       ]
 
     @staticmethod
     def concatenate_infos():
@@ -192,20 +235,24 @@ class MakeFinalDict:
 # time.sleep(5)  # TODO:routine to analise if the new file is ready for next analisys
 #MakeFile.concatenate_infos()
 #
-month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
-year = 2019
+# month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
+# year = 2019
+#
+# date = datetime.date.today()
+# date_string = date.strftime('%y%m%d')
+#
+# for month in month_list:
+#     total_qvv_list = MakeFinalDict().variant_info_gen(month, year)
+#
+#     with open(DataPoint.PATH_DataFiles + "\\" + date_string + "_" + month + '_qvvs.csv', 'w', newline='\n') as csvfile:
+#         wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+#         for line in total_qvv_list:
+#             wr.writerow(line)
+#
+# total_qvv_dict = MakeFinalDict().variant_model_gen(month_list)
+# with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dictionary_qvvs_by_month.json', 'w') as f:
+#     json.dump(total_qvv_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
-date = datetime.date.today()
-date_string = date.strftime('%y%m%d')
 
-for month in month_list:
-    total_qvv_list = MakeFinalDict().variant_info_gen(month, year)
+MakeFile.bm_qvv()
 
-    with open(DataPoint.PATH_DataFiles + "\\" + date_string + "_" + month + '_qvvs.csv', 'w', newline='\n') as csvfile:
-        wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-        for line in total_qvv_list:
-            wr.writerow(line)
-
-total_qvv_dict = MakeFinalDict().variant_model_gen(month_list)
-with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dictionary_qvvs_by_month.json', 'w') as f:
-    json.dump(total_qvv_dict, f, indent=4, sort_keys=True, ensure_ascii=False)

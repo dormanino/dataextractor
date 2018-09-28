@@ -1,10 +1,9 @@
 from typing import List
 
-from PDS_Extractors.Analysis.ProductionAnalyzer import ProductionAnalyzer
-from PDS_Extractors.Analysis.QVVComponentsAnalyzer import QVVComponentsAnalyzer
+from PDS_Extractors.Reporting.ReportOutput import ReportOutput
+from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
 from PDS_Extractors.Models.MonthYear import MonthYear
 from PDS_Extractors.Models.Production.Production import Production
-from PDS_Extractors.Reporting.ReportTrigger import ReportOutput
 
 
 class TechDocStatusReport:
@@ -21,7 +20,7 @@ class TechDocStatusReport:
         "Status", "Comment"
     ]
 
-    def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsAnalyzer):
+    def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor):
         self.production = production
         self.qvv_components_analyzer = qvv_components_analyzer
 
@@ -41,7 +40,7 @@ class TechDocStatusReport:
 
     def run_month(self, month_year: MonthYear, include_parts: bool, status_filter):
         data_rows = []
-        monthly_production = ProductionAnalyzer.extract_monthly_production(month_year, self.production)
+        monthly_production = self.production.extract_monthly_production(month_year)
         for qvv in monthly_production.qvv_production_list:
             analyzed_qvv = self.qvv_components_analyzer.analyzed_qvv_components(qvv, month_year.to_date(), include_parts)
             for grouping, analyzed_components in analyzed_qvv.components.items():

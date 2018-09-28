@@ -1,4 +1,4 @@
-from PDS_Extractors.TechDocValidation.DueDate.DueDateStatus import DueDateStatus
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateStatus import DueDateStatus
 
 
 class DueDateAnalysis:

@@ -11,7 +11,7 @@ from PDS_Extractors.Models.Component.ComponentGroupingType import ComponentGroup
 from PDS_Extractors.Models.Plant import Plant
 from PDS_Extractors.Models.Production.Production import Production
 from PDS_Extractors.OLD.QVVCompositionValidator import QVVCompositionValidator
-from PDS_Extractors.TechDocValidation.DueDate.DueDateValidator import DueDateValidator
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateValidator import DueDateValidator
 
 production = Production.from_dict(json.load(open(DataPoint.production)))
 vehicles_sbc = BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_vehicles)))

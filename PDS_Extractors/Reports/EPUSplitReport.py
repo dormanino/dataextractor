@@ -1,10 +1,9 @@
 from typing import List
 
-from PDS_Extractors.Analysis.ProductionAnalyzer import ProductionAnalyzer
-from PDS_Extractors.Analysis.QVVComponentsAnalyzer import QVVComponentsAnalyzer
+from PDS_Extractors.Reporting.ReportOutput import ReportOutput
+from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
 from PDS_Extractors.Models.MonthYear import MonthYear
 from PDS_Extractors.Models.Production.Production import Production
-from PDS_Extractors.Reporting.ReportTrigger import ReportOutput
 
 
 class PartVolumeData:
@@ -20,20 +19,21 @@ class EPUSplitReport:
         "Component Number", "KG", "ANZ", "Grouping"  # Component
     ]
 
-    def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsAnalyzer):
+    def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor):
         self.production = production
         self.qvv_components_analyzer = qvv_components_analyzer
 
     def run(self, month_years: List[MonthYear]) -> ReportOutput:
         data_rows = dict()
         for month_year in month_years:
-            monthly_production = ProductionAnalyzer.extract_monthly_production(month_year, self.production)
+            monthly_production = self.production.extract_monthly_production(month_year)
             for qvv in monthly_production.qvv_production_list:
                 analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), True)
                 for grouping, analyzed_components in analyzed_qvv.components.items():
                     for analyzed_component in analyzed_components:
                         for analyzed_part in analyzed_component.parts:
-
+                            if analyzed_part.part.part_number == 'A 000 003 85 99':
+                                x = 1
                             # GROUP LINES BY PART NUMBER, BAUMUSTER, SAA
                             line_key = (analyzed_part.part.part_number
                                         + qvv.baumuster_id
@@ -63,7 +63,7 @@ class EPUSplitReport:
                             if month_year not in part_volume_data.month_year_vol.keys():
                                 part_volume_data.month_year_vol[month_year] = 0
 
-                            part_volume_data.month_year_vol[month_year] = part_volume_data.month_year_vol[month_year] + qvv.volume
+                            part_volume_data.month_year_vol[month_year] = qvv.volume  # part_volume_data.month_year_vol[month_year] +
 
         final_headers = self.headers.copy()
         month_years_str = list(map(lambda my: my.to_str(), month_years))
