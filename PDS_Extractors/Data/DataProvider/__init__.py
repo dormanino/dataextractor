@@ -8,10 +8,13 @@ class DataProvider:
 
     @staticmethod
     def agrmz(plant, data_type_source, source):
+        bm_info = json.load(open(DataPoint.data_info_bm))
         complete_line = ''
         data_source = []
         curent_reg = ''
         bm = ''
+        bu = ''
+        family = ''
         data_type = ''
         kg = ''
         none_flag = False
@@ -23,7 +26,7 @@ class DataProvider:
                 register_char = line[1]
                 if register_char is '_' and line_counter is not 0:  # start of component
                     if line != curent_reg and not none_flag:
-                        data_source.append((bm, data_type, kg, complete_line))
+                        data_source.append((bm, bu, family, data_type, kg, complete_line))
                         complete_line = ''
                     else:
                         bm = line_info_dict['bm']
@@ -31,15 +34,28 @@ class DataProvider:
                         kg = line_info_dict['kg'].strip()
                         none_flag = False
                         complete_line = ''
+                        if bm in bm_info:
+                            bu = bm_info[bm][0]
+                            family = bm_info[bm][1]
+                        else:
+                            bu = None
+                            family = None
+
                     curent_reg = line
                 complete_line += line
                 bm = line_info_dict['bm']
                 data_type = line_info_dict['data_type']
                 kg = line_info_dict['kg'].strip()
+                if bm in bm_info:
+                    bu = bm_info[bm][0]
+                    family = bm_info[bm][1]
+                else:
+                    bu = None
+                    family = None
             else:
-                data_source.append((bm, data_type, kg, complete_line))
+                data_source.append((bm, bu, family, data_type, kg, complete_line))
                 bm = line_info_dict['bm']
-                data_source.append((bm, None, None, None))
+                data_source.append((bm, None, None, None, None, None))
                 none_flag = True
                 continue
 
@@ -89,35 +105,38 @@ class DataProvider:
 
         main_dict = dict(plant=plant, source=data_type_source, data=[])
         for data in data_source:
-            print(data)
+            # print(data)
 
             # Find/Create Baumuster node
-            info_bm = data[0]
-            bm_data = next(filter(lambda i: i['bm'] == info_bm, main_dict['data']), None)
-            if bm_data is None:
-                bm_data = dict(bm='', data=[])
-                bm_data['bm'] = info_bm
-                main_dict['data'].append(bm_data)
 
-            info_data_input = data[1]
+            bm_data = next(filter(lambda i: i["bm"] == data[0], main_dict["data"]), None)
+            if bm_data is None:
+                bm_data = dict(bm="", bu="", family="", data=[])
+                bm_data["bm"] = data[0]
+                bm_data["bu"] = data[1]
+                bm_data["family"] = data[2]
+                main_dict["data"].append(bm_data)
+
+            # if the data_type field is None
+            info_data_input = data[3]
             if info_data_input is not None:
 
                 # Find/Create Data Input node
-                data_input = next(filter(lambda i: i['type'] == info_data_input, bm_data["data"]), None)
+                data_input = next(filter(lambda i: i["type"] == info_data_input, bm_data["data"]), None)
                 if data_input is None:
-                    data_input = dict(type='', data=[])
-                    data_input['type'] = info_data_input
-                    bm_data['data'].append(data_input)
+                    data_input = dict(type="", data=[])
+                    data_input["type"] = info_data_input
+                    bm_data["data"].append(data_input)
 
                 # Find/Create Grouping Input node
-                info_grouping_input = data[2]
-                grouping_input = next(filter(lambda i: i['kg'] == info_grouping_input, data_input["data"]), None)
+                info_grouping_input = data[4]
+                grouping_input = next(filter(lambda i: i["kg"] == info_grouping_input, data_input["data"]), None)
                 if grouping_input is None:
-                    grouping_input = dict(kg='', regs=[])
-                    grouping_input['kg'] = info_grouping_input
-                    data_input['data'].append(grouping_input)
+                    grouping_input = dict(kg="", regs=[])
+                    grouping_input["kg"] = info_grouping_input
+                    data_input["data"].append(grouping_input)
 
-                full_line = data[3]
+                full_line = data[5]
                 amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the component (each line has 80 char)
                 register = dict()
                 marker = False
@@ -144,6 +163,8 @@ class DataProvider:
                         next_substring = full_line[next_start_char:next_end_char + 1]
 
                     if '_' in substring[1]:  # if the line is the component marker
+                        # print(substring)
+
                         for q, r in zip(slices[1].keys(), slices[1].values()):
                             data = substring[r[0]:r[1]].strip()
                             if data == '':
@@ -249,7 +270,6 @@ class DataProvider:
                                 next_line_baubarkeitsbed += 1
                             else:
                                 eof_baubarkeitsbed = True
-
                                 restriction_baubarkeitsbed = restriction_baubarkeitsbed.replace(' ', '')
 
                         register.update({'bg_baubarkeitsbed': bg_baubarkeitsbed})
@@ -580,21 +600,22 @@ class DataProvider:
 
 
 # agrmz code
-# plants = ['sbc', 'jdf']
-# data_types = ['vehicle', 'aggregate']
-# for plant in plants:
-#     list_to_check = []
-#     for data_type in data_types:
-#         if plant == 'sbc' and data_type == 'vehicle':
-#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
-#         elif plant == 'jdf' and data_type == 'vehicle':
-#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
-#         elif plant == 'sbc' and data_type == 'aggregate':
-#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
-#         elif plant == 'jdf' and data_type == 'aggregate':
-#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
-#         DataProvider.agrmz(plant, data_type, list_to_check)
+plants = ['sbc', 'jdf']
+data_types = ['vehicle', 'aggregate']
+for plant in plants:
+    list_to_check = []
+    for data_type in data_types:
+        if plant == 'sbc' and data_type == 'vehicle':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
+        elif plant == 'jdf' and data_type == 'vehicle':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
+        elif plant == 'sbc' and data_type == 'aggregate':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
+        elif plant == 'jdf' and data_type == 'aggregate':
+            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
+        DataProvider.agrmz(plant, data_type, list_to_check)
+        print("concluded " + plant + "/" + data_type)
 
 
-DataProvider.treeca('sbc', DataPoint.data_3ca_raw_sbc)
-DataProvider.treeca('jdf', DataPoint.data_3ca_raw_jdf)
+# DataProvider.treeca('sbc', DataPoint.data_3ca_raw_sbc)
+# DataProvider.treeca('jdf', DataPoint.data_3ca_raw_jdf)

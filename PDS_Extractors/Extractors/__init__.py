@@ -4,7 +4,6 @@ import json
 import datetime
 import time
 from collections import OrderedDict
-import sys
 
 
 class PdsNfc:
@@ -327,7 +326,7 @@ class PdsNfc:
         return part_list
 
 
-plants = ['jdf']  # 'sbc',
+plants = ['sbc']  # 'jdf',
 data_type = ['vehicle', 'aggregate']
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
@@ -353,22 +352,22 @@ date_string = date.strftime('%y%m%d')
 #         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_kgs.json', 'w+') as f:
 #             json.dump(data_kgs, f, indent=4, sort_keys=True, ensure_ascii=False)
 #     pds_mainframe_connection.connection.pds_logout()
-#
-# for plant in plants:
-#     pds_mainframe_connection = PdsNfc(plant)
-#     for data in data_type:
-#         data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
-#
-#         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
-#             json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
-#     pds_mainframe_connection.connection.pds_logout()
-# PdsNfc().mainframe_connection.send_string('exit', 2, 15)
 
 for plant in plants:
     pds_mainframe_connection = PdsNfc(plant)
-    data_parts = pds_mainframe_connection.oper_pds_3ca()
-    with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_3CA.json', 'w+') as f:
-        json.dump(data_parts, f, indent=4, sort_keys=False, ensure_ascii=False)
+    for data in data_type:
+        data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
+
+        with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
+            json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
     pds_mainframe_connection.connection.pds_logout()
 PdsNfc().mainframe_connection.send_string('exit', 2, 15)
-sys.exit()
+
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     data_parts = pds_mainframe_connection.oper_pds_3ca()
+#     with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_3CA.json', 'w+') as f:
+#         json.dump(data_parts, f, indent=4, sort_keys=False, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+# PdsNfc().mainframe_connection.send_string('exit', 2, 15)
+# sys.exit()

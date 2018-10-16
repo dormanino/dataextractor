@@ -250,8 +250,8 @@ class ProPresum:
         return dicto, partials_main_operation_dict #, main_operation_dict
 
 
-# data_for_12mpp_volume_data_extraction = '0118'
-data_for_12mpp_volume_data_extraction = '0119'
+data_for_12mpp_volume_data_extraction = '0118'
+# data_for_12mpp_volume_data_extraction = '0119'
 d = ProPresum().pro_presum_main(data_for_12mpp_volume_data_extraction)
 
 date = datetime.date.today()
