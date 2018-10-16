@@ -6,14 +6,17 @@ from B3902V.DataPoint import DataPoint
 
 def parse_b3902v_raw_data():
 
-    slices = [(0, 3), (3, 24), (24, 45), (45, 53), (53, 61), (61, 62), (62, 64), (64, 83),
-              (83, 85), (85, 115), (115, 145), (145, 146)]
+    slices = [
+        (0, 3), (3, 24), (24, 45), (45, 53), (53, 61), (61, 62),
+        (62, 64), (64, 83), (83, 85), (85, 115), (115, 145), (145, 146)
+    ]
 
-    data_list = (sorted(
-        [tuple
-         (line
-          [slice(start, end)].strip() for start, end in [part for part in slices]
-          ) for line in open(DataPoint.data_b3902v, 'r')], key=lambda x: x[1]))
+    data_list = (
+        sorted(
+            [tuple
+             (line
+              [slice(start, end)].strip() for start, end in [part for part in slices]
+              ) for line in open(DataPoint.data_b3902v, 'r')], key=lambda x: x[1]))
 
     slice_start_end = None
     data_concluded = False
