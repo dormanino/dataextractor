@@ -9,6 +9,9 @@ class MBBrasMainframeTN3270Connection:
         self.emulator.connect('cpua')
         self.emulator.wait_for_field()
         if self.emulator.is_connected():
+            while not self.emulator.string_found(11, 50, 'Usuario :'):
+                self.emulator.wait_for_field()
+
             if self.emulator.string_found(11, 50, 'Usuario :'):
                 self.emulator.wait_for_field()
                 print('Session loaded fine')
@@ -23,7 +26,7 @@ class MBBrasMainframeTN3270Connection:
 class LogInMBBrasTN3270(MBBrasMainframeTN3270Connection):
 
     def __init__(self):
-        super().__init__()
+        MBBrasMainframeTN3270Connection.__init__(self)
         user = input('Please insert your F mainframe user ID: ')
         password = input('Please, input your user ' + user + ' password: ')
         if self.emulator.is_connected():

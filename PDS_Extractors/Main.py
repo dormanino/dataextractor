@@ -7,13 +7,13 @@ path = DataPoint.PATH_DataFiles
 
 year = 2019
 # months = [1]
-months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+months = [7, 8, 9, 10, 11, 12]  # 1, 2, 3, 4, 5, 6
 month_years = list(map(lambda m: MonthYear(m, year), months))
 
 reports = {
     # "2019_1_family_parts": ReportType.FamilyParts,
-    # "2019_1_cost_analysis_components": ReportType.CostAnalysisComponents,
-    "NEW_EPU_Split_test": ReportType.EPUSplit
+    "2019_1_cost_analysis_components": ReportType.CostAnalysisComponents
+    # "NEW_EPU_Split_test": ReportType.EPUSplit
 }
 
 trigger = ReportTrigger()

@@ -166,7 +166,7 @@ class DataProvider:
                         # print(substring)
 
                         for q, r in zip(slices[1].keys(), slices[1].values()):
-                            data = substring[r[0]:r[1]].strip()
+                            data = substring[r[0]:r[1]].strip().replace(",", ";")
                             if data == '':
                                 data = None
                             register.update({q: data})
@@ -174,7 +174,7 @@ class DataProvider:
 
                     elif not prior_substring.strip() == '' and '_' in prior_substring[1]:  # defines if you are in between the component header and
                         for q_1, r_1 in zip(slices[2].keys(), slices[2].values()):
-                            data = substring[r_1[0]:r_1[1]].strip()
+                            data = substring[r_1[0]:r_1[1]].strip().replace(",", ";")
                             if data == '':
                                 data = None
                             register.update({q_1: data})
@@ -190,7 +190,7 @@ class DataProvider:
 
                     elif marker:
                         for q, r in zip(slices[3].keys(), slices[3].values()):
-                            data = substring[r[0]:r[1]].strip()
+                            data = substring[r[0]:r[1]].strip().replace(",", ";")
                             if data == '':
                                 data = None
                             register.update({q: data})
@@ -203,12 +203,12 @@ class DataProvider:
                         dicto_data_1_codebedingungen = dicto_codebedingungen['code']
                         next_line_codebedingungen = line
 
-                        if substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]].strip() == '':
+                        if substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]].strip().replace(",", ";") == '':
                             bg_codebedingungen = None
                         else:
                             bg_codebedingungen = substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]]
 
-                        restriction_codebedingungen = substring[dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[1]].strip()
+                        restriction_codebedingungen = substring[dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[1]].strip().replace(",", ";")
 
                         if ';' not in restriction_codebedingungen:
                             eof_codebedingungen = False
@@ -220,7 +220,7 @@ class DataProvider:
                             next_end_char_codebedingungen = next_line_codebedingungen * 80
                             next_start_char_codebedingungen = next_end_char_codebedingungen - 80
                             next_substring_codebedingungen = full_line[next_start_char_codebedingungen:next_end_char_codebedingungen + 1]
-                            next_substring_anal_codebedingungen = next_substring_codebedingungen[dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[1]].strip()
+                            next_substring_anal_codebedingungen = next_substring_codebedingungen[dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[1]].strip().replace(",", ";")
                             restriction_codebedingungen = restriction_codebedingungen + next_substring_anal_codebedingungen
                             analysed_lines.append(next_line_codebedingungen)
                             if ';' not in next_substring_anal_codebedingungen:
@@ -243,12 +243,12 @@ class DataProvider:
                         data_baubarkeitsbed = substring[dicto_data_1_baubarkeitsbed[0]:dicto_data_1_baubarkeitsbed[1]]  # codes data
                         next_line_baubarkeitsbed = line
 
-                        if substring[dicto_data_0_baubarkeitsbed[0]: dicto_data_0_baubarkeitsbed[1]].strip() == '':
+                        if substring[dicto_data_0_baubarkeitsbed[0]: dicto_data_0_baubarkeitsbed[1]].strip().replace(",", ";") == '':
                             bg_baubarkeitsbed = None
                         else:
                             bg_baubarkeitsbed = substring[dicto_data_0_baubarkeitsbed[0]: dicto_data_0_baubarkeitsbed[1]]
 
-                        restriction_baubarkeitsbed = substring[dicto_data_1_baubarkeitsbed[0]: dicto_data_1_baubarkeitsbed[1]].strip()
+                        restriction_baubarkeitsbed = substring[dicto_data_1_baubarkeitsbed[0]: dicto_data_1_baubarkeitsbed[1]].strip().replace(",", ";")
 
                         if ';' not in restriction_baubarkeitsbed:
                             eof_baubarkeitsbed = False
@@ -282,7 +282,7 @@ class DataProvider:
                         data_zusteuerbed = substring[dicto_data_zusteuerbed[0]:dicto_data_zusteuerbed[1]]  # codes data
                         next_line_zusteuerbed = line
 
-                        restriction_zusteuerbed = substring[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip()
+                        restriction_zusteuerbed = substring[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip().replace(",", ";")
 
                         if ';' not in restriction_zusteuerbed:
                             eof_zusteuerbed = False
@@ -295,7 +295,7 @@ class DataProvider:
                             next_end_char_zusteuerbed = next_line_zusteuerbed * 80
                             next_start_char_zusteuerbed = next_end_char_zusteuerbed - 80
                             next_substring_zusteuerbed = full_line[next_start_char_zusteuerbed:next_end_char_zusteuerbed + 1]
-                            next_substring_anal_zusteuerbed = next_substring_zusteuerbed[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip()
+                            next_substring_anal_zusteuerbed = next_substring_zusteuerbed[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip().replace(",", ";")
                             restriction_zusteuerbed = restriction_zusteuerbed + next_substring_anal_zusteuerbed
                             analysed_lines.append(next_line_zusteuerbed)
 
@@ -313,8 +313,8 @@ class DataProvider:
                         dicto_verw = slices[7]
                         dicto_0_data_verw = dicto_verw['verw.-st']  # tuple
                         dicto_1_data_verw = dicto_verw['verw_info']  # tuple
-                        data_0_verw = substring[dicto_0_data_verw[0]:dicto_0_data_verw[1]].strip()
-                        data_1_verw = substring[dicto_1_data_verw[0]:dicto_1_data_verw[1]].strip()
+                        data_0_verw = substring[dicto_0_data_verw[0]:dicto_0_data_verw[1]].strip().replace(",", ";")
+                        data_1_verw = substring[dicto_1_data_verw[0]:dicto_1_data_verw[1]].strip().replace(",", ";")
                         next_line_VERW = line
                         if line == amount_of_lines:
                             if data_0_verw == '':
@@ -330,7 +330,7 @@ class DataProvider:
                         analysed_lines.append(line)
 
                     elif line not in analysed_lines:
-                        register.update({'extra_info': substring.strip()})
+                        register.update({'extra_info': substring.strip().replace(",", ";")})
 
                 grouping_input['regs'].append(register)
 

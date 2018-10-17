@@ -8,6 +8,7 @@ from BPM_STAR_Extractors.DataPoint import DataPoint
 from BPM_STAR_Extractors.String_Parser import Parse
 from collections import namedtuple
 
+
 class MakeFile:
 
     @staticmethod
@@ -233,7 +234,7 @@ class MakeFinalDict:
 # time.sleep(5)  # TODO:routine to analise if the new file is ready for next analisys
 # MakeFile.bm_qvv_vol()
 # time.sleep(5)  # TODO:routine to analise if the new file is ready for next analisys
-#MakeFile.concatenate_infos()
+# MakeFile.concatenate_infos()
 #
 # month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
 # year = 2019
@@ -253,6 +254,4 @@ class MakeFinalDict:
 # with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dictionary_qvvs_by_month.json', 'w') as f:
 #     json.dump(total_qvv_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
-
 MakeFile.bm_qvv()
-

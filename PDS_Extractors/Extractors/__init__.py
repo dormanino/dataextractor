@@ -19,6 +19,99 @@ class PdsNfc:
             self.app_plant = '1542'
         self.mainframe_connection = self.connection.pds_connection(self.app_name, self.app_plant)
 
+    def oper_pds_56(self, logout=False):
+        self.mainframe_connection.send_string('56', 1, 30)
+        self.mainframe_connection.move_to(24, 80)
+        self.mainframe_connection.send_enter()
+        self.mainframe_connection.wait_for_field()
+
+        self.mainframe_connection.move_to(2, 46)
+        self.mainframe_connection.send_eraseEOF()
+        self.mainframe_connection.send_string('A0004460557', 2, 46)
+
+        self.mainframe_connection.move_to(24, 80)
+        self.mainframe_connection.send_enter()
+        self.mainframe_connection.wait_for_field()
+
+        oper_eof = True
+        pd_56_data_list = []
+        while oper_eof:
+            pd56_data = OrderedDict()
+            pd56_data["sachnummer"] = self.mainframe_connection.string_get_EBCDIC(5, 1, 80).strip().replace(",", ";")
+            pd56_data["benennung"] = self.mainframe_connection.string_get_EBCDIC(7, 1, 51).strip().replace(",", ";")
+            pd56_data["skz"] = self.mainframe_connection.string_get_EBCDIC(7, 52, 5).strip().replace(",", ";")
+            pd56_data["st"] = self.mainframe_connection.string_get_EBCDIC(7, 57, 2).strip().replace(",", ";")
+            pd56_data["ww"] = self.mainframe_connection.string_get_EBCDIC(7, 60, 2).strip().replace(",", ";")
+            pd56_data["d"] = self.mainframe_connection.string_get_EBCDIC(7, 63, 1).strip().replace(",", ";")
+            pd56_data["f"] = self.mainframe_connection.string_get_EBCDIC(7, 65, 1).strip().replace(",", ";")
+            pd56_data["b"] = self.mainframe_connection.string_get_EBCDIC(7, 67, 1).strip().replace(",", ";")
+            pd56_data["ehm"] = self.mainframe_connection.string_get_EBCDIC(7, 69, 2).strip().replace(",", ";")
+            pd56_data["ae-st"] = self.mainframe_connection.string_get_EBCDIC(7, 73, 3).strip().replace(",", ";")
+            pd56_data["brm"] = self.mainframe_connection.string_get_EBCDIC(8, 7, 45).strip().replace(",", ";")
+            pd56_data["dbwa"] = self.mainframe_connection.string_get_EBCDIC(8, 62, 6).strip().replace(",", ";")
+            pd56_data["get"] = self.mainframe_connection.string_get_EBCDIC(8, 73, 1).strip().replace(",", ";")
+            pd56_data["mr"] = self.mainframe_connection.string_get_EBCDIC(8, 79, 2).strip().replace(",", ";")
+            pd56_data["kf"] = self.mainframe_connection.string_get_EBCDIC(9, 6, 1).strip().replace(",", ";")
+            pd56_data["vert"] = self.mainframe_connection.string_get_EBCDIC(9, 14, 45).strip().replace(",", ";")
+            pd56_data["w-vert"] = self.mainframe_connection.string_get_EBCDIC(9, 68, 13).strip().replace(",", ";")
+            pd56_data["bm"] = self.mainframe_connection.string_get_EBCDIC(10, 7, 51).strip().replace(",", ";")
+            pd56_data["kont"] = self.mainframe_connection.string_get_EBCDIC(10, 74, 4).strip().replace(",", ";")
+            pd56_data["znr"] = self.mainframe_connection.string_get_EBCDIC(11, 7, 3).strip().replace(",", ";")
+            pd56_data["zgs"] = self.mainframe_connection.string_get_EBCDIC(11, 16, 3).strip().replace(",", ";")
+            pd56_data["b1"] = self.mainframe_connection.string_get_EBCDIC(11, 24, 57).strip().replace(",", ";")
+            pd56_data["cad"] = self.mainframe_connection.string_get_EBCDIC(12, 16, 2).strip().replace(",", ";")
+            pd56_data["b2"] = self.mainframe_connection.string_get_EBCDIC(12, 24, 57).strip().replace(",", ";")
+            if "PF13=B1,B2/NEUE ATTRIBUTE" in self.mainframe_connection.string_get_EBCDIC(24, 1, 80):
+                pass  # TODO: include routine to new further data into b1 and b2 field
+            pd56_data["zdat"] = self.mainframe_connection.string_get_EBCDIC(13, 10, 13).strip().replace(",", ";")
+            pd56_data["mt"] = self.mainframe_connection.string_get_EBCDIC(13, 29, 1).strip().replace(",", ";")
+            pd56_data["dbn"] = self.mainframe_connection.string_get_EBCDIC(13, 36, 5).strip().replace(",", ";")
+            pd56_data["dbo"] = self.mainframe_connection.string_get_EBCDIC(13, 47, 5).strip().replace(",", ";")
+            pd56_data["dba"] = self.mainframe_connection.string_get_EBCDIC(13, 60, 5).strip().replace(",", ";")
+            pd56_data["ds"] = self.mainframe_connection.string_get_EBCDIC(13, 72, 1).strip().replace(",", ";")
+            pd56_data["dz"] = self.mainframe_connection.string_get_EBCDIC(13, 78, 1).strip().replace(",", ";")
+            pd56_data["wqua"] = self.mainframe_connection.string_get_EBCDIC(14, 8, 38).strip().replace(",", ";")
+            pd56_data["dbwe"] = self.mainframe_connection.string_get_EBCDIC(14, 60, 6).strip().replace(",", ";")
+            pd56_data["dbh"] = self.mainframe_connection.string_get_EBCDIC(14, 72, 6).strip().replace(",", ";")
+            pd56_data["bza"] = self.mainframe_connection.string_get_EBCDIC(15, 8, 7).strip().replace(",", ";")
+            pd56_data["da"] = self.mainframe_connection.string_get_EBCDIC(16, 21, 2).strip().replace(",", ";")
+            pd56_data["di"] = self.mainframe_connection.string_get_EBCDIC(16, 33, 3).strip().replace(",", ";")
+            pd56_data["mv-vw"] = self.mainframe_connection.string_get_EBCDIC(16,47,3).strip().replace(",", ";")
+            pd56_data["pv"] = self.mainframe_connection.string_get_EBCDIC(16,60,3).strip().replace(",", ";")
+            pd56_data["dv"] = self.mainframe_connection.string_get_EBCDIC(16,72,3).strip().replace(",", ";")
+            pd56_data["lm"] = self.mainframe_connection.string_get_EBCDIC(16,80,1).strip().replace(",", ";")
+            pd56_data["abs"] = self.mainframe_connection.string_get_EBCDIC(17,8,4).strip().replace(",", ";")
+            pd56_data["eba"] = self.mainframe_connection.string_get_EBCDIC(17,21,5).strip().replace(",", ";")
+            pd56_data["lba"] = self.mainframe_connection.string_get_EBCDIC(17,33,5).strip().replace(",", ";")
+            pd56_data["moa/bg"] = self.mainframe_connection.string_get_EBCDIC(17,47,7).strip().replace(",", ";")
+            pd56_data["ml/ae"] = self.mainframe_connection.string_get_EBCDIC(17,72,8).strip().replace(",", ";")
+            if "PF15=F23/GEWICHTE" in self.mainframe_connection.string_get_EBCDIC(24,1,80):
+                pass  #  TODO: implement routine to copy multi_screen data
+            pd56_data["em-ab"] = self.mainframe_connection.string_get_EBCDIC(19,10,6).strip().replace(",", ";")
+            pd56_data["t-a"] = self.mainframe_connection.string_get_EBCDIC(19,24,7).strip().replace(",", ";")
+            pd56_data["fz-ab"] = self.mainframe_connection.string_get_EBCDIC(19,32,7).strip().replace(",", ";")
+            pd56_data["em-bis"] = self.mainframe_connection.string_get_EBCDIC(19,50,6).strip().replace(",", ";")
+            pd56_data["t-b"] = self.mainframe_connection.string_get_EBCDIC(19,64,7).strip().replace(",", ";")
+            pd56_data["fz-bis"] = self.mainframe_connection.string_get_EBCDIC(19,72,7).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            # pd56_data[""] = self.mainframe_connection.string_get_EBCDIC(line, , ).strip().replace(",", ";")
+            pd_56_data_list.append(pd56_data)
+        if logout:
+            self.connection.pds_logout()
+        return pd_56_data_list
+
     def oper_pds_02(self, logout=False):
         mainframe_data_list = []
         oper_eof = True
@@ -326,10 +419,10 @@ class PdsNfc:
         return part_list
 
 
-plants = ['sbc']  # 'jdf',
-data_type = ['vehicle', 'aggregate']
-date = datetime.date.today()
-date_string = date.strftime('%y%m%d')
+# plants = ['sbc']  # 'jdf',
+# data_type = ['vehicle', 'aggregate']
+# date = datetime.date.today()
+# date_string = date.strftime('%y%m%d')
 
 # for plant in plants:
 #     pds_mainframe_connection = PdsNfc(plant)
@@ -353,15 +446,15 @@ date_string = date.strftime('%y%m%d')
 #             json.dump(data_kgs, f, indent=4, sort_keys=True, ensure_ascii=False)
 #     pds_mainframe_connection.connection.pds_logout()
 
-for plant in plants:
-    pds_mainframe_connection = PdsNfc(plant)
-    for data in data_type:
-        data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
-
-        with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
-            json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
-    pds_mainframe_connection.connection.pds_logout()
-PdsNfc().mainframe_connection.send_string('exit', 2, 15)
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     for data in data_type:
+#         data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
+#
+#         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
+#             json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+# PdsNfc().mainframe_connection.send_string('exit', 2, 15)
 
 # for plant in plants:
 #     pds_mainframe_connection = PdsNfc(plant)
@@ -371,3 +464,7 @@ PdsNfc().mainframe_connection.send_string('exit', 2, 15)
 #     pds_mainframe_connection.connection.pds_logout()
 # PdsNfc().mainframe_connection.send_string('exit', 2, 15)
 # sys.exit()
+
+plant = "sbc"
+pds_mainframe_connection = PdsNfc(plant)
+data_56 = pds_mainframe_connection.oper_pds_56()
