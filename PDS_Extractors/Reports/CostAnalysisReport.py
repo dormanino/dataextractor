@@ -9,10 +9,10 @@ from PDS_Extractors.Models.Production.Production import Production
 class CostAnalysisReport:
     fixed_headers = [
         "Month/Year",
-        "Business Unit", "Family", "Baumuster", "QVV",  "Volume",
+        "Baumuster", "BU", "Family", "QVV", "Volume",
         "Component ID", "KG", "ANZ",
         "Pem AB", "Termin AB", "Pem BIS", "Termin BIS",
-        "Grouping", "Component Description", "Codebedingungen",
+        "Grouping", "Component BU", "Component Family", "Component Description", "Codebedingungen",
         "Status", "Comment"
     ]
     part_headers = [
@@ -47,9 +47,9 @@ class CostAnalysisReport:
                 for analyzed_component in analyzed_components:
                     data_row = [
                         month_year.to_str(),
+                        qvv.baumuster_id,
                         qvv.business_unit,
                         qvv.family,
-                        qvv.baumuster_id,
                         qvv.qvv_id,
                         qvv.volume,
                         analyzed_component.component.component_id,
@@ -60,6 +60,8 @@ class CostAnalysisReport:
                         analyzed_component.component.em_bis,
                         analyzed_component.component.t_b,
                         grouping,
+                        analyzed_component.component.business_unit,
+                        analyzed_component.component.family,
                         analyzed_component.component.component_description,
                         analyzed_component.component.validation_rule,
                         analyzed_component.due_date_analysis.status.name,

@@ -173,7 +173,7 @@ class ComponentsExtractor:
         second_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
 
         groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG, ComponentGroupingType.General]
-        prefix = "Aggr"
+        prefix = ComponentGroupingType.Aggregate.name
 
         # SPECIAL RULE FOR D979811 ACELLO CABIN
         if baumuster_id == "D979811":
@@ -202,7 +202,7 @@ class ComponentsExtractor:
             if not master_components_list:
                 raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
 
-            mashed_bm_data = BaumusterData(baumuster_id, master_components_list)
+            mashed_bm_data = BaumusterData(baumuster_id, component.business_unit, component.family, master_components_list)
             return self.extract_components_by_grouping(mashed_bm_data, groupings, prefix, baumuster_id)
 
     def grouped_non_cabin_aggr_components(self, component: Component, main_aggr_src: BaumusterCollection,

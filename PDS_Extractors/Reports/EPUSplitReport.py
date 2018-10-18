@@ -15,8 +15,8 @@ class PartVolumeData:
 class EPUSplitReport:
     headers = [
         "Part Number", "Quantity", "BZA", "DA", "W", "EHM",  # Part
-        "Baumuster", "Business Unit", "Family", "QVV",  # QVV Production
-        "Component Number", "KG", "ANZ", "Grouping"  # Component
+        "Baumuster", "BU", "Family", "QVV",  # QVV Production
+        "Component Number", "KG", "ANZ", "Grouping", "Component BU", "Component Family",  # Component
     ]
 
     def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor):
@@ -32,8 +32,6 @@ class EPUSplitReport:
                 for grouping, analyzed_components in analyzed_qvv.components.items():
                     for analyzed_component in analyzed_components:
                         for analyzed_part in analyzed_component.parts:
-                            if analyzed_part.part.part_number == 'A 000 003 85 99':
-                                x = 1
                             # GROUP LINES BY PART NUMBER, BAUMUSTER, SAA
                             line_key = (analyzed_part.part.part_number
                                         + qvv.baumuster_id
@@ -48,14 +46,16 @@ class EPUSplitReport:
                                     analyzed_part.part.da,
                                     analyzed_part.part.w,
                                     analyzed_part.part.ehm,
+                                    qvv.baumuster_id,
                                     qvv.business_unit,
                                     qvv.family,
-                                    qvv.baumuster_id,
                                     qvv.qvv_id,
                                     analyzed_component.component.component_id,
                                     analyzed_component.component.kg,
                                     analyzed_component.component.anz,
-                                    grouping
+                                    grouping,
+                                    analyzed_component.component.business_unit,
+                                    analyzed_component.component.family
                                 ]
                                 data_rows[line_key] = PartVolumeData(line_data)
 

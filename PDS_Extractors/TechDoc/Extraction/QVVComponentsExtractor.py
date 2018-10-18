@@ -54,7 +54,7 @@ class QVVComponentsExtractor:
             for grouping, components in vehicle_components.items():
                 qvv_components[grouping] = list(filter(lambda ac: self.tech_doc_validator.validate_code_rule(ac, qvv), components))
 
-            vehicle_aggregates = vehicle_components[ComponentGroupingType.Aggregate.name]
+            vehicle_aggregates = qvv_components[ComponentGroupingType.Aggregate.name]
             for grouping, components in self.components_extractor.grouped_aggregates_for_vehicle_components(vehicle_aggregates).items():
                 # SPECIAL RULE FOR D979811 ACELLO CABIN
                 if "D979811" in grouping and Plant.SBC.name in grouping:

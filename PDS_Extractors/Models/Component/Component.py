@@ -2,13 +2,15 @@ from PDS_Extractors.Models.Component.ComponentGroupingType import ComponentGroup
 
 
 class Component:
-    def __init__(self, component_id: str, component_description: str, baumuster_id: str,
+    def __init__(self, component_id: str, component_description: str, baumuster_id: str, business_unit: str, family: str,
                  bg: str, grouping_type: ComponentGroupingType, kg: str, validation_rule: str,
                  em_ab, em_bis, t_a, t_b, anz, asa, asb, pos):
         self.component_id: str = component_id
         self.clean_component_id: str = Component.clean_component_id(component_id)
         self.component_description: str = component_description
         self.baumuster_id: str = baumuster_id
+        self.business_unit: str = business_unit
+        self.family = family
         self.bg = bg
         self.grouping_type: ComponentGroupingType = grouping_type
         self.kg: str = kg
@@ -28,6 +30,8 @@ class Component:
             datadict[Component.JSONKeys.component_id],
             datadict.get(Component.JSONKeys.component_description, "(No Description)"),
             datadict[Component.JSONKeys.baumuster_id],
+            datadict[Component.JSONKeys.business_unit],
+            datadict[Component.JSONKeys.family],
             datadict.get(Component.JSONKeys.bg, None),
             datadict[Component.JSONKeys.grouping_type],
             datadict[Component.JSONKeys.kg],
@@ -46,6 +50,8 @@ class Component:
         component_id = "abm_saa"
         component_description = "part_description"
         baumuster_id = "baumuster_id"
+        business_unit = "bu"
+        family = "family"
         bg = "bg_codebedingungen"
         grouping_type = "grouping_type"
         kg = "kg"
