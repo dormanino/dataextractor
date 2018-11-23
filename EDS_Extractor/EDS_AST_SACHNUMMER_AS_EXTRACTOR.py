@@ -1,4 +1,4 @@
-from MainframeMainConnections import MainframeMainConections as Connection
+from BPM_STAR_Extractors.MainframeMainConnections import MainframeMainConections as Connection
 from os import getcwd
 import time
 

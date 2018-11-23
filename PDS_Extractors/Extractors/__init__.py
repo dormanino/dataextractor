@@ -1,6 +1,6 @@
 from PDS_Extractors.Data.DataPoint import DataPoint
 from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
-import MainframeMainConnections
+from BPM_STAR_Extractors import MainframeMainConnections
 import json
 import datetime
 import time
