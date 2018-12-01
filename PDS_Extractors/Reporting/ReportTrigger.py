@@ -1,6 +1,7 @@
 import json
 
 from PDS_Extractors.Models.Baumuster.BaumusterInfo import BaumusterInfo
+from PDS_Extractors.Models.Plant import Plant
 from PDS_Extractors.Reports.FamilyParts import FamilyPartsReport
 from PDS_Extractors.TechDoc.Extraction.BaumusterComponentsExtractor import BaumusterComponentsExtractor
 from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
@@ -16,6 +17,7 @@ from PDS_Extractors.Reports.CostAnalysisReport import CostAnalysisReport
 from PDS_Extractors.Reports.EPUSplitReport import EPUSplitReport
 from PDS_Extractors.Reports.TechDocStatusReport import TechDocStatusReport
 from PDS_Extractors.TechDoc.Validation.DueDate.DueDateStatus import DueDateStatus
+from PDS_Extractors.Reports.SAAsExtractionReport import SAAsExtractionReport
 
 
 class ReportTrigger:
@@ -79,3 +81,11 @@ class ReportTrigger:
 
             report = TechDocStatusReport(self.production, self.qvv_components_extractor)
             return report.run(month_years, include_parts, status_filter)
+
+        # SAA extraction from AGRMZ data
+        if report_type in ReportGroupings.extract_saa_reports:
+            report = SAAsExtractionReport(self.tech_doc_data_source)
+            if report_type is ReportType.ExtractSAAFromAGRMZ_SBC:
+                return report.run(Plant.SBC)
+            elif report_type is ReportType.ExtractSAAFromAGRMZ_JDF:
+                return report.run(Plant.JDF)

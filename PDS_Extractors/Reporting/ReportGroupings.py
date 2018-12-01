@@ -36,3 +36,8 @@ class ReportGroupings:
         ReportType.TechDocNoConclusionComponents,
         ReportType.TechDocNoConclusionComponentsAndParts
     ]
+
+    extract_saa_reports = [
+        ReportType.ExtractSAAFromAGRMZ_SBC,
+        ReportType.ExtractSAAFromAGRMZ_JDF
+    ]

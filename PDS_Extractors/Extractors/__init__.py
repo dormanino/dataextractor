@@ -398,14 +398,17 @@ class PdsNfc:
 
     def oper_pds_3ca(self, logout=False):
         saa_list = []
-        if plant is 'sbc' or plant is 'jdf':
-            file_csv = open(DataPoint.data_saa, encoding='utf-8')
-            saa_swap_list = file_csv.readlines()
-            for saa_line_index, saa_line in enumerate(saa_swap_list):
-                if not saa_line_index == 0:
-                    saa_rpl_line = saa_line.replace('\n', '')
-                    saa_split = saa_rpl_line.split(',')
-                    saa_list.append(saa_split)
+        if plant is "sbc":
+            file_csv = open(DataPoint.data_saa_sbc, encoding='utf-8')
+        elif plant is "jdf":\
+            file_csv = open(DataPoint.data_saa_jdf, encoding='utf-8')
+
+        saa_swap_list = file_csv.readlines()
+        for saa_line_index, saa_line in enumerate(saa_swap_list):
+            if not saa_line_index == 0:
+                saa_rpl_line = saa_line.replace('\n', '')
+                saa_split = saa_rpl_line.split(',')
+                saa_list.append(saa_split)
 
         part_list = []
         operation = True

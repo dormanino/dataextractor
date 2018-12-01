@@ -13,3 +13,5 @@ class ReportType(Enum):
     TechDocInvertedSequenceComponentsAndParts = "Tech Doc - Inversoes de Sequencia - Componentes e Partes"
     TechDocNoConclusionComponents = "TechDoc - Nao Conclusivos - Componentes"
     TechDocNoConclusionComponentsAndParts = "TechDoc - Nao Conclusivos - Componentes e Partes"
+    ExtractSAAFromAGRMZ_SBC = "SAAs para copia de 3c"
+    ExtractSAAFromAGRMZ_JDF = "SAAs para copia de 3c"

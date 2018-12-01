@@ -13,8 +13,10 @@ month_years = list(map(lambda m: MonthYear(m, year), months))
 
 reports = {
     # "2019_1_family_parts": ReportType.FamilyParts,
-    "2019_1_cost_analysis_components_no_new": ReportType.CostAnalysisComponents
+    # "2019_1_cost_analysis_components_no_new": ReportType.CostAnalysisComponents
     # "NEW_EPU_Split_test": ReportType.EPUSplit
+    "SAA_SET_SBC": ReportType.ExtractSAAFromAGRMZ_SBC,
+    "SAA_SET_JDF": ReportType.ExtractSAAFromAGRMZ_JDF
 }
 
 trigger = ReportTrigger()
