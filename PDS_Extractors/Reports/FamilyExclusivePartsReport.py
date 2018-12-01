@@ -16,6 +16,7 @@ class FamilyExclusivePartsReport:
         "Part Number", "Part Description"
     ]
 
+    # dependency injection (pass the parameters to construct the object construction - helps in the TDD)
     def __init__(self, baumuster_list: List[BaumusterInfo], baumuster_components_extractor: BaumusterComponentsExtractor):
         self.baumuster_list = baumuster_list
         self.baumuster_components_extractor = baumuster_components_extractor

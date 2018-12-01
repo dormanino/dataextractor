@@ -56,15 +56,6 @@ class MakeFile:
             if dozempp[dc]['total'] != '0':
                 final_dict[dc] = dozempp[dc]['total']
 
-        for f in final_dict:
-            for b in dicto_tst:
-                if f == b:
-                    if f == 'QVV81503113B':
-                        print(f)
-                    volume = final_dict[f]
-                    final_dict[f] = dicto_tst[b], volume
-                    break
-
         set_bm = set()
         for dt in final_dict.values():
             set_bm.add(dt[0])
@@ -238,10 +229,10 @@ class MakeFinalDict:
 #
 # month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
 # year = 2019
-#
+# #
 # date = datetime.date.today()
 # date_string = date.strftime('%y%m%d')
-#
+# #
 # for month in month_list:
 #     total_qvv_list = MakeFinalDict().variant_info_gen(month, year)
 #

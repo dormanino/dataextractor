@@ -1,8 +1,7 @@
-from MainframeMainConnections import MainframeMainConections as Connection
+from BPM_STAR_Extractors.MainframeMainConnections import MainframeMainConections as Connection
 import json
 import datetime
 from collections import OrderedDict
-import os
 
 
 class PdsNfc0E:

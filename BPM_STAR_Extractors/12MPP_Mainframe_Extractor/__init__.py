@@ -1,4 +1,4 @@
-from MainframeMainConnections import LogInMBBrasTN3270BPMSTAR
+from BPM_STAR_Extractors.MainframeMainConnections import LogInMBBrasTN3270BPMSTAR
 from BPM_STAR_Extractors.DataPoint import DataPoint
 from GeneralHelpers import PartitionStringinDigitsandNonDigits
 import json
@@ -28,7 +28,7 @@ class ProPresum:
                             data=data)
         return variant_data
 
-    def pro_presum_main(self, dt_ref, resume_type='ptfm', main_option='a', periodicity='m', presentation=' '):
+    def pro_presum_main(self, dt_ref, resume_type='ptfm', main_option='a', periodicity='m', deno="veiculo", presentation=' ', copy_all=False):
         """
             schematics for screen matrix function
                 1) rows starts on char 1 and ends on char 80 (80 columns)
@@ -70,15 +70,26 @@ class ProPresum:
         self.mainframe.send_enter()
         self.mainframe.wait_for_field()
         time.sleep(1)
+        # if copy_all is flaged, need to include a 'q' to indicate start of the register in the mainframe in the same format from
+        # the model below
         self.mainframe.send_string(dt_ref, 4, 49)
+
+        if copy_all is True:
+            self.mainframe.move_to(12, 49)
+            self.mainframe.send_eraseEOF()
+            self.mainframe.send_string('q', 9, 49)
+        else:
+            self.mainframe.send_string(deno, 12, 49)
+
         self.mainframe.send_string(presentation, 16, 49)
         self.mainframe.move_to(24, 80)
         self.mainframe.send_enter()
         self.mainframe.wait_for_field()
         time.sleep(1)
+
         """
-            get the full header on 6,1,80 (consider row, column, amount of chars) and strip string, split by spaces (chain of methods) and
-            part the data from the returned list from split method/function 
+            get the full header on line 6, row 1 to 80 (consider row, column, amount of chars) and strip string, split by spaces 
+            (chain of methods) and part the data from the returned list from split method/function 
         """
 
         dates_header_list = self.mainframe.string_get(6, 1, 80).strip().split(' ')
@@ -247,12 +258,12 @@ class ProPresum:
             if data_eof_declaration in self.mainframe.string_get(4, 1, 80) and not start:
                 oper_eof = False
 
-        return dicto, partials_main_operation_dict #, main_operation_dict
+        return dicto, partials_main_operation_dict  #  , main_operation_dict
 
 
-data_for_12mpp_volume_data_extraction = '0118'
+data_for_12mpp_volume_data_extraction = '0119'
 # data_for_12mpp_volume_data_extraction = '0119'
-d = ProPresum().pro_presum_main(data_for_12mpp_volume_data_extraction)
+d = ProPresum().pro_presum_main(data_for_12mpp_volume_data_extraction, copy_all=True)
 
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
