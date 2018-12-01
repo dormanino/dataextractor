@@ -400,7 +400,7 @@ class PdsNfc:
         saa_list = []
         if plant is "sbc":
             file_csv = open(DataPoint.data_saa_sbc, encoding='utf-8')
-        elif plant is "jdf":\
+        elif plant is "jdf":
             file_csv = open(DataPoint.data_saa_jdf, encoding='utf-8')
 
         saa_swap_list = file_csv.readlines()

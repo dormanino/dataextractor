@@ -7,6 +7,31 @@ from PDS_Extractors.Helpers.LatestFileVersion import LatestFileVersion
 class DataProvider:
 
     @staticmethod
+    def code_restriction_string_checker(partial_string, general_code_string, general_function_string, code_loop_counter, function_loop_counter):
+        if partial_string not in general_code_string:
+            general_code_string += partial_string
+
+        if partial_string not in general_function_string:
+            general_function_string += partial_string
+            if function_loop_counter == 0:
+                function_loop_counter = code_loop_counter + 1
+            else:
+                function_loop_counter += 1
+        else:
+            if function_loop_counter == code_loop_counter:
+                if DataProvider.check_string_similarity(general_function_string, general_code_string):
+                    general_code_string += ';'
+
+        return general_code_string, general_function_string, code_loop_counter, function_loop_counter
+
+    @staticmethod
+    def check_string_similarity(string1, string2):
+        if string1 == string2:
+            return True
+        else:
+            return False
+
+    @staticmethod
     def agrmz(plant, data_type_source, source):
         bm_info = json.load(open(DataPoint.data_info_bm))
         complete_line = ''
@@ -166,15 +191,15 @@ class DataProvider:
                         # print(substring)
 
                         for q, r in zip(slices[1].keys(), slices[1].values()):
-                            data = substring[r[0]:r[1]].strip().replace(",", ";")
+                            data = substring[r[0]:r[1]].strip().replace(",", "-")
                             if data == '':
                                 data = None
                             register.update({q: data})
                         analysed_lines.append(line)
 
-                    elif not prior_substring.strip() == '' and '_' in prior_substring[1]:  # defines if you are in between the component header and
+                    elif not prior_substring.strip() == "" and "_" in prior_substring[1]:  # defines if you are in between the component header and
                         for q_1, r_1 in zip(slices[2].keys(), slices[2].values()):
-                            data = substring[r_1[0]:r_1[1]].strip().replace(",", ";")
+                            data = substring[r_1[0]:r_1[1]].strip().replace(",", "-")
                             if data == '':
                                 data = None
                             register.update({q_1: data})
@@ -190,7 +215,7 @@ class DataProvider:
 
                     elif marker:
                         for q, r in zip(slices[3].keys(), slices[3].values()):
-                            data = substring[r[0]:r[1]].strip().replace(",", ";")
+                            data = substring[r[0]:r[1]].strip().replace(",", "-")
                             if data == '':
                                 data = None
                             register.update({q: data})
@@ -198,36 +223,55 @@ class DataProvider:
                         marker = False
 
                     elif 'BG/CODEBEDINGUNGEN :' in substring:
+                        eof_codebedingungen = False
                         dicto_codebedingungen = slices[4]
                         dicto_data_0_codebedingungen = dicto_codebedingungen['bg']
                         dicto_data_1_codebedingungen = dicto_codebedingungen['code']
                         next_line_codebedingungen = line
+                        code_loop_counter = 0
+                        function_loop_counter = 0
+                        general_code_string = ''
+                        general_function_string = ''
 
-                        if substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]].strip().replace(",", ";") == '':
+                        if substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]].strip().replace(",", "-") == '':
                             bg_codebedingungen = None
                         else:
                             bg_codebedingungen = substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]]
 
-                        restriction_codebedingungen = substring[dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[1]].strip().replace(",", ";")
+                        restriction_codebedingungen = substring[
+                                                      dicto_data_1_codebedingungen[0]:
+                                                      dicto_data_1_codebedingungen[1]
+                                                        ].strip().replace(",", "-")
 
                         if ';' not in restriction_codebedingungen:
-                            eof_codebedingungen = False
-                            next_line_codebedingungen += 1
-                        else:
-                            eof_codebedingungen = True
+                            while not eof_codebedingungen:
+                                next_end_char_codebedingungen = next_line_codebedingungen * 80
+                                next_start_char_codebedingungen = next_end_char_codebedingungen - 80
+                                next_substring_codebedingungen = full_line[next_start_char_codebedingungen:next_end_char_codebedingungen + 1]
+                                next_substring_anal_codebedingungen = next_substring_codebedingungen[
+                                                                      dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[
+                                                                          1]].strip().replace(",", "-")
 
-                        while not eof_codebedingungen:
-                            next_end_char_codebedingungen = next_line_codebedingungen * 80
-                            next_start_char_codebedingungen = next_end_char_codebedingungen - 80
-                            next_substring_codebedingungen = full_line[next_start_char_codebedingungen:next_end_char_codebedingungen + 1]
-                            next_substring_anal_codebedingungen = next_substring_codebedingungen[dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[1]].strip().replace(",", ";")
-                            restriction_codebedingungen = restriction_codebedingungen + next_substring_anal_codebedingungen
-                            analysed_lines.append(next_line_codebedingungen)
-                            if ';' not in next_substring_anal_codebedingungen:
-                                eof_codebedingungen = False
-                                next_line_codebedingungen += 1
-                            else:
-                                eof_codebedingungen = True
+                                general_code_string, general_function_string, code_loop_counter, function_loop_counter = \
+                                    DataProvider.code_restriction_string_checker(
+                                        restriction_codebedingungen,
+                                        general_code_string,
+                                        general_function_string,
+                                        code_loop_counter,
+                                        function_loop_counter
+                                    )
+
+                                analysed_lines.append(next_line_codebedingungen)
+                                restriction_codebedingungen = general_code_string
+
+                                if ';' not in restriction_codebedingungen:
+                                    eof_codebedingungen = False
+                                    next_line_codebedingungen += 1
+                                    code_loop_counter += 1
+                                else:
+                                    eof_codebedingungen = True
+                        else:
+                            restriction_codebedingungen = general_code_string
 
                         restriction_codebedingungen = restriction_codebedingungen.replace(' ', '')
 
@@ -243,12 +287,14 @@ class DataProvider:
                         data_baubarkeitsbed = substring[dicto_data_1_baubarkeitsbed[0]:dicto_data_1_baubarkeitsbed[1]]  # codes data
                         next_line_baubarkeitsbed = line
 
-                        if substring[dicto_data_0_baubarkeitsbed[0]: dicto_data_0_baubarkeitsbed[1]].strip().replace(",", ";") == '':
+                        # in order to maintain consistency with csv data and not provide unwanted effecr with semicolon,
+                        # after .strip(), included .replace(",", for "-")
+                        if substring[dicto_data_0_baubarkeitsbed[0]: dicto_data_0_baubarkeitsbed[1]].strip().replace(",", "-") == '':
                             bg_baubarkeitsbed = None
                         else:
                             bg_baubarkeitsbed = substring[dicto_data_0_baubarkeitsbed[0]: dicto_data_0_baubarkeitsbed[1]]
 
-                        restriction_baubarkeitsbed = substring[dicto_data_1_baubarkeitsbed[0]: dicto_data_1_baubarkeitsbed[1]].strip().replace(",", ";")
+                        restriction_baubarkeitsbed = substring[dicto_data_1_baubarkeitsbed[0]: dicto_data_1_baubarkeitsbed[1]].strip().replace(",", "-")
 
                         if ';' not in restriction_baubarkeitsbed:
                             eof_baubarkeitsbed = False
@@ -282,7 +328,7 @@ class DataProvider:
                         data_zusteuerbed = substring[dicto_data_zusteuerbed[0]:dicto_data_zusteuerbed[1]]  # codes data
                         next_line_zusteuerbed = line
 
-                        restriction_zusteuerbed = substring[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip().replace(",", ";")
+                        restriction_zusteuerbed = substring[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip().replace(",", "-")
 
                         if ';' not in restriction_zusteuerbed:
                             eof_zusteuerbed = False
@@ -295,7 +341,7 @@ class DataProvider:
                             next_end_char_zusteuerbed = next_line_zusteuerbed * 80
                             next_start_char_zusteuerbed = next_end_char_zusteuerbed - 80
                             next_substring_zusteuerbed = full_line[next_start_char_zusteuerbed:next_end_char_zusteuerbed + 1]
-                            next_substring_anal_zusteuerbed = next_substring_zusteuerbed[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip().replace(",", ";")
+                            next_substring_anal_zusteuerbed = next_substring_zusteuerbed[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip().replace(",", "-")
                             restriction_zusteuerbed = restriction_zusteuerbed + next_substring_anal_zusteuerbed
                             analysed_lines.append(next_line_zusteuerbed)
 
@@ -313,8 +359,8 @@ class DataProvider:
                         dicto_verw = slices[7]
                         dicto_0_data_verw = dicto_verw['verw.-st']  # tuple
                         dicto_1_data_verw = dicto_verw['verw_info']  # tuple
-                        data_0_verw = substring[dicto_0_data_verw[0]:dicto_0_data_verw[1]].strip().replace(",", ";")
-                        data_1_verw = substring[dicto_1_data_verw[0]:dicto_1_data_verw[1]].strip().replace(",", ";")
+                        data_0_verw = substring[dicto_0_data_verw[0]:dicto_0_data_verw[1]].strip().replace(",", "-")
+                        data_1_verw = substring[dicto_1_data_verw[0]:dicto_1_data_verw[1]].strip().replace(",", "-")
                         next_line_VERW = line
                         if line == amount_of_lines:
                             if data_0_verw == '':
@@ -330,7 +376,7 @@ class DataProvider:
                         analysed_lines.append(line)
 
                     elif line not in analysed_lines:
-                        register.update({'extra_info': substring.strip().replace(",", ";")})
+                        register.update({'extra_info': substring.strip().replace(",", "-")})
 
                 grouping_input['regs'].append(register)
 
