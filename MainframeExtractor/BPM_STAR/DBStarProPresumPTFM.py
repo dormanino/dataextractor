@@ -38,10 +38,9 @@ class DBStarProPresumPTFM(DBStarProPresum):
         EmulatorHelper.set_value(self.emulator, "", EmulatorPosition(16, 49))  # Apresentacao: "Cliente/Baumuster"
 
     def extract_vol_data(self, ref_date, number_of_months):
-        # calculate the number of iterations, rectify to one up if not multiple of 12
-        iterations = int(number_of_months / 12)
+        iterations = int(number_of_months / 12)  # calculate the number of iterations,
         if (number_of_months % 12) > 0:
-            iterations += 1
+            iterations += 1  # rectify to one up if not multiple of 12
 
         step_ref_date = ref_date
         for step in range(1, iterations):
@@ -67,6 +66,9 @@ class DBStarProPresumPTFM(DBStarProPresum):
 
         first_item = None
         current_item = self.get_current_item()
+        next_item = None
+        same_item = False
+
         while current_item != first_item:
             if first_item is None:
                 first_item = current_item
@@ -94,7 +96,12 @@ class DBStarProPresumPTFM(DBStarProPresum):
             self.emulator.move_to(24, 80)
             self.emulator.send_enter()
             self.emulator.wait_for_field()
-            current_item = self.get_current_item()
+            next_item = self.get_current_item()
+
+            if next_item == current_item:
+                same_item = True
+            else:
+                same_item = False
 
     def get_current_item(self):
         item_pos = EmulatorPosition(4, 1)
