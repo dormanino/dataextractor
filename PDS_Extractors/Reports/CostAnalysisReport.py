@@ -42,7 +42,11 @@ class CostAnalysisReport:
         data_rows = []
         monthly_production = self.production.extract_monthly_production(month_year)
         for qvv in monthly_production.qvv_production_list:
-            analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), include_parts)
+            try:
+                analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), include_parts)
+            except ValueError as error:
+                print(error)
+                continue
             for grouping, analyzed_components in analyzed_qvv.components.items():
                 for analyzed_component in analyzed_components:
                     data_row = [

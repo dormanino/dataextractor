@@ -152,7 +152,7 @@ class ComponentsExtractor:
                         grouped_aggregates_for_vehicle[grouping].extend(components)
                     else:
                         grouped_aggregates_for_vehicle[grouping] = components
-            except Exception as error:
+            except ValueError as error:
                 print(error)
                 continue
         return grouped_aggregates_for_vehicle
@@ -169,8 +169,17 @@ class ComponentsExtractor:
                                       main_aggr_src: BaumusterCollection,
                                       sec_aggr_src: BaumusterCollection) -> Dict[str, List[Component]]:
         baumuster_id = component.clean_component_id
-        first_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, main_aggr_src)
-        second_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
+        first_aggr_bm = None
+        second_aggr_bm = None
+
+        try:
+            first_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, main_aggr_src)
+        except ValueError:
+            pass
+        try:
+            second_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
+        except ValueError:
+            pass
 
         groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG, ComponentGroupingType.General]
         prefix = ComponentGroupingType.Aggregate.name
@@ -208,9 +217,17 @@ class ComponentsExtractor:
     def grouped_non_cabin_aggr_components(self, component: Component, main_aggr_src: BaumusterCollection,
                                           sec_aggr_src: BaumusterCollection) -> Dict[str, List[Component]]:
         baumuster_id = component.clean_component_id
-        aggregates_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, main_aggr_src)
+        aggregates_bm = None
+
+        try:
+            aggregates_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, main_aggr_src)
+        except ValueError:
+            pass
         if aggregates_bm is None:  # search in fallback
-            aggregates_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
+            try:
+                aggregates_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
+            except ValueError:
+                pass
         if aggregates_bm is None:
             raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
         groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG, ComponentGroupingType.General]

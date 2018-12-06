@@ -18,13 +18,19 @@ class QVVComponentsExtractor:
         self.components_extractor = ComponentsExtractor(self.tech_doc_data_source, self.tech_doc_validator)
         self.grouped_components_for_qvv_cache = dict()
 
-    def validate_acello_cabin(self, components, qvv, plant):
+    def validate_actros_cabin(self, components, qvv):
         cleaned_up_composition = qvv.composition.copy()
         for code in self.tech_doc_data_source.cabin_codes_to_ignore:
             if code in cleaned_up_composition:
                 cleaned_up_composition.remove(code)
+            # if code not in cleaned_up_composition:
+            #     cleaned_up_composition.append(code)
 
-        rectified_composition = cleaned_up_composition.copy()
+        rectified_qvv = QVVProduction(qvv.qvv_id, qvv.baumuster_id, qvv.business_unit, qvv.family, qvv.volume, cleaned_up_composition)
+        return list(filter(lambda c: self.tech_doc_validator.validate_code_rule(c, rectified_qvv), components))
+
+    def validate_acello_cabin(self, components, qvv, plant):
+        rectified_composition = qvv.composition.copy()
         swap_fa0 = "FA0"
         swap_fr0 = "FR0"
         if plant == Plant.SBC:
@@ -56,10 +62,12 @@ class QVVComponentsExtractor:
 
             vehicle_aggregates = qvv_components[ComponentGroupingType.Aggregate.name]
             for grouping, components in self.components_extractor.grouped_aggregates_for_vehicle_components(vehicle_aggregates).items():
-                # SPECIAL RULE FOR D979811 ACELLO CABIN
-                if "D979811" in grouping and Plant.SBC.name in grouping:
+
+                if qvv.family == "Actros":  # SPECIAL RULE FOR Actros Familiy
+                    valid_components = self.validate_actros_cabin(components, qvv)
+                elif "D979811" in grouping and Plant.SBC.name in grouping:  # SPECIAL RULE FOR D979811 ACELLO CABIN in SBC
                     valid_components = self.validate_acello_cabin(components, qvv, Plant.SBC)
-                elif "D979811" in grouping and Plant.JDF.name in grouping:
+                elif "D979811" in grouping and Plant.JDF.name in grouping:  # SPECIAL RULE FOR D979811 ACELLO CABIN in JDF
                     valid_components = self.validate_acello_cabin(components, qvv, Plant.JDF)
                 else:
                     valid_components = list(filter(lambda c: self.tech_doc_validator.validate_code_rule(c, qvv), components))

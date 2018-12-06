@@ -41,3 +41,8 @@ class ReportGroupings:
         ReportType.ExtractSAAFromAGRMZ_SBC,
         ReportType.ExtractSAAFromAGRMZ_JDF
     ]
+
+    extract_optionals_reports = [
+        ReportType.ExtractOptionalsPartsFrom3CA_SBC,
+        ReportType.ExtractOptionalsPartsFrom3CA_JDF
+    ]

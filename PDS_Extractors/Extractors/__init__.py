@@ -1,6 +1,8 @@
+import sys
+
 from PDS_Extractors.Data.DataPoint import DataPoint
 from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
-from BPM_STAR_Extractors import MainframeMainConnections
+from MainframeExtractor.Connection.LogInMBBrasTN3270PDS import LogInMBBrasTN3270PDS
 import json
 import datetime
 import time
@@ -8,7 +10,7 @@ from collections import OrderedDict
 
 
 class PdsNfc:
-    connection = MainframeMainConnections.LogInMBBrasTN3270PDS()
+    connection = LogInMBBrasTN3270PDS()
 
     def __init__(self, plant=None):
         self.plant = plant
@@ -398,6 +400,7 @@ class PdsNfc:
 
     def oper_pds_3ca(self, logout=False):
         saa_list = []
+        file_csv = object
         if plant is "sbc":
             file_csv = open(DataPoint.data_saa_sbc, encoding='utf-8')
         elif plant is "jdf":
@@ -494,37 +497,37 @@ data_type = ['vehicle', 'aggregate']
 date = datetime.date.today()
 date_string = date.strftime('%y%m%d')
 
-for plant in plants:
-    pds_mainframe_connection = PdsNfc(plant)
-    data_02 = pds_mainframe_connection.oper_pds_02()
-
-    with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_02.json', 'w+') as f:
-        json.dump(data_02, f, indent=4, sort_keys=True, ensure_ascii=False)
-
-    data_03 = pds_mainframe_connection.oper_pds_03()
-
-    with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_03.json', 'w+') as f:
-        json.dump(data_03, f, indent=4, sort_keys=True, ensure_ascii=False)
-    pds_mainframe_connection.connection.pds_logout()
-
-for plant in plants:
-    pds_mainframe_connection = PdsNfc(plant)
-    for data in data_type:
-        data_kgs = pds_mainframe_connection.oper_pds_agr_for_kgs(data)
-
-        with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_kgs.json', 'w+') as f:
-            json.dump(data_kgs, f, indent=4, sort_keys=True, ensure_ascii=False)
-    pds_mainframe_connection.connection.pds_logout()
-
-for plant in plants:
-    pds_mainframe_connection = PdsNfc(plant)
-    for data in data_type:
-        data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
-
-        with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
-            json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
-    pds_mainframe_connection.connection.pds_logout()
-PdsNfc().mainframe_connection.send_string('exit', 2, 15)
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     data_02 = pds_mainframe_connection.oper_pds_02()
+#
+#     with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_02.json', 'w+') as f:
+#         json.dump(data_02, f, indent=4, sort_keys=True, ensure_ascii=False)
+#
+#     data_03 = pds_mainframe_connection.oper_pds_03()
+#
+#     with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_PDS_03.json', 'w+') as f:
+#         json.dump(data_03, f, indent=4, sort_keys=True, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+#
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     for data in data_type:
+#         data_kgs = pds_mainframe_connection.oper_pds_agr_for_kgs(data)
+#
+#         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_kgs.json', 'w+') as f:
+#             json.dump(data_kgs, f, indent=4, sort_keys=True, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+#
+# for plant in plants:
+#     pds_mainframe_connection = PdsNfc(plant)
+#     for data in data_type:
+#         data_agr = pds_mainframe_connection.oper_pds_agrmz(data)
+#
+#         with open(DataPoint.PATH_DataFiles + '\\' + date_string + '_' + plant + '_' + data + '_PDS_agrmz.json', 'w+') as f:
+#             json.dump(data_agr, f, indent=4, sort_keys=False, ensure_ascii=False)
+#     pds_mainframe_connection.connection.pds_logout()
+# PdsNfc().mainframe_connection.send_string('exit', 2, 15)
 
 for plant in plants:
     pds_mainframe_connection = PdsNfc(plant)

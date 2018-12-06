@@ -28,7 +28,14 @@ class EPUSplitReport:
         for month_year in month_years:
             monthly_production = self.production.extract_monthly_production(month_year)
             for qvv in monthly_production.qvv_production_list:
-                analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), True)
+                if qvv.family != 'Actros':
+                    print(qvv.family, qvv.qvv_id, month_year.to_str())
+                    continue
+                try:
+                    analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), True)
+                except ValueError as error:
+                    print(error)
+                    continue
                 for grouping, analyzed_components in analyzed_qvv.components.items():
                     for analyzed_component in analyzed_components:
                         for analyzed_part in analyzed_component.parts:

@@ -7,29 +7,26 @@ from PDS_Extractors.Helpers.LatestFileVersion import LatestFileVersion
 class DataProvider:
 
     @staticmethod
-    def code_restriction_string_checker(partial_string, general_code_string, general_function_string, code_loop_counter, function_loop_counter):
-        if partial_string not in general_code_string:
-            general_code_string += partial_string
-
-        if partial_string not in general_function_string:
-            general_function_string += partial_string
-            if function_loop_counter == 0:
-                function_loop_counter = code_loop_counter + 1
-            else:
-                function_loop_counter += 1
-        else:
-            if function_loop_counter == code_loop_counter:
-                if DataProvider.check_string_similarity(general_function_string, general_code_string):
-                    general_code_string += ';'
-
-        return general_code_string, general_function_string, code_loop_counter, function_loop_counter
+    def code_restriction_string_checker(partial_string, general_code_string):
+        if partial_string in general_code_string:
+            if DataProvider.find_str(general_code_string, partial_string) == 0:
+                return True
+        return False
 
     @staticmethod
-    def check_string_similarity(string1, string2):
-        if string1 == string2:
-            return True
-        else:
-            return False
+    def find_str(s, char):
+        index = 0
+
+        if char in s:
+            c = char[0]
+            for ch in s:
+                if ch == c:
+                    if s[index:index + len(char)] == char:
+                        return index
+
+                index += 1
+
+        return -1
 
     @staticmethod
     def agrmz(plant, data_type_source, source):
@@ -112,12 +109,12 @@ class DataProvider:
                 'anz': (55, 58)
             },
             4: {
-                'bg': (24, 26),  # bg para Code
-                'code': (28, 62)
+                'bg': (25, 28),  # bg para SAA e bms (bg codebedingung)
+                'code': (28, 58)
             },
             5: {
-                'bg': (24, 26),  # bg para SAA
-                'code': (25, 80)
+                'bg': (23, 25),  # bg para Code (bg baubarkeitsbed)
+                'code': (26, 58)
             },
             6: {
                 'zusteuerbed': (25, 80)
@@ -130,10 +127,7 @@ class DataProvider:
 
         main_dict = dict(plant=plant, source=data_type_source, data=[])
         for data in data_source:
-            # print(data)
-
             # Find/Create Baumuster node
-
             bm_data = next(filter(lambda i: i["bm"] == data[0], main_dict["data"]), None)
             if bm_data is None:
                 bm_data = dict(bm="", bu="", family="", data=[])
@@ -188,8 +182,6 @@ class DataProvider:
                         next_substring = full_line[next_start_char:next_end_char + 1]
 
                     if '_' in substring[1]:  # if the line is the component marker
-                        # print(substring)
-
                         for q, r in zip(slices[1].keys(), slices[1].values()):
                             data = substring[r[0]:r[1]].strip().replace(",", "-")
                             if data == '':
@@ -228,10 +220,6 @@ class DataProvider:
                         dicto_data_0_codebedingungen = dicto_codebedingungen['bg']
                         dicto_data_1_codebedingungen = dicto_codebedingungen['code']
                         next_line_codebedingungen = line
-                        code_loop_counter = 0
-                        function_loop_counter = 0
-                        general_code_string = ''
-                        general_function_string = ''
 
                         if substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]].strip().replace(",", "-") == '':
                             bg_codebedingungen = None
@@ -244,6 +232,7 @@ class DataProvider:
                                                         ].strip().replace(",", "-")
 
                         if ';' not in restriction_codebedingungen:
+                            next_line_codebedingungen += 1
                             while not eof_codebedingungen:
                                 next_end_char_codebedingungen = next_line_codebedingungen * 80
                                 next_start_char_codebedingungen = next_end_char_codebedingungen - 80
@@ -252,39 +241,35 @@ class DataProvider:
                                                                       dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[
                                                                           1]].strip().replace(",", "-")
 
-                                general_code_string, general_function_string, code_loop_counter, function_loop_counter = \
-                                    DataProvider.code_restriction_string_checker(
-                                        restriction_codebedingungen,
-                                        general_code_string,
-                                        general_function_string,
-                                        code_loop_counter,
-                                        function_loop_counter
-                                    )
-
                                 analysed_lines.append(next_line_codebedingungen)
-                                restriction_codebedingungen = general_code_string
 
-                                if ';' not in restriction_codebedingungen:
-                                    eof_codebedingungen = False
-                                    next_line_codebedingungen += 1
-                                    code_loop_counter += 1
+                                if ';' not in next_substring_anal_codebedingungen:
+                                    if next_substring_anal_codebedingungen == '':
+                                        restriction_codebedingungen += ';'
+                                        eof_codebedingungen = True
+                                    elif DataProvider.code_restriction_string_checker(next_substring_anal_codebedingungen, restriction_codebedingungen):
+                                        restriction_codebedingungen += next_substring_anal_codebedingungen
+                                        restriction_codebedingungen += ';'
+                                        eof_codebedingungen = True
+                                    elif next_substring_anal_codebedingungen in restriction_codebedingungen:
+                                        x=1
+                                    else:
+                                        eof_codebedingungen = False
+                                        next_line_codebedingungen += 1
+                                        restriction_codebedingungen += next_substring_anal_codebedingungen
                                 else:
                                     eof_codebedingungen = True
-                        else:
-                            restriction_codebedingungen = general_code_string
+                                    restriction_codebedingungen += next_substring_anal_codebedingungen
 
                         restriction_codebedingungen = restriction_codebedingungen.replace(' ', '')
-
                         register.update({'bg_codebedingungen': bg_codebedingungen})
                         register.update({'codebedingungen': restriction_codebedingungen})
                         analysed_lines.append(line)
 
                     elif 'BG/BAUBARKEITSBED' in substring:
-
                         dicto_baubarkeitsbed = slices[5]
                         dicto_data_0_baubarkeitsbed = dicto_baubarkeitsbed['bg']  # tuple
                         dicto_data_1_baubarkeitsbed = dicto_baubarkeitsbed['code']  # tuple
-                        data_baubarkeitsbed = substring[dicto_data_1_baubarkeitsbed[0]:dicto_data_1_baubarkeitsbed[1]]  # codes data
                         next_line_baubarkeitsbed = line
 
                         # in order to maintain consistency with csv data and not provide unwanted effecr with semicolon,
@@ -299,7 +284,6 @@ class DataProvider:
                         if ';' not in restriction_baubarkeitsbed:
                             eof_baubarkeitsbed = False
                             next_line_baubarkeitsbed += 1
-
                         else:
                             eof_baubarkeitsbed = True
 
@@ -311,7 +295,7 @@ class DataProvider:
                             restriction_baubarkeitsbed = restriction_baubarkeitsbed + next_substring_anal_baubarkeitsbed
                             analysed_lines.append(next_line_baubarkeitsbed)
 
-                            if ';' not in next_substring_anal_baubarkeitsbed:
+                            if ';' not in next_substring_anal_baubarkeitsbed and next_substring_anal_baubarkeitsbed.strip() != "":
                                 eof_baubarkeitsbed = False
                                 next_line_baubarkeitsbed += 1
                             else:
@@ -325,7 +309,6 @@ class DataProvider:
                     elif 'PB/ZUSTEUERBED' in substring:
                         dicto_zusteuerbed = slices[6]
                         dicto_data_zusteuerbed = dicto_zusteuerbed['zusteuerbed']  # tuple
-                        data_zusteuerbed = substring[dicto_data_zusteuerbed[0]:dicto_data_zusteuerbed[1]]  # codes data
                         next_line_zusteuerbed = line
 
                         restriction_zusteuerbed = substring[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip().replace(",", "-")
@@ -361,7 +344,6 @@ class DataProvider:
                         dicto_1_data_verw = dicto_verw['verw_info']  # tuple
                         data_0_verw = substring[dicto_0_data_verw[0]:dicto_0_data_verw[1]].strip().replace(",", "-")
                         data_1_verw = substring[dicto_1_data_verw[0]:dicto_1_data_verw[1]].strip().replace(",", "-")
-                        next_line_VERW = line
                         if line == amount_of_lines:
                             if data_0_verw == '':
                                 data_0_verw = None
@@ -663,5 +645,5 @@ for plant in plants:
         print("concluded " + plant + "/" + data_type)
 
 
-# DataProvider.treeca('sbc', DataPoint.data_3ca_raw_sbc)
-# DataProvider.treeca('jdf', DataPoint.data_3ca_raw_jdf)
+DataProvider.treeca('sbc', DataPoint.data_3ca_raw_sbc)
+DataProvider.treeca('jdf', DataPoint.data_3ca_raw_jdf)

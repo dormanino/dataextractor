@@ -18,6 +18,7 @@ from PDS_Extractors.Reports.EPUSplitReport import EPUSplitReport
 from PDS_Extractors.Reports.TechDocStatusReport import TechDocStatusReport
 from PDS_Extractors.TechDoc.Validation.DueDate.DueDateStatus import DueDateStatus
 from PDS_Extractors.Reports.SAAsExtractionReport import SAAsExtractionReport
+from PDS_Extractors.Reports.OptionalsPartNumberReport import OptionalsPartNumberReport
 
 
 class ReportTrigger:
@@ -89,3 +90,12 @@ class ReportTrigger:
                 return report.run(Plant.SBC)
             elif report_type is ReportType.ExtractSAAFromAGRMZ_JDF:
                 return report.run(Plant.JDF)
+
+        # Optionals extraction from 3CA data
+        if report_type in ReportGroupings.extract_optionals_reports:
+            report = OptionalsPartNumberReport(self.tech_doc_data_source)
+            if report_type is ReportType.ExtractSAAFromAGRMZ_SBC:
+                return report.run(Plant.SBC)
+            elif report_type is ReportType.ExtractSAAFromAGRMZ_JDF:
+                return report.run(Plant.JDF)
+

@@ -27,7 +27,7 @@ class TechDocValidator:
         cached = self.parts_due_date_cache.get(cache_key, None)
         if cached is None:
             due_date_analysis = DueDateValidator.part_status_on_date(part, ref_date)
-            self.parts_due_date_cache[cache_key] = due_date_analysis
+            # self.parts_due_date_cache[cache_key] = due_date_analysis
             return due_date_analysis
         else:
             return cached
@@ -52,7 +52,7 @@ class TechDocValidator:
         cached = self.component_due_date_cache.get(cache_key, None)
         if cached is None:
             due_date_analysis = DueDateValidator.component_status_on_date(component, ref_date)
-            self.component_due_date_cache[cache_key] = due_date_analysis
+            # self.component_due_date_cache[cache_key] = due_date_analysis
             return due_date_analysis
         else:
             return cached
