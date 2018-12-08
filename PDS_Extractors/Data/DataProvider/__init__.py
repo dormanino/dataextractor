@@ -8,39 +8,35 @@ class DataProvider:
 
     @staticmethod
     def code_restriction_string_checker(partial_string, general_code_string):
-        if partial_string in general_code_string:
-            if DataProvider.find_str(general_code_string, partial_string) == 0:
+        # reverse the strings
+        partial_string = partial_string[::-1]
+        general_code_string = general_code_string[::-1]
+        # create counters
+        ext_counter = 0
+        int_counter = 0
+        # unpack both reversed strings in to chars and check if the concatenated sting (general_code_string)
+        # end is the same as the partial string
+        for partials_char, generals_char in zip(partial_string, general_code_string):
+            ext_counter += 1
+            if partials_char == generals_char:
+                int_counter += 1
+            if ext_counter == int_counter and int_counter == len(partial_string):
                 return True
         return False
 
     @staticmethod
-    def find_str(s, char):
-        index = 0
-
-        if char in s:
-            c = char[0]
-            for ch in s:
-                if ch == c:
-                    if s[index:index + len(char)] == char:
-                        return index
-
-                index += 1
-
-        return -1
-
-    @staticmethod
     def agrmz(plant, data_type_source, source):
         bm_info = json.load(open(DataPoint.data_info_bm))
+        lines_list = source
         complete_line = ''
         data_source = []
         curent_reg = ''
-        bm = ''
-        bu = ''
-        family = ''
+        none_flag = False
         data_type = ''
         kg = ''
-        none_flag = False
-        lines_list = source
+        bu = ''
+        bm = ''
+        family = ''
 
         for line_counter, line_info_dict in enumerate(lines_list):
             line = line_info_dict['data']
@@ -108,7 +104,7 @@ class DataProvider:
                 'vkfbez': (3, 55),
                 'anz': (55, 58)
             },
-            4: {
+            "bg_codebedingung": {
                 'bg': (25, 28),  # bg para SAA e bms (bg codebedingung)
                 'code': (28, 58)
             },
@@ -189,7 +185,8 @@ class DataProvider:
                             register.update({q: data})
                         analysed_lines.append(line)
 
-                    elif not prior_substring.strip() == "" and "_" in prior_substring[1]:  # defines if you are in between the component header and
+                    elif not prior_substring.strip() == "" and "_" in prior_substring[1]:
+                        # defines if you are in between the component header and the rest of the register
                         for q_1, r_1 in zip(slices[2].keys(), slices[2].values()):
                             data = substring[r_1[0]:r_1[1]].strip().replace(",", "-")
                             if data == '':
@@ -214,49 +211,56 @@ class DataProvider:
                         analysed_lines.append(line)
                         marker = False
 
-                    elif 'BG/CODEBEDINGUNGEN :' in substring:
-                        eof_codebedingungen = False
-                        dicto_codebedingungen = slices[4]
-                        dicto_data_0_codebedingungen = dicto_codebedingungen['bg']
-                        dicto_data_1_codebedingungen = dicto_codebedingungen['code']
-                        next_line_codebedingungen = line
+                    elif 'BG/CODEBEDINGUNGEN' in substring:
 
-                        if substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]].strip().replace(",", "-") == '':
+                        bg_substring = substring[
+                                       slices["bg_codebedingung"]["bg"][0]:
+                                       slices["bg_codebedingung"]["bg"][1]
+                                       ].strip().replace(",", "-")
+
+                        if bg_substring == '':
                             bg_codebedingungen = None
                         else:
-                            bg_codebedingungen = substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]]
+                            bg_codebedingungen = bg_substring
 
                         restriction_codebedingungen = substring[
-                                                      dicto_data_1_codebedingungen[0]:
-                                                      dicto_data_1_codebedingungen[1]
+                                                      slices["bg_codebedingung"]["code"][0]:
+                                                      slices["bg_codebedingung"]["code"][1]
                                                         ].strip().replace(",", "-")
 
                         if ';' not in restriction_codebedingungen:
-                            next_line_codebedingungen += 1
+                            eof_codebedingungen = False
+                            next_line_codebedingungen = line + 1
                             while not eof_codebedingungen:
                                 next_end_char_codebedingungen = next_line_codebedingungen * 80
                                 next_start_char_codebedingungen = next_end_char_codebedingungen - 80
                                 next_substring_codebedingungen = full_line[next_start_char_codebedingungen:next_end_char_codebedingungen + 1]
                                 next_substring_anal_codebedingungen = next_substring_codebedingungen[
-                                                                      dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[
-                                                                          1]].strip().replace(",", "-")
-
-                                analysed_lines.append(next_line_codebedingungen)
+                                                      slices["bg_codebedingung"]["code"][0]:
+                                                      slices["bg_codebedingung"]["code"][1]
+                                                                      ].strip().replace(",", "-")
 
                                 if ';' not in next_substring_anal_codebedingungen:
                                     if next_substring_anal_codebedingungen == '':
-                                        restriction_codebedingungen += ';'
                                         eof_codebedingungen = True
-                                    elif DataProvider.code_restriction_string_checker(next_substring_anal_codebedingungen, restriction_codebedingungen):
-                                        restriction_codebedingungen += next_substring_anal_codebedingungen
                                         restriction_codebedingungen += ';'
-                                        eof_codebedingungen = True
                                     elif next_substring_anal_codebedingungen in restriction_codebedingungen:
-                                        x=1
+                                        result = DataProvider.code_restriction_string_checker(
+                                            next_substring_anal_codebedingungen,
+                                            restriction_codebedingungen
+                                        )
+                                        if result:
+                                            eof_codebedingungen = True
+                                            restriction_codebedingungen += next_substring_anal_codebedingungen
+                                            restriction_codebedingungen += ';'
+                                        else:
+                                            eof_codebedingungen = False
+                                            restriction_codebedingungen += next_substring_anal_codebedingungen
+                                            next_line_codebedingungen += 1
                                     else:
                                         eof_codebedingungen = False
-                                        next_line_codebedingungen += 1
                                         restriction_codebedingungen += next_substring_anal_codebedingungen
+                                        next_line_codebedingungen += 1
                                 else:
                                     eof_codebedingungen = True
                                     restriction_codebedingungen += next_substring_anal_codebedingungen
@@ -279,7 +283,10 @@ class DataProvider:
                         else:
                             bg_baubarkeitsbed = substring[dicto_data_0_baubarkeitsbed[0]: dicto_data_0_baubarkeitsbed[1]]
 
-                        restriction_baubarkeitsbed = substring[dicto_data_1_baubarkeitsbed[0]: dicto_data_1_baubarkeitsbed[1]].strip().replace(",", "-")
+                        restriction_baubarkeitsbed = substring[
+                                                     dicto_data_1_baubarkeitsbed[0]:
+                                                     dicto_data_1_baubarkeitsbed[1]
+                                                     ].strip().replace(",", "-")
 
                         if ';' not in restriction_baubarkeitsbed:
                             eof_baubarkeitsbed = False
@@ -291,7 +298,9 @@ class DataProvider:
                             next_end_char_baubarkeitsbed = next_line_baubarkeitsbed * 80
                             next_start_char_baubarkeitsbed = next_end_char_baubarkeitsbed - 80
                             next_substring_baubarkeitsbed = full_line[next_start_char_baubarkeitsbed:next_end_char_baubarkeitsbed + 1]
-                            next_substring_anal_baubarkeitsbed = next_substring_baubarkeitsbed[dicto_data_1_baubarkeitsbed[0]: dicto_data_1_baubarkeitsbed[1]]
+                            next_substring_anal_baubarkeitsbed = next_substring_baubarkeitsbed[
+                                                                 dicto_data_1_baubarkeitsbed[0]:
+                                                                 dicto_data_1_baubarkeitsbed[1]]
                             restriction_baubarkeitsbed = restriction_baubarkeitsbed + next_substring_anal_baubarkeitsbed
                             analysed_lines.append(next_line_baubarkeitsbed)
 
@@ -324,7 +333,10 @@ class DataProvider:
                             next_end_char_zusteuerbed = next_line_zusteuerbed * 80
                             next_start_char_zusteuerbed = next_end_char_zusteuerbed - 80
                             next_substring_zusteuerbed = full_line[next_start_char_zusteuerbed:next_end_char_zusteuerbed + 1]
-                            next_substring_anal_zusteuerbed = next_substring_zusteuerbed[dicto_data_zusteuerbed[0]: dicto_data_zusteuerbed[1]].strip().replace(",", "-")
+                            next_substring_anal_zusteuerbed = next_substring_zusteuerbed[
+                                                              dicto_data_zusteuerbed[0]:
+                                                              dicto_data_zusteuerbed[1]
+                                                              ].strip().replace(",", "-")
                             restriction_zusteuerbed = restriction_zusteuerbed + next_substring_anal_zusteuerbed
                             analysed_lines.append(next_line_zusteuerbed)
 
@@ -353,8 +365,7 @@ class DataProvider:
                             register.update({'verw.-st': data_0_verw})
                             register.update({'verw_info': data_1_verw})
                         else:
-                            x = 1
-                            pass  # TODO: make logic for
+                            pass  # TODO: make logic for this situation
                         analysed_lines.append(line)
 
                     elif line not in analysed_lines:
@@ -373,7 +384,7 @@ class DataProvider:
 
     @staticmethod
     def all_codes():
-        #TODO: remove weak file path
+        # TODO: remove weak file path
         all_codes_file = LatestFileVersion.latest_file_version('json', '_PDS_0E',
                                                                current='C:\\Users\\vravagn\\PycharmProjects\\DataExtractor\\PDS_Extractors')
         data_json = json.load(open(all_codes_file))
@@ -391,20 +402,20 @@ class DataProvider:
 
         slices = {
             1: {
-                'CU': (3, 14),  # ok
-                'POS': (14, 18),   # ok
-                'LA': (18, 21),  # ok
-                'SP': (21, 24),  # ok
-                'code_bed': (24, 54),  # ok
-                'asa': (55, 59),  # ok
+                'CU': (3, 14),
+                'POS': (14, 18),
+                'LA': (18, 21),
+                'SP': (21, 24),
+                'code_bed': (24, 54),
+                'asa': (55, 59),
                 'em-ab': (61, 67),
                 'em-bis': (72, 78)
             },
             2: {
-                'RF': (18, 21),  # ok
-                'PG': (21, 24),  # ok
-                'code_bed': (24, 54),  # ok
-                'asb': (55, 59),  # ok
+                'RF': (18, 21),
+                'PG': (21, 24),
+                'code_bed': (24, 54),
+                'asb': (55, 59),
                 't-a_kz': (62, 63),
                 't-a': (63, 69),
                 't-b_kz': (73, 74),
@@ -628,21 +639,21 @@ class DataProvider:
 
 
 # agrmz code
-plants = ['sbc', 'jdf']
-data_types = ['vehicle', 'aggregate']
-for plant in plants:
-    list_to_check = []
-    for data_type in data_types:
-        if plant == 'sbc' and data_type == 'vehicle':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
-        elif plant == 'jdf' and data_type == 'vehicle':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
-        elif plant == 'sbc' and data_type == 'aggregate':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
-        elif plant == 'jdf' and data_type == 'aggregate':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
-        DataProvider.agrmz(plant, data_type, list_to_check)
-        print("concluded " + plant + "/" + data_type)
+# plants = ['sbc', 'jdf']
+# data_types = ['vehicle', 'aggregate']
+# for plant in plants:
+#     list_to_check = []
+#     for data_type in data_types:
+#         if plant == 'sbc' and data_type == 'vehicle':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
+#         elif plant == 'jdf' and data_type == 'vehicle':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
+#         elif plant == 'sbc' and data_type == 'aggregate':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
+#         elif plant == 'jdf' and data_type == 'aggregate':
+#             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
+#         DataProvider.agrmz(plant, data_type, list_to_check)
+#         print("concluded " + plant + "/" + data_type)
 
 
 DataProvider.treeca('sbc', DataPoint.data_3ca_raw_sbc)
