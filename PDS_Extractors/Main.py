@@ -17,8 +17,6 @@ reports = {
     # "EPU_Split": ReportType.EPUSplit
     # "SAA_SET_SBC": ReportType.ExtractSAAFromAGRMZ_SBC,
     # "SAA_SET_JDF": ReportType.ExtractSAAFromAGRMZ_JDF
-    # "ExtractOptionalsPartsFrom3CA_SBC": ReportType.ExtractOptionalsPartsFrom3CA_SBC,
-    # "ExtractOptionalsPartsFrom3CA_JDF": ReportType.ExtractOptionalsPartsFrom3CA_JDF
 }
 
 trigger = ReportTrigger()
