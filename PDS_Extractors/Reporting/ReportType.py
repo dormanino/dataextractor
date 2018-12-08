@@ -15,6 +15,7 @@ class ReportType(Enum):
     TechDocNoConclusionComponentsAndParts = "TechDoc - Nao Conclusivos - Componentes e Partes"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     ExtractSAAFromAGRMZ_SBC = "SAAs para copia de 3CA em SBC"
     ExtractSAAFromAGRMZ_JDF = "SAAs para copia de 3CA em JDF"
 =======
@@ -22,6 +23,8 @@ class ReportType(Enum):
 =======
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     ExtractSAAFromAGRMZ_SBC = "SAAs para copia de 3ca em sbc"
     ExtractSAAFromAGRMZ_JDF = "SAAs para copia de 3ca em jdf"
 =======
@@ -33,6 +36,9 @@ class ReportType(Enum):
     ExtractSAAFromAGRMZ_JDF = "SAAs para copia de 3CA em JDF"
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

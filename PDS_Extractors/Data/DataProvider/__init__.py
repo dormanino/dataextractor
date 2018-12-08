@@ -8,8 +8,6 @@ class DataProvider:
 
     @staticmethod
     def code_restriction_string_checker(partial_string, general_code_string):
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         # reverse the strings
         partial_string = partial_string[::-1]
         general_code_string = general_code_string[::-1]
@@ -25,32 +23,6 @@ class DataProvider:
             if ext_counter == int_counter and int_counter == len(partial_string):
                 return True
         return False
-=======
-=======
->>>>>>> Stashed changes
-        if partial_string in general_code_string:
-            if DataProvider.find_str(general_code_string, partial_string) == 0:
-                return True
-        return False
-
-    @staticmethod
-    def find_str(s, char):
-        index = 0
-
-        if char in s:
-            c = char[0]
-            for ch in s:
-                if ch == c:
-                    if s[index:index + len(char)] == char:
-                        return index
-
-                index += 1
-
-        return -1
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
     @staticmethod
     def agrmz(plant, data_type_source, source):
@@ -132,14 +104,7 @@ class DataProvider:
                 'vkfbez': (3, 55),
                 'anz': (55, 58)
             },
-<<<<<<< Updated upstream
             "bg_codebedingung": {
-=======
-            4: {
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
                 'bg': (25, 28),  # bg para SAA e bms (bg codebedingung)
                 'code': (28, 58)
             },
@@ -187,7 +152,8 @@ class DataProvider:
                     data_input["data"].append(grouping_input)
 
                 full_line = data[5]
-                amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the component (each line has 80 char)
+                # finds the amount of data in the component (each line has 80 char)
+                amount_of_lines = int(len(full_line) / 80)
                 register = dict()
                 marker = False
                 prior_substring = ''
@@ -246,7 +212,6 @@ class DataProvider:
                         analysed_lines.append(line)
                         marker = False
 
-<<<<<<< Updated upstream
                     elif 'BG/CODEBEDINGUNGEN' in substring:
 
                         bg_substring = substring[
@@ -255,16 +220,6 @@ class DataProvider:
                                        ].strip().replace(",", "-")
 
                         if bg_substring == '':
-=======
-                    elif 'BG/CODEBEDINGUNGEN :' in substring:
-                        eof_codebedingungen = False
-                        dicto_codebedingungen = slices[4]
-                        dicto_data_0_codebedingungen = dicto_codebedingungen['bg']
-                        dicto_data_1_codebedingungen = dicto_codebedingungen['code']
-                        next_line_codebedingungen = line
-
-                        if substring[dicto_data_0_codebedingungen[0]: dicto_data_0_codebedingungen[1]].strip().replace(",", "-") == '':
->>>>>>> Stashed changes
                             bg_codebedingungen = None
                         else:
                             bg_codebedingungen = bg_substring
@@ -275,22 +230,18 @@ class DataProvider:
                                                         ].strip().replace(",", "-")
 
                         if ';' not in restriction_codebedingungen:
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
                             eof_codebedingungen = False
                             next_line_codebedingungen = line + 1
-=======
                             next_line_codebedingungen += 1
->>>>>>> Stashed changes
-=======
                             next_line_codebedingungen += 1
->>>>>>> Stashed changes
+                            next_line_codebedingungen += 1
                             while not eof_codebedingungen:
                                 next_end_char_codebedingungen = next_line_codebedingungen * 80
                                 next_start_char_codebedingungen = next_end_char_codebedingungen - 80
-                                next_substring_codebedingungen = full_line[next_start_char_codebedingungen:next_end_char_codebedingungen + 1]
+                                next_substring_codebedingungen = full_line[
+                                                                 next_start_char_codebedingungen:
+                                                                 next_end_char_codebedingungen + 1]
                                 next_substring_anal_codebedingungen = next_substring_codebedingungen[
-<<<<<<< Updated upstream
                                                       slices["bg_codebedingung"]["code"][0]:
                                                       slices["bg_codebedingung"]["code"][1]
                                                                       ].strip().replace(",", "-")
@@ -316,30 +267,7 @@ class DataProvider:
                                         eof_codebedingungen = False
                                         restriction_codebedingungen += next_substring_anal_codebedingungen
                                         next_line_codebedingungen += 1
-=======
-                                                                      dicto_data_1_codebedingungen[0]: dicto_data_1_codebedingungen[
-                                                                          1]].strip().replace(",", "-")
 
-                                analysed_lines.append(next_line_codebedingungen)
-
-                                if ';' not in next_substring_anal_codebedingungen:
-                                    if next_substring_anal_codebedingungen == '':
-                                        restriction_codebedingungen += ';'
-                                        eof_codebedingungen = True
-                                    elif DataProvider.code_restriction_string_checker(next_substring_anal_codebedingungen, restriction_codebedingungen):
-                                        restriction_codebedingungen += next_substring_anal_codebedingungen
-                                        restriction_codebedingungen += ';'
-                                        eof_codebedingungen = True
-                                    elif next_substring_anal_codebedingungen in restriction_codebedingungen:
-                                        x=1
-                                    else:
-                                        eof_codebedingungen = False
-                                        next_line_codebedingungen += 1
-                                        restriction_codebedingungen += next_substring_anal_codebedingungen
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
                                 else:
                                     eof_codebedingungen = True
                                     restriction_codebedingungen += next_substring_anal_codebedingungen
@@ -347,7 +275,6 @@ class DataProvider:
                         restriction_codebedingungen = restriction_codebedingungen.replace(' ', '')
                         register.update({'bg_codebedingungen': bg_codebedingungen})
                         register.update({'codebedingungen': restriction_codebedingungen})
-                        analysed_lines.append(line)
 
                     elif 'BG/BAUBARKEITSBED' in substring:
                         dicto_baubarkeitsbed = slices[5]
@@ -459,7 +386,9 @@ class DataProvider:
         with open(final_path, 'w', encoding='utf-8') as f:
             json.dump(main_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
-        return print('concluded')
+        print("concluded")
+
+        return 'concluded'
 
     @staticmethod
     def all_codes():
@@ -714,11 +643,12 @@ class DataProvider:
         with open(final_path, 'w', encoding='utf-8') as f:
             json.dump(main_dict, f, indent=4, sort_keys=False, ensure_ascii=False)
 
-        return print('concluded')
+        print('concluded')
+
+        return 'concluded'
 
 
 # agrmz code
-<<<<<<< Updated upstream
 # plants = ['sbc', 'jdf']
 # data_types = ['vehicle', 'aggregate']
 # for plant in plants:
@@ -734,24 +664,6 @@ class DataProvider:
 #             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
 #         DataProvider.agrmz(plant, data_type, list_to_check)
 #         print("concluded " + plant + "/" + data_type)
-=======
-plants = ['sbc', 'jdf']
-data_types = ['vehicle', 'aggregate']
-for plant in plants:
-    list_to_check = []
-    for data_type in data_types:
-        if plant == 'sbc' and data_type == 'vehicle':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_sbc))
-        elif plant == 'jdf' and data_type == 'vehicle':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_vehicles_jdf))
-        elif plant == 'sbc' and data_type == 'aggregate':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_sbc))
-        elif plant == 'jdf' and data_type == 'aggregate':
-            list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
-        DataProvider.agrmz(plant, data_type, list_to_check)
-        print("concluded " + plant + "/" + data_type)
->>>>>>> Stashed changes
-
 
 DataProvider.treeca('sbc', DataPoint.data_3ca_raw_sbc)
 DataProvider.treeca('jdf', DataPoint.data_3ca_raw_jdf)
