@@ -1,5 +1,6 @@
-from collections import OrderedDict
 import typing
+from PDS_Extractors.Models.Component import ComponentGroupingType
+
 
 class BaumusterPDSSalesData:
     def __init__(self, baumuster: str, benennung: str, verkaufbezeichnung: str, tieferverkaufbezeichnung: typing.List, family: str,
@@ -10,7 +11,6 @@ class BaumusterPDSSalesData:
         self.benennung: str = benennung
         self.verkaufbezeichnung: str = verkaufbezeichnung
         self.tieferverkaufbezeichnung: str = tieferverkaufbezeichnung
-        self.business_unit: str = business_unit
         self.family = family
         self.bg = bg
         self.grouping_type: ComponentGroupingType = grouping_type
