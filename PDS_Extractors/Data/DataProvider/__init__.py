@@ -152,7 +152,8 @@ class DataProvider:
                     data_input["data"].append(grouping_input)
 
                 full_line = data[5]
-                amount_of_lines = int(len(full_line) / 80)  # finds the amount of data in the component (each line has 80 char)
+                # finds the amount of data in the component (each line has 80 char)
+                amount_of_lines = int(len(full_line) / 80)
                 register = dict()
                 marker = False
                 prior_substring = ''
@@ -231,10 +232,15 @@ class DataProvider:
                         if ';' not in restriction_codebedingungen:
                             eof_codebedingungen = False
                             next_line_codebedingungen = line + 1
+                            next_line_codebedingungen += 1
+                            next_line_codebedingungen += 1
+                            next_line_codebedingungen += 1
                             while not eof_codebedingungen:
                                 next_end_char_codebedingungen = next_line_codebedingungen * 80
                                 next_start_char_codebedingungen = next_end_char_codebedingungen - 80
-                                next_substring_codebedingungen = full_line[next_start_char_codebedingungen:next_end_char_codebedingungen + 1]
+                                next_substring_codebedingungen = full_line[
+                                                                 next_start_char_codebedingungen:
+                                                                 next_end_char_codebedingungen + 1]
                                 next_substring_anal_codebedingungen = next_substring_codebedingungen[
                                                       slices["bg_codebedingung"]["code"][0]:
                                                       slices["bg_codebedingung"]["code"][1]
@@ -261,6 +267,7 @@ class DataProvider:
                                         eof_codebedingungen = False
                                         restriction_codebedingungen += next_substring_anal_codebedingungen
                                         next_line_codebedingungen += 1
+
                                 else:
                                     eof_codebedingungen = True
                                     restriction_codebedingungen += next_substring_anal_codebedingungen
@@ -268,7 +275,6 @@ class DataProvider:
                         restriction_codebedingungen = restriction_codebedingungen.replace(' ', '')
                         register.update({'bg_codebedingungen': bg_codebedingungen})
                         register.update({'codebedingungen': restriction_codebedingungen})
-                        analysed_lines.append(line)
 
                     elif 'BG/BAUBARKEITSBED' in substring:
                         dicto_baubarkeitsbed = slices[5]
@@ -380,7 +386,9 @@ class DataProvider:
         with open(final_path, 'w', encoding='utf-8') as f:
             json.dump(main_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
 
-        return print('concluded')
+        print("concluded")
+
+        return 'concluded'
 
     @staticmethod
     def all_codes():
@@ -635,7 +643,9 @@ class DataProvider:
         with open(final_path, 'w', encoding='utf-8') as f:
             json.dump(main_dict, f, indent=4, sort_keys=False, ensure_ascii=False)
 
-        return print('concluded')
+        print('concluded')
+
+        return 'concluded'
 
 
 # agrmz code
@@ -654,7 +664,6 @@ class DataProvider:
 #             list_to_check = json.load(open(DataPoint.data_agrmz_raw_aggregates_jdf))
 #         DataProvider.agrmz(plant, data_type, list_to_check)
 #         print("concluded " + plant + "/" + data_type)
-
 
 DataProvider.treeca('sbc', DataPoint.data_3ca_raw_sbc)
 DataProvider.treeca('jdf', DataPoint.data_3ca_raw_jdf)
