@@ -23,8 +23,6 @@ class QVVComponentsExtractor:
         for code in self.tech_doc_data_source.cabin_codes_to_ignore:
             if code in cleaned_up_composition:
                 cleaned_up_composition.remove(code)
-            # if code not in cleaned_up_composition:
-            #     cleaned_up_composition.append(code)
 
         rectified_qvv = QVVProduction(qvv.qvv_id, qvv.baumuster_id, qvv.business_unit, qvv.family, qvv.volume, cleaned_up_composition)
         return list(filter(lambda c: self.tech_doc_validator.validate_code_rule(c, rectified_qvv), components))

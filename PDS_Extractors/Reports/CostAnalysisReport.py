@@ -59,28 +59,28 @@ class CostAnalysisReport:
                         analyzed_component.component.component_id,
                         analyzed_component.component.kg,
                         analyzed_component.component.anz,
-                        analyzed_component.component.em_ab,
-                        analyzed_component.component.t_a,
-                        analyzed_component.component.em_bis,
-                        analyzed_component.component.t_b,
+                        # analyzed_component.component.em_ab,
+                        # analyzed_component.component.t_a,
+                        # analyzed_component.component.em_bis,
+                        # analyzed_component.component.t_b,
                         grouping,
                         analyzed_component.component.business_unit,
                         analyzed_component.component.family,
-                        analyzed_component.component.component_description,
-                        analyzed_component.component.validation_rule,
-                        analyzed_component.due_date_analysis.status.name,
-                        analyzed_component.due_date_analysis.comment
+                        # analyzed_component.component.component_description,
+                        # analyzed_component.component.validation_rule,
+                        # analyzed_component.due_date_analysis.status.name,
+                        # analyzed_component.due_date_analysis.comment
                     ]
 
                     if include_parts:
                         for analyzed_part in analyzed_component.parts:
                             part_data = [
                                 analyzed_part.part.part_number,
-                                analyzed_part.part.part_description,
+                                # analyzed_part.part.part_description,
                                 analyzed_part.part.quantity,
                                 analyzed_part.part.bza,
-                                analyzed_part.due_date_analysis.status.name,
-                                analyzed_part.due_date_analysis.comment
+                                # analyzed_part.due_date_analysis.status.name,
+                                # analyzed_part.due_date_analysis.comment
                             ]
                             extended_data_row = data_row.copy()
                             extended_data_row.extend(part_data)

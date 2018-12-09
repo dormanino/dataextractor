@@ -21,13 +21,40 @@ class ComponentsExtractor:
         self.baumuster_data_cache = dict()
         self.component_parts_cache = dict()
 
-    # PARTS
+    # SOURCE
+    def vehicles_source_for_family(self, family: str) -> BaumusterCollection:
+        if family in self.tech_doc_data_source.jdf_families:
+            return self.tech_doc_data_source.jdf_vehicles_source
+        else:
+            return self.tech_doc_data_source.sbc_vehicles_source
+
+    def aggregates_source_for_component(self, component: Component) -> (BaumusterCollection, BaumusterCollection):
+        if component.grouping_type is not ComponentGroupingType.Aggregate:
+            raise ValueError("Component " + component.component_id + " is not an Aggregate")
+
+        if component.family in self.tech_doc_data_source.jdf_families:
+            if component.clean_component_id in self.tech_doc_data_source.cabin_bms:
+                main_source = self.tech_doc_data_source.jdf_aggregates_collection
+                secondary_source = None
+            else:
+                main_source = self.tech_doc_data_source.jdf_aggregates_collection
+                secondary_source = self.tech_doc_data_source.sbc_aggregates_collection
+        else:
+            if component.clean_component_id in self.tech_doc_data_source.cabin_bms:
+                main_source = self.tech_doc_data_source.jdf_aggregates_collection
+                secondary_source = self.tech_doc_data_source.sbc_aggregates_collection
+            else:
+                main_source = self.tech_doc_data_source.sbc_aggregates_collection
+                secondary_source = None
+        return main_source, secondary_source
+
     def parts_source_for_component(self, component: Component) -> ComponentsCollection:
         if component.em_ab[0] == "U":
             return self.tech_doc_data_source.sbc_component_parts_collection
         else:  # if component.em_ab[0] == "R":
             return self.tech_doc_data_source.jdf_component_parts_collection
 
+    # PARTS
     def find_parts_for_component_in_source(self, component: Component, source: ComponentsCollection) -> ComponentParts:
         cache_key = str(hash(source)) + str(hash(component))
         not_found_value = "not_found"
@@ -94,7 +121,7 @@ class ComponentsExtractor:
                         parts = self.parts_for_component(component)
                         analyzed_parts = list(map(lambda p: self.tech_doc_validator.analyze_part(p, ref_date), parts))
                     except ValueError:
-                        continue
+                        pass
                 analyzed_component = self.tech_doc_validator.analyze_component(component, analyzed_parts, ref_date)
                 analyzed_components.append(analyzed_component)
                 analyzed_groupings[grouping] = analyzed_components
@@ -119,29 +146,12 @@ class ComponentsExtractor:
         return valid_groupings
 
     # VEHICLE COMPONENTS
-    def vehicles_source_for_family(self, family: str) -> BaumusterCollection:
-        if family in self.tech_doc_data_source.jdf_families:
-            return self.tech_doc_data_source.jdf_vehicles_source
-        else:
-            return self.tech_doc_data_source.sbc_vehicles_source
-
     def grouped_vehicle_components(self, vehicle_bm: BaumusterData) -> Dict[str, List[Component]]:
         groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG,
                      ComponentGroupingType.General, ComponentGroupingType.Aggregate]
         return self.extract_components_by_grouping(vehicle_bm, groupings)
 
     # AGGREGATE COMPONENTS
-    def aggregates_source_for_component(self, component: Component) -> (BaumusterCollection, BaumusterCollection):
-        if component.grouping_type is not ComponentGroupingType.Aggregate:
-            raise ValueError("Component " + component.component_id + " is not an Aggregate")
-        elif component.clean_component_id in self.tech_doc_data_source.cabin_bms:
-            main_source = self.tech_doc_data_source.jdf_aggregates_collection
-            secondary_source = self.tech_doc_data_source.sbc_aggregates_collection
-        else:
-            main_source = self.tech_doc_data_source.sbc_aggregates_collection
-            secondary_source = self.tech_doc_data_source.jdf_aggregates_collection
-        return main_source, secondary_source
-
     def grouped_aggregates_for_vehicle_components(self, vehicle_components: List[Component]) -> Dict[str, List[Component]]:
         grouped_aggregates_for_vehicle = dict()
         for component in vehicle_components:
@@ -158,12 +168,45 @@ class ComponentsExtractor:
         return grouped_aggregates_for_vehicle
 
     def grouped_aggregates_for_component(self, component: Component) -> Dict[str, List[Component]]:
-        main, secondary = self.aggregates_source_for_component(component)
-        if component.clean_component_id in self.tech_doc_data_source.cabin_bms:
-            grouped_aggregate_components = self.grouped_cabin_aggr_components(component, main, secondary)
-        else:
-            grouped_aggregate_components = self.grouped_non_cabin_aggr_components(component, main, secondary)
-        return grouped_aggregate_components
+        first_src, second_src = self.aggregates_source_for_component(component)
+
+        baumuster_id = component.clean_component_id
+        first_aggr_bm = None
+        second_aggr_bm = None
+
+        if first_src is not None:
+            try:
+                first_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, first_src)
+            except ValueError:
+                pass
+        if second_src is not None:
+            try:
+                second_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, second_src)
+            except ValueError:
+                pass
+        if first_aggr_bm is None and second_aggr_bm is None:
+            raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
+
+        groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG, ComponentGroupingType.General]
+        prefix = ComponentGroupingType.Aggregate.name
+
+        sbc_components = dict()
+        sbc_aggr_bm = first_aggr_bm if first_src.plant == Plant.SBC else second_aggr_bm
+        if sbc_aggr_bm is not None:
+            sbc_components = self.extract_components_by_grouping(sbc_aggr_bm, groupings, prefix, baumuster_id + " " + Plant.SBC.name)
+
+        jdf_components = dict()
+        jdf_aggr_bm = first_aggr_bm if first_src.plant == Plant.JDF else second_aggr_bm
+        if jdf_aggr_bm is not None:
+            jdf_components = self.extract_components_by_grouping(jdf_aggr_bm, groupings, prefix, baumuster_id + " " + Plant.JDF.name)
+
+        return dict(sbc_components, **jdf_components)
+
+        # if component.clean_component_id in self.tech_doc_data_source.cabin_bms:
+        #     grouped_aggregate_components = self.grouped_cabin_aggr_components(component, main, secondary)
+        # else:
+        #     grouped_aggregate_components = self.grouped_non_cabin_aggr_components(component, main, secondary)
+        # return grouped_aggregate_components
 
     def grouped_cabin_aggr_components(self, component: Component,
                                       main_aggr_src: BaumusterCollection,
