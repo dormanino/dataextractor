@@ -1,15 +1,23 @@
 import json
 import csv
 import datetime
-import time
 from collections import OrderedDict
 from GeneralHelpers import CheckFileExists
 from BPM_STAR_Extractors.DataPoint import DataPoint
 from BPM_STAR_Extractors.String_Parser import Parse
-from collections import namedtuple
 
 
 class MakeFile:
+
+    @staticmethod
+    def make_json_file(source_dict, filename, indent=None):
+        date = datetime.date.today()
+        date_string = date.strftime('%y%m%d')
+        full_filename = date_string + filename + "." + DataPoint.EXT_json
+        path = DataPoint.PATH_DataFiles + "\\" + full_filename
+        with open(path, 'w') as file:
+            json.dump(source_dict, file, indent=indent, ensure_ascii=False)
+        print(full_filename + " concluded")
 
     @staticmethod
     def parsed_12mpp():
@@ -34,58 +42,26 @@ class MakeFile:
 
     @staticmethod
     def bm_qvv_vol():
-
-        while not CheckFileExists.Check.open_file(DataPoint.data_variant_final_data):
-            print('fst pass final variant data not available')
-        print('fst pass final variant data available')
-
-        while not CheckFileExists.Check.open_file(DataPoint.data_12mpp_parsed):
-            print('fst pass 12 mpp data not available')
-        print('fst pass 12 mpp data available')
-
-        b3902v = json. load(open(DataPoint.data_variant_final_data))
+        b3902v = json.load(open(DataPoint.data_variant_final_data))
         dozempp = json.load(open(DataPoint.data_12mpp_parsed))
-        # TODO: dict comprehension
-        dicto_tst = {}
+
+        bm_variants_dict = dict()
         for b in b3902v:
-            dicto_tst[str(b['variant'])] = b['baumuster'][0:7]
+            bm_id = b['baumuster'][0:7]
+            bm_variant = b['variant']
+            total_vol_key = "total"
+            variant_total_vol = 0
+            if next(filter(lambda v: v == bm_variant, dozempp.keys()), None):
+                variant_total_vol = int(dozempp[bm_variant][total_vol_key])
+            if variant_total_vol <= 0:
+                continue
+            if bm_id not in bm_variants_dict.keys():  # create bm_key, start total, add variant
+                bm_variants_dict[bm_id] = {total_vol_key: variant_total_vol, bm_variant: variant_total_vol}
+            else:  # add variant, update total
+                updated_total = bm_variants_dict[bm_id][total_vol_key] + variant_total_vol
+                bm_variants_dict[bm_id].update({total_vol_key: updated_total, bm_variant: variant_total_vol})
 
-        final_dict = {}
-        # TODO: dict comprehension
-        for dc in dozempp:
-            if dozempp[dc]['total'] != '0':
-                final_dict[dc] = dozempp[dc]['total']
-
-        set_bm = set()
-        for dt in final_dict.values():
-            set_bm.add(dt[0])
-        print(set_bm)
-
-        data_sum = 0
-        dict_tst = {}
-        data_tot_sum = 0
-        for po in set_bm:
-            for dt in final_dict.items():
-                if po == dt[1][0]:
-                    data_sum += int(dt[1][1])
-            data_tot_sum += data_sum
-            dict_tst[po] = data_sum
-            data_sum = 0
-
-        date = datetime.date.today()
-        date_string = date.strftime('%y%m%d')
-
-        with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_qvv_bmvol.json', 'w') as f:
-            json.dump(final_dict, f, indent=2, sort_keys=True, ensure_ascii=False)
-
-            time.sleep(3)
-            while not CheckFileExists.Check.open_file(DataPoint.PATH_DataFiles + "\\" + date_string + '_qvv_bmvol.json'):
-                print('not ready')
-                time.sleep(3)
-            print('ready')
-
-        with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_bmvol_tot.json', 'w') as f:
-            json.dump(dict_tst, f, sort_keys=True, ensure_ascii=False)
+        MakeFile.make_json_file(bm_variants_dict, DataPoint.filename_bm_qvv_vol, 2)
 
     @staticmethod
     def bm_qvv():
@@ -136,51 +112,24 @@ class MakeFile:
 
     @staticmethod
     def concatenate_infos():
+        b3902v = json.load(open(DataPoint.data_variant_final_data))
+        dozempp = json.load(open(DataPoint.data_12mpp_parsed))
+        bm_qvv_vol = json.load(open(DataPoint.data_qvv_bm_vol))
+        bm_info = json.load(open(DataPoint.data_info_bm))
+        variant_code_data = {val['variant']: val['codes'] for val in b3902v}
 
-        while not CheckFileExists.Check.open_file(DataPoint.data_qvv_bm_vol):
-            print('qvv_bm_vol not available')
-            time.sleep(5)
-        print('qvv_bm_vol available')
-        CheckFileExists.Check.open_file(DataPoint.data_variant_final_data)
-        print('variant final data available')
-        CheckFileExists.Check.open_file(DataPoint.data_info_bm)
-        print('info bm available')
-        CheckFileExists.Check.open_file(DataPoint.data_12mpp_parsed)
-        print('12mpp parsed available')
+        end_dict = {}
+        for (bm_id, variant_vol) in bm_qvv_vol.items():
+            for (variant, vol) in variant_vol.items():
+                if variant == "total":
+                    continue
+                # TODO: Proper dictionary hierarchy, current structure reeks of go-horse
+                end_dict[variant] = [[[bm_id, [bm_info[bm_id][0],
+                                               bm_info[bm_id][1]]],
+                                      dozempp[variant]],
+                                     variant_code_data[variant]]
 
-        qvv_info = json.load(open(DataPoint.data_qvv_bm_vol))
-        b3902v_info = json.load(open(DataPoint.data_variant_final_data))
-        gen_info = json.load(open(DataPoint.data_info_bm))
-        prog_prod = json.load(open(DataPoint.data_12mpp_parsed))
-
-        dicto = {}
-        qvv_with_volume_list = [[key, val] for key, val in qvv_info.items()]
-        info_a_ver = [[info, bm] for info, bm in gen_info.items()]
-        for bm_qvv in qvv_with_volume_list:
-            for bm_info in info_a_ver:
-                if bm_info[0] == bm_qvv[1][0]:
-                    dicto[bm_qvv[0]] = bm_info
-
-        for key_dicto, val_dicto in dicto.items():
-            if 'QVV81503113B' == key_dicto:
-                print('yes')
-
-            if key_dicto in prog_prod:
-                dicto[key_dicto] = [dicto[key_dicto], prog_prod[key_dicto]]
-        print('not found')
-
-        data_prev = {val['variant']: val['codes'] for val in b3902v_info}
-
-        for key_dicto, val_dicto in dicto.items():
-            if key_dicto in data_prev:
-                dicto[key_dicto] = [dicto[key_dicto], data_prev[key_dicto]]
-
-        date = datetime.date.today()
-        date_string = date.strftime('%y%m%d')
-
-        with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dict_end.json', 'w') as f:
-            json.dump(dicto, f, indent=4, sort_keys=True, ensure_ascii=False)
-    print('dict_end.json concluded')
+        MakeFile.make_json_file(end_dict, DataPoint.filename_dict_end, 4)
 
 
 class MakeFinalDict:
@@ -189,7 +138,7 @@ class MakeFinalDict:
             print('dict end available')
         self.qvv_data = json.load(open(DataPoint.data_final_dict))
 
-    def variant_info_gen(self, month_data, year):
+    def variant_info_gen(self, month_data):
 
         qvvs_data = list((key, values[0][0][0], values[0][0][1][0],
                           values[0][0][1][1], [i['code'] for i in values[1]], int(values[0][1][month_data]))
@@ -197,8 +146,8 @@ class MakeFinalDict:
 
         return qvvs_data
 
-    def variant_model_gen(self, months):
-        qvvs_data_dict = {'production': []}
+    def variant_model_gen(self, months, year):
+        qvvs_data_dict = {"year": year, 'production': []}
         for month in months:
             monthly_production = {'month': '',  # change to `month_year` and pass year along
                                   'data': []}
@@ -215,7 +164,6 @@ class MakeFinalDict:
                     main_dict['volume'] = int(values[0][1][month])
                     swap_list.append(main_dict)
                 monthly_production['month'] = month
-                monthly_production['year'] = year
                 monthly_production['data'] = swap_list
             qvvs_data_dict['production'].append(monthly_production)
         return qvvs_data_dict
@@ -227,22 +175,22 @@ class MakeFinalDict:
 # time.sleep(5)  # TODO:routine to analise if the new file is ready for next analisys
 # MakeFile.concatenate_infos()
 #
-# month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
-# year = 2019
-# #
-# date = datetime.date.today()
-# date_string = date.strftime('%y%m%d')
-# #
-# for month in month_list:
-#     total_qvv_list = MakeFinalDict().variant_info_gen(month, year)
+month_list = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez', 'total']
+year = 2019
 #
-#     with open(DataPoint.PATH_DataFiles + "\\" + date_string + "_" + month + '_qvvs.csv', 'w', newline='\n') as csvfile:
-#         wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-#         for line in total_qvv_list:
-#             wr.writerow(line)
+date = datetime.date.today()
+date_string = date.strftime('%y%m%d')
 #
-# total_qvv_dict = MakeFinalDict().variant_model_gen(month_list)
-# with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dictionary_qvvs_by_month.json', 'w') as f:
-#     json.dump(total_qvv_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
+for month in month_list:
+    total_qvv_list = MakeFinalDict().variant_info_gen(month)
 
-MakeFile.bm_qvv()
+    with open(DataPoint.PATH_DataFiles + "\\" + date_string + "_" + month + '_qvvs.csv', 'w', newline='\n') as csvfile:
+        wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+        for line in total_qvv_list:
+            wr.writerow(line)
+
+total_qvv_dict = MakeFinalDict().variant_model_gen(month_list, year)
+with open(DataPoint.PATH_DataFiles + "\\" + date_string + '_dictionary_qvvs_by_month.json', 'w') as f:
+    json.dump(total_qvv_dict, f, indent=4, sort_keys=True, ensure_ascii=False)
+
+# MakeFile.bm_qvv()

@@ -50,15 +50,24 @@ class QVVComponentsExtractor:
         cached = self.grouped_components_for_qvv_cache.get(cache_key, None)
         if cached is None:
             qvv_components = dict()
+            vehicle_aggregates = dict()
 
-            vehicles_source = self.components_extractor.vehicles_source_for_family(qvv.family)
-            vehicle_bm = self.components_extractor.find_baumuster_data_for_id_in_source(qvv.baumuster_id, vehicles_source)
+            if qvv.baumuster_id.startswith("C"):  # Default QVVs
+                vehicles_source = self.components_extractor.vehicles_source_for_family(qvv.family)
+                vehicle_bm = self.components_extractor.find_baumuster_data_for_id_in_source(qvv.baumuster_id, vehicles_source)
 
-            vehicle_components = self.components_extractor.grouped_vehicle_components(vehicle_bm)
-            for grouping, components in vehicle_components.items():
-                qvv_components[grouping] = list(filter(lambda ac: self.tech_doc_validator.validate_code_rule(ac, qvv), components))
+                vehicle_components = self.components_extractor.grouped_vehicle_components(vehicle_bm)
+                for grouping, components in vehicle_components.items():
+                    qvv_components[grouping] = list(filter(lambda ac: self.tech_doc_validator.validate_code_rule(ac, qvv), components))
 
-            vehicle_aggregates = qvv_components[ComponentGroupingType.Aggregate.name]
+                vehicle_aggregates = qvv_components[ComponentGroupingType.Aggregate.name]
+
+            elif qvv.baumuster_id.startswith("D"):  # Default QVAAs, QVAMs, QVAJs, etc
+                # create dummy component based on baumuster_id to get only the aggregates -- workaround
+                dummy_component = Component(qvv.baumuster_id, "", "", "", "", "", ComponentGroupingType.Aggregate,
+                                            "", "", "", "", "", "", "", "", "", "")
+                vehicle_aggregates = [dummy_component]
+
             for grouping, components in self.components_extractor.grouped_aggregates_for_vehicle_components(vehicle_aggregates).items():
 
                 if qvv.family == "Actros":  # SPECIAL RULE FOR Actros Familiy
