@@ -1,5 +1,6 @@
 import datetime
 from typing import Dict, List
+import sys
 
 from PDS_Extractors.Models.Analysis.AnalyzedComponent import AnalyzedComponent
 from PDS_Extractors.TechDoc.Validation.TechDocValidator import TechDocValidator
@@ -61,6 +62,7 @@ class ComponentsExtractor:
         not_found_error = "Couldn't find parts for Component " + component.component_id
 
         cached_component_parts = self.component_parts_cache.get(cache_key, None)
+        print(sys.getsizeof(self.component_parts_cache))
         if cached_component_parts == not_found_value:
             raise ValueError(not_found_error)
         elif cached_component_parts is None:
@@ -208,70 +210,70 @@ class ComponentsExtractor:
         #     grouped_aggregate_components = self.grouped_non_cabin_aggr_components(component, main, secondary)
         # return grouped_aggregate_components
 
-    def grouped_cabin_aggr_components(self, component: Component,
-                                      main_aggr_src: BaumusterCollection,
-                                      sec_aggr_src: BaumusterCollection) -> Dict[str, List[Component]]:
-        baumuster_id = component.clean_component_id
-        first_aggr_bm = None
-        second_aggr_bm = None
-
-        try:
-            first_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, main_aggr_src)
-        except ValueError:
-            pass
-        try:
-            second_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
-        except ValueError:
-            pass
-
-        groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG, ComponentGroupingType.General]
-        prefix = ComponentGroupingType.Aggregate.name
-
-        # SPECIAL RULE FOR D979811 ACELLO CABIN
-        if baumuster_id == "D979811":
-            if first_aggr_bm is None or second_aggr_bm is None:
-                raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
-
-            jdf_aggr_bm = first_aggr_bm if main_aggr_src.plant == Plant.JDF else second_aggr_bm
-            jdf_components = self.extract_components_by_grouping(jdf_aggr_bm, groupings, prefix, baumuster_id + " " + Plant.JDF.name)
-
-            sbc_aggr_bm = second_aggr_bm if sec_aggr_src.plant == Plant.SBC else first_aggr_bm
-            sbc_components = self.extract_components_by_grouping(sbc_aggr_bm, groupings, prefix, baumuster_id + " " + Plant.SBC.name)
-
-            for key in sbc_components.keys():
-                if key in jdf_components.keys():
-                    jdf_components[key].extend(sbc_components[key])
-                else:
-                    jdf_components[key] = sbc_components[key]
-            return jdf_components
-
-        else:
-            master_components_list: List[Component] = []
-            if first_aggr_bm is not None:
-                master_components_list.extend(first_aggr_bm.components_list)
-            if second_aggr_bm is not None:
-                master_components_list.extend(second_aggr_bm.components_list)
-            if not master_components_list:
-                raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
-
-            mashed_bm_data = BaumusterData(baumuster_id, component.business_unit, component.family, master_components_list)
-            return self.extract_components_by_grouping(mashed_bm_data, groupings, prefix, baumuster_id)
-
-    def grouped_non_cabin_aggr_components(self, component: Component, main_aggr_src: BaumusterCollection,
-                                          sec_aggr_src: BaumusterCollection) -> Dict[str, List[Component]]:
-        baumuster_id = component.clean_component_id
-        aggregates_bm = None
-
-        try:
-            aggregates_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, main_aggr_src)
-        except ValueError:
-            pass
-        if aggregates_bm is None:  # search in fallback
-            try:
-                aggregates_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
-            except ValueError:
-                pass
-        if aggregates_bm is None:
-            raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
-        groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG, ComponentGroupingType.General]
-        return self.extract_components_by_grouping(aggregates_bm, groupings, "Aggr", baumuster_id)
+    # def grouped_cabin_aggr_components(self, component: Component,
+    #                                   main_aggr_src: BaumusterCollection,
+    #                                   sec_aggr_src: BaumusterCollection) -> Dict[str, List[Component]]:
+    #     baumuster_id = component.clean_component_id
+    #     first_aggr_bm = None
+    #     second_aggr_bm = None
+    #
+    #     try:
+    #         first_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, main_aggr_src)
+    #     except ValueError:
+    #         pass
+    #     try:
+    #         second_aggr_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
+    #     except ValueError:
+    #         pass
+    #
+    #     groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG, ComponentGroupingType.General]
+    #     prefix = ComponentGroupingType.Aggregate.name
+    #
+    #     # SPECIAL RULE FOR D979811 ACELLO CABIN
+    #     if baumuster_id == "D979811":
+    #         if first_aggr_bm is None or second_aggr_bm is None:
+    #             raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
+    #
+    #         jdf_aggr_bm = first_aggr_bm if main_aggr_src.plant == Plant.JDF else second_aggr_bm
+    #         jdf_components = self.extract_components_by_grouping(jdf_aggr_bm, groupings, prefix, baumuster_id + " " + Plant.JDF.name)
+    #
+    #         sbc_aggr_bm = second_aggr_bm if sec_aggr_src.plant == Plant.SBC else first_aggr_bm
+    #         sbc_components = self.extract_components_by_grouping(sbc_aggr_bm, groupings, prefix, baumuster_id + " " + Plant.SBC.name)
+    #
+    #         for key in sbc_components.keys():
+    #             if key in jdf_components.keys():
+    #                 jdf_components[key].extend(sbc_components[key])
+    #             else:
+    #                 jdf_components[key] = sbc_components[key]
+    #         return jdf_components
+    #
+    #     else:
+    #         master_components_list: List[Component] = []
+    #         if first_aggr_bm is not None:
+    #             master_components_list.extend(first_aggr_bm.components_list)
+    #         if second_aggr_bm is not None:
+    #             master_components_list.extend(second_aggr_bm.components_list)
+    #         if not master_components_list:
+    #             raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
+    #
+    #         mashed_bm_data = BaumusterData(baumuster_id, component.business_unit, component.family, master_components_list)
+    #         return self.extract_components_by_grouping(mashed_bm_data, groupings, prefix, baumuster_id)
+    #
+    # def grouped_non_cabin_aggr_components(self, component: Component, main_aggr_src: BaumusterCollection,
+    #                                       sec_aggr_src: BaumusterCollection) -> Dict[str, List[Component]]:
+    #     baumuster_id = component.clean_component_id
+    #     aggregates_bm = None
+    #
+    #     try:
+    #         aggregates_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, main_aggr_src)
+    #     except ValueError:
+    #         pass
+    #     if aggregates_bm is None:  # search in fallback
+    #         try:
+    #             aggregates_bm = self.find_baumuster_data_for_id_in_source(baumuster_id, sec_aggr_src)
+    #         except ValueError:
+    #             pass
+    #     if aggregates_bm is None:
+    #         raise ValueError("Couldn't find Aggregate Baumuster " + baumuster_id)
+    #     groupings = [ComponentGroupingType.SAA, ComponentGroupingType.LEG, ComponentGroupingType.General]
+    #     return self.extract_components_by_grouping(aggregates_bm, groupings, "Aggr", baumuster_id)

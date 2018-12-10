@@ -1,5 +1,6 @@
 import py3270
 import time
+from MainframeExtractor.Connection.LogInMBBrasTN3270 import LogInMBBrasTN3270
 
 
 class LogInMBBrasTN3270BPMSTAR(LogInMBBrasTN3270):

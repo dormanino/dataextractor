@@ -13,7 +13,8 @@ month_years = list(map(lambda m: MonthYear(m, year), months))
 
 reports = {
     # "2019_1_parts_by_family": ReportType.FamilyParts,
-    "2019_1_cost_analysis_with_parts_NEWWWWWWWw": ReportType.CostAnalysisComponentsAndParts
+    # "2019_1_cost_analysis_QVAAs": ReportType.CostAnalysisComponents
+    "2019_1_cost_analysis_with_parts_QVAAs": ReportType.CostAnalysisComponentsAndParts
     # "EPU_Split": ReportType.EPUSplit
     # "SAA_SET_SBC": ReportType.ExtractSAAFromAGRMZ_SBC,
     # "SAA_SET_JDF": ReportType.ExtractSAAFromAGRMZ_JDF
