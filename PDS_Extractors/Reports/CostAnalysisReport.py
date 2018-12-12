@@ -42,6 +42,8 @@ class CostAnalysisReport:
         data_rows = []
         monthly_production = self.production.extract_monthly_production(month_year)
         for qvv in monthly_production.qvv_production_list:
+            if qvv.qvv_id[0:4] == "QVAA":
+                continue
             try:
                 analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), include_parts)
             except ValueError as error:
@@ -78,6 +80,7 @@ class CostAnalysisReport:
                                 analyzed_part.part.part_number,
                                 # analyzed_part.part.part_description,
                                 analyzed_part.part.quantity,
+                                analyzed_part.part.w,
                                 analyzed_part.part.bza,
                                 # analyzed_part.due_date_analysis.status.name,
                                 # analyzed_part.due_date_analysis.comment
