@@ -90,6 +90,7 @@ class TechDocStatusReport:
                                 analyzed_part.part.part_number,
                                 analyzed_part.part.part_description,
                                 analyzed_part.part.quantity,
+                                analyzed_part.part.w,
                                 analyzed_part.part.bza,
                                 analyzed_part.due_date_analysis.status.name,
                                 analyzed_part.due_date_analysis.comment
