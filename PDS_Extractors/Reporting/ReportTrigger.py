@@ -73,9 +73,7 @@ class ReportTrigger:
         elif report_type in ReportGroupings.tech_doc_reports:
 
             status_filter = None
-            if report_type in ReportGroupings.tech_doc_delta_reports:
-                status_filter = [DueDateStatus.Modified_Valid, DueDateStatus.Modified_Invalid, DueDateStatus.New, DueDateStatus.Canceled]
-            elif report_type in ReportGroupings.tech_doc_inverted_sequence_reports:
+            if report_type in ReportGroupings.tech_doc_inverted_sequence_reports:
                 status_filter = [DueDateStatus.InvertedSequence]
             elif report_type in ReportGroupings.tech_doc_no_conclusion_reports:
                 status_filter = [DueDateStatus.NoConclusion]
@@ -83,7 +81,16 @@ class ReportTrigger:
             report = TechDocStatusReport(self.production, self.qvv_components_extractor)
             return report.run(month_years, include_parts, status_filter)
 
-        # SAA extraction from AGRMZ data
+        # Tech doc Deltas
+        elif report_type in ReportGroupings.tech_doc_delta_reports:
+            status_filter = None
+            if report_type in ReportGroupings.tech_doc_delta_reports:
+                status_filter = [DueDateStatus.Modified_Valid, DueDateStatus.Modified_Invalid, DueDateStatus.New, DueDateStatus.Canceled]
+
+            report = TechDocStatusReport(self.production, self.qvv_components_extractor)
+            return report.run(month_years, include_parts, status_filter)
+
+    # SAA extraction from AGRMZ data
         if report_type in ReportGroupings.extract_saa_reports:
             report = SAAsExtractionReport(self.tech_doc_data_source)
             if report_type is ReportType.ExtractSAAFromAGRMZ_SBC:
