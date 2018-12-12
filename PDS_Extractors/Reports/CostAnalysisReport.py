@@ -80,10 +80,12 @@ class CostAnalysisReport:
                                 analyzed_part.part.part_number,
                                 # analyzed_part.part.part_description,
                                 analyzed_part.part.quantity,
+                                analyzed_part.part.structure_index,
                                 analyzed_part.part.w,
                                 analyzed_part.part.bza,
                                 # analyzed_part.due_date_analysis.status.name,
                                 # analyzed_part.due_date_analysis.comment
+
                             ]
                             extended_data_row = data_row.copy()
                             extended_data_row.extend(part_data)

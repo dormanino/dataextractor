@@ -28,8 +28,7 @@ class EPUSplitReport:
         for month_year in month_years:
             monthly_production = self.production.extract_monthly_production(month_year)
             for qvv in monthly_production.qvv_production_list:
-                # Avoid doubling Cabin Parts in the EPU Split SUMUP
-                if qvv.qvv_id[0:4] == 'QVAA':
+                if qvv.qvv_id[0:4] == "QVAA":
                     continue
                 try:
                     analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), True)
@@ -69,8 +68,8 @@ class EPUSplitReport:
                             part_volume_data = data_rows[line_key]
                             if month_year not in part_volume_data.month_year_vol.keys():
                                 part_volume_data.month_year_vol[month_year] = 0
-
-                            part_volume_data.month_year_vol[month_year] = qvv.volume  # part_volume_data.month_year_vol[month_year] +
+                            # part_volume_data.month_year_vol[month_year] +
+                            part_volume_data.month_year_vol[month_year] = qvv.volume
 
         final_headers = self.headers.copy()
         month_years_str = list(map(lambda my: my.to_str(), month_years))

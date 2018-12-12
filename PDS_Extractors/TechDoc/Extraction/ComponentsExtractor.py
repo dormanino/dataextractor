@@ -62,7 +62,7 @@ class ComponentsExtractor:
         not_found_error = "Couldn't find parts for Component " + component.component_id
 
         cached_component_parts = self.component_parts_cache.get(cache_key, None)
-        print(sys.getsizeof(self.component_parts_cache))
+
         if cached_component_parts == not_found_value:
             raise ValueError(not_found_error)
         elif cached_component_parts is None:
