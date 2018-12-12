@@ -21,8 +21,8 @@ class DataPoint:
 
     # Final Data Points
     data_info_bm = PATH_DataFiles + '\\bm_info.json'
-    # data_EPU_SPLIT = PATH_DataFiles + '\\NEW_EPU_Split_test.csv'
-    data_EPU_SPLIT = PATH_DataFiles + '\\NEW_EPU_Split_test_FIXED_ACTROS_EXCEPTION_4.csv'
+    data_EPU_SPLIT = PATH_DataFiles + '\\EPU_Split.csv'
+    # data_EPU_SPLIT = PATH_DataFiles + '\\NEW_EPU_Split_test_FIXED_ACTROS_EXCEPTION_4.csv'
     production = LatestFileVersion.latest_file_version(EXT_json, '_dictionary_qvvs_by_month', current=PATH_DataFiles)
     data_sbc_vehicles = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_sbc + SUFFIX_data_vehicles, current=PATH_DataFiles)
     data_jdf_vehicles = LatestFileVersion.latest_file_version(EXT_json, SUFFIX_jdf + SUFFIX_data_vehicles, current=PATH_DataFiles)
