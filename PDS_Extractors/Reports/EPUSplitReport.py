@@ -28,8 +28,8 @@ class EPUSplitReport:
         for month_year in month_years:
             monthly_production = self.production.extract_monthly_production(month_year)
             for qvv in monthly_production.qvv_production_list:
-                if qvv.family != 'Actros':
-                    print(qvv.family, qvv.qvv_id, month_year.to_str())
+                # Avoid doubling Cabin Parts in the EPU Split SUMUP
+                if qvv.qvv_id[0:4] == 'QVAA':
                     continue
                 try:
                     analyzed_qvv = self.qvv_components_analyzer.valid_qvv_components(qvv, month_year.to_date(), True)
