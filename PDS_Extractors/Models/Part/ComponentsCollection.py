@@ -5,20 +5,20 @@ from PDS_Extractors.Models.Plant import Plant
 
 
 class ComponentsCollection:
-    def __init__(self, plant: Plant, componment_parts_list: List[ComponentParts]):
+    def __init__(self, plant: Plant, component_parts_list: List[ComponentParts]):
         self.plant: Plant = plant
-        self.component_parts_list: List[ComponentParts] = componment_parts_list
+        self.component_parts_list: List[ComponentParts] = component_parts_list
 
     @classmethod
     def from_dict(cls, datadict):
         return cls(
             Plant.from_str(datadict[ComponentsCollection.JSONKeys.plant]),
-            list(map(ComponentParts.from_dict, datadict[ComponentsCollection.JSONKeys.componment_parts_list]))
+            list(map(ComponentParts.from_dict, datadict[ComponentsCollection.JSONKeys.component_parts_list]))
         )
 
     class JSONKeys:
         plant = "plant"
-        componment_parts_list = "data"
+        component_parts_list = "data"
 
     def __eq__(self, other):
         return self.plant == other.plant
