@@ -4,7 +4,9 @@ from Globus_Data.Models.PurchasingData import PartCostData
 
 
 class LoadGlobusData:
-    def load_globus_data(self):
+
+    @staticmethod
+    def load_globus_data():
         wb = load_workbook(data_sbc_vehicles, read_only=True)
         ws = wb[wb.sheetnames[0]]
         globus_data_list = []
@@ -19,8 +21,3 @@ class LoadGlobusData:
             yield xablau
             globus_data_list.append(xablau)
         return globus_data_list
-
-
-xyz = LoadGlobusData()
-for data in xyz.load_globus_data():
-    print(data.part_id, data.totalprice)

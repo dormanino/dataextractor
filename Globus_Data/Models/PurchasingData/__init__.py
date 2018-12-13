@@ -13,3 +13,8 @@ class PartCostData:
         self.currency: str = currency
         self.totalprice: str = totalprice
         self.addon: str = addon
+
+    def to_list(self):
+
+        return [self.part_id, self.es1, self.es2, self.plant, self.supplynbr, self.dmcsupplcode, self.supplier,
+                self.prdcountry, self.supcountry, self.currency, self.totalprice, self.addon]

@@ -49,7 +49,7 @@ class TechDocStatusReport:
                 continue
             for grouping, analyzed_components in analyzed_qvv.components.items():
 
-                if status_filter is None or not status_filter:
+                if include_parts or status_filter is None or not status_filter:
                     filtered_components = analyzed_components
                 else:
                     filtered_components = list(filter(lambda ac: ac.due_date_analysis.status in status_filter, analyzed_components))
@@ -73,7 +73,7 @@ class TechDocStatusReport:
                         analyzed_component.component.business_unit,
                         analyzed_component.component.family,
                         analyzed_component.component.component_description,
-                        analyzed_component.component.validation_rule,
+                        # analyzed_component.component.validation_rule,
                         analyzed_component.due_date_analysis.status.value,
                         analyzed_component.due_date_analysis.comment
                     ]
@@ -90,9 +90,13 @@ class TechDocStatusReport:
                                 analyzed_part.part.part_number,
                                 analyzed_part.part.part_description,
                                 analyzed_part.part.quantity,
-                                analyzed_part.part.w,
+                                # analyzed_part.part.w,
                                 analyzed_part.part.bza,
                                 analyzed_part.due_date_analysis.status.name,
+                                analyzed_part.part.em_ab,
+                                analyzed_part.part.t_a,
+                                analyzed_part.part.em_bis,
+                                analyzed_part.part.t_b,
                                 analyzed_part.due_date_analysis.comment
                             ]
                             extended_data_row = data_row.copy()

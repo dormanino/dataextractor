@@ -18,6 +18,10 @@ class ReportGroupings:
     ]
 
     tech_doc_reports = [
+        ReportType.TechDocDeltaComponents,
+        ReportType.TechDocDeltaComponentsAndParts,
+        ReportType.TechDocInvertedSequenceComponents,
+        ReportType.TechDocInvertedSequenceComponentsAndParts,
         ReportType.TechDocNoConclusionComponents,
         ReportType.TechDocNoConclusionComponentsAndParts
     ]

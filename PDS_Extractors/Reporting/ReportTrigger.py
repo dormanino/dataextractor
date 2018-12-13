@@ -1,5 +1,6 @@
 import json
 
+from Globus_Data.Models.Extractors import LoadGlobusData
 from PDS_Extractors.Models.Baumuster.BaumusterInfo import BaumusterInfo
 from PDS_Extractors.Models.Plant import Plant
 from PDS_Extractors.Reports.FamilyParts import FamilyPartsReport
@@ -23,11 +24,21 @@ from PDS_Extractors.Reports.OptionalsPartNumberReport import OptionalsPartNumber
 
 class ReportTrigger:
     def __init__(self):
+        # BAUMUSTER INFO
         baumusters_dict = json.load(open(DataPoint.data_info_bm))
         self.baumusters_list = []
         for key, value in baumusters_dict.items():
             if key[0] == "C":
                 self.baumusters_list.append(BaumusterInfo(key, value[0], value[1]))
+
+        # PARTS COST DATA
+        globus_data = LoadGlobusData.load_globus_data()
+        self.parts_cost_data = dict()
+        for part_cost_data in globus_data:
+            if part_cost_data not in self.parts_cost_data.keys():
+                self.parts_cost_data[part_cost_data.part_id] = [part_cost_data]
+            else:
+                self.parts_cost_data[part_cost_data.part_id].append(part_cost_data)
 
         self.production = Production.from_dict(json.load(open(DataPoint.production)))
         self.tech_doc_data_source = TechDocDataSource(BaumusterCollection.from_dict(json.load(open(DataPoint.data_sbc_vehicles))),
@@ -56,7 +67,7 @@ class ReportTrigger:
 
         # EPU SPLIT
         if report_type == ReportType.EPUSplit:
-            report = EPUSplitReport(self.production, self.qvv_components_extractor)
+            report = EPUSplitReport(self.production, self.qvv_components_extractor, self.parts_cost_data)
             return report.run(month_years)
 
         # FAMILY EXCLUSIVE PARTS
@@ -73,19 +84,12 @@ class ReportTrigger:
         elif report_type in ReportGroupings.tech_doc_reports:
 
             status_filter = None
-            if report_type in ReportGroupings.tech_doc_inverted_sequence_reports:
+            if report_type in ReportGroupings.tech_doc_delta_reports:
+                status_filter = [DueDateStatus.Modified_Valid, DueDateStatus.Modified_Invalid, DueDateStatus.New, DueDateStatus.Canceled]
+            elif report_type in ReportGroupings.tech_doc_inverted_sequence_reports:
                 status_filter = [DueDateStatus.InvertedSequence]
             elif report_type in ReportGroupings.tech_doc_no_conclusion_reports:
                 status_filter = [DueDateStatus.NoConclusion]
-
-            report = TechDocStatusReport(self.production, self.qvv_components_extractor)
-            return report.run(month_years, include_parts, status_filter)
-
-        # Tech doc Deltas
-        elif report_type in ReportGroupings.tech_doc_delta_reports:
-            status_filter = None
-            if report_type in ReportGroupings.tech_doc_delta_reports:
-                status_filter = [DueDateStatus.Modified_Valid, DueDateStatus.Modified_Invalid, DueDateStatus.New, DueDateStatus.Canceled]
 
             report = TechDocStatusReport(self.production, self.qvv_components_extractor)
             return report.run(month_years, include_parts, status_filter)

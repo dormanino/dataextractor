@@ -81,8 +81,11 @@ class CostAnalysisReport:
                                 # analyzed_part.part.part_description,
                                 analyzed_part.part.quantity,
                                 analyzed_part.part.structure_index,
-                                analyzed_part.part.w,
                                 analyzed_part.part.bza,
+                                analyzed_part.part.em_ab,
+                                analyzed_part.part.t_a,
+                                analyzed_part.part.em_bis,
+                                analyzed_part.part.t_b,
                                 # analyzed_part.due_date_analysis.status.name,
                                 # analyzed_part.due_date_analysis.comment
 

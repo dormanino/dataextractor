@@ -4,6 +4,7 @@ from PDS_Extractors.Reporting.ReportOutput import ReportOutput
 from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
 from PDS_Extractors.Models.MonthYear import MonthYear
 from PDS_Extractors.Models.Production.Production import Production
+from Globus_Data.Models.PurchasingData import PartCostData
 
 
 class PartVolumeData:
@@ -19,9 +20,10 @@ class EPUSplitReport:
         "Component Number", "KG", "ANZ", "Grouping", "Component BU", "Component Family",  # Component
     ]
 
-    def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor):
+    def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor, parts_cost_data):
         self.production = production
         self.qvv_components_analyzer = qvv_components_analyzer
+        self.parts_cost_data = parts_cost_data
 
     def run(self, month_years: List[MonthYear]) -> ReportOutput:
         data_rows = dict()
@@ -71,11 +73,8 @@ class EPUSplitReport:
                             # part_volume_data.month_year_vol[month_year] +
                             part_volume_data.month_year_vol[month_year] = qvv.volume
 
-        final_headers = self.headers.copy()
-        month_years_str = list(map(lambda my: my.to_str(), month_years))
-        final_headers.extend(month_years_str)
-
-        all_data = []
+        print("STARTED - GROUPING OF MONTHLY VOLUME BY PART")
+        all_parts_data = []
         for part_volume_data_key in sorted(data_rows):
             part_volume_data_data = data_rows[part_volume_data_key]
             line_output = part_volume_data_data.line_data.copy()
@@ -84,6 +83,26 @@ class EPUSplitReport:
                     line_output.append(part_volume_data_data.month_year_vol[month_year])
                 else:
                     line_output.append(0)
-            all_data.append(line_output)
+            all_parts_data.append(line_output)
+        print("ENDED - GROUPING OF MONTHLY VOLUME BY PART")
 
-        return ReportOutput(final_headers, all_data)
+        print("STARTED - CROSSING COST DATA BY PART")
+        all_cost_data = []
+        for part_data in all_parts_data:
+            part_id = part_data[0].replace(" ", "")
+            cost_line = part_data.copy()
+            if part_id in self.parts_cost_data.keys():
+                for part_cost_data in self.parts_cost_data[part_id]:
+                    cost_line = part_data.copy()
+                    cost_line.extend(part_cost_data.to_list())
+                    all_cost_data.append(cost_line)
+            else:
+                cost_line.append("Cost data not found")
+                all_cost_data.append(cost_line)
+        print("ENDED - CROSSING COST DATA BY PART")
+
+        final_headers = self.headers.copy()
+        month_years_str = list(map(lambda my: my.to_str(), month_years))
+        final_headers.extend(month_years_str)
+        return ReportOutput(final_headers, all_cost_data)
+        # return ReportOutput(final_headers, all_parts_data)
