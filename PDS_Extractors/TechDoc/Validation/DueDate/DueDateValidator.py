@@ -41,7 +41,6 @@ class DueDateValidator:
                     return DueDateAnalysis(DueDateStatus.Invalid, DueDateComment.out_of_reference())
                 else:
                     return DueDateAnalysis(DueDateStatus.NoConclusion, DueDateComment.no_conclusion(1))
-
         elif from_date == no_deadline:
             if apa_to is None:
                 return DueDateAnalysis(DueDateStatus.Invalid, DueDateComment.modified_no_due_date_apa_from(apa_from))
@@ -50,7 +49,6 @@ class DueDateValidator:
                     return DueDateAnalysis(DueDateStatus.InvertedSequence, DueDateComment.inverted_sequence())
                 else:
                     return DueDateAnalysis(DueDateStatus.Invalid, DueDateComment.modified_no_effect(apa_to))
-
         elif from_date > (int_ref_date + days_offset):
             if apa_to is None:
                 return DueDateAnalysis(DueDateStatus.Invalid, DueDateComment.future_modified_with_due_date(apa_from, from_date))
@@ -67,7 +65,6 @@ class DueDateValidator:
                     return DueDateAnalysis(DueDateStatus.Invalid, DueDateComment.out_of_reference())
                 else:
                     return DueDateAnalysis(DueDateStatus.NoConclusion, DueDateComment.no_conclusion(2))
-
         elif (int_ref_date - days_offset) <= from_date <= (int_ref_date + days_offset):
             if apa_to is None:
                 return DueDateAnalysis(DueDateStatus.Modified_Valid, DueDateComment.applied_recently(apa_from))
@@ -82,6 +79,5 @@ class DueDateValidator:
                     return DueDateAnalysis(DueDateStatus.InvertedSequence, DueDateComment.inverted_sequence())
                 else:
                     return DueDateAnalysis(DueDateStatus.NoConclusion, DueDateComment.no_conclusion(3))
-
         else:
             return DueDateAnalysis(DueDateStatus.NoConclusion, DueDateComment.no_conclusion(4))
