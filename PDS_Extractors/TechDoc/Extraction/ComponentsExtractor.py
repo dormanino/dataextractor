@@ -1,7 +1,5 @@
 import datetime
 from typing import Dict, List
-import sys
-
 from PDS_Extractors.Models.Analysis.AnalyzedComponent import AnalyzedComponent
 from PDS_Extractors.TechDoc.Validation.TechDocValidator import TechDocValidator
 from PDS_Extractors.Models.DataSource.TechDocDataSource import TechDocDataSource
