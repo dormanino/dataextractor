@@ -22,6 +22,7 @@ if not cache_bypass:
         # "ExtractOptionalsPartsFrom3CA_SBC": ReportType.ExtractOptionalsPartsFrom3CA_SBC,
         # "ExtractOptionalsPartsFrom3CA_JDF": ReportType.ExtractOptionalsPartsFrom3CA_JDF
         # "Tech Doc Delta_with parts_no saa filter": ReportType.TechDocDeltaComponentsAndParts
+        # "SAAs and parts for BM SBC": ReportType.ExtractSAAandPartsfromBM_SBC
     }
 
     trigger = ReportTrigger()
