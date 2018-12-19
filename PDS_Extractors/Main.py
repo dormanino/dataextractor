@@ -15,8 +15,9 @@ if not cache_bypass:
 
     month_years = list(map(lambda m: MonthYear(m, year), months_list))
     reports = {
-        "EPU_Split": ReportType.EPUSplit
+        # "EPU_Split": ReportType.EPUSplit
         # "2019_1_cost_analysis_QVAAs": ReportType.CostAnalysisComponents
+        "2019_1_cost_analysis_with_parts_QVAAs": ReportType.CostAnalysisComponentsAndParts
         # "SAA_SET_SBC": ReportType.ExtractSAAFromAGRMZ_SBC,
         # "SAA_SET_JDF": ReportType.ExtractSAAFromAGRMZ_JDF
         # "ExtractOptionalsPartsFrom3CA_SBC": ReportType.ExtractOptionalsPartsFrom3CA_SBC,
