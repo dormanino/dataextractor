@@ -23,6 +23,7 @@ if not cache_bypass:
         # "ExtractOptionalsPartsFrom3CA_SBC": ReportType.ExtractOptionalsPartsFrom3CA_SBC,
         # "ExtractOptionalsPartsFrom3CA_JDF": ReportType.ExtractOptionalsPartsFrom3CA_JDF
         "Tech Doc Delta_with parts_no saa filter": ReportType.TechDocDeltaComponentsAndParts
+        # "Tech Doc Delta_saa only": ReportType.TechDocDeltaComponents
         # "SAAs and parts for BM SBC": ReportType.ExtractSAAandPartsfromBM_SBC
     }
 
@@ -40,7 +41,6 @@ else:
             # "2019_1_parts_by_family": ReportType.FamilyParts,
             # "2019_1_cost_analysis_with_parts_QVAAs" + str(months): ReportType.CostAnalysisComponentsAndParts
             # "Tech Doc Delta_with parts" + str(months): ReportType.TechDocDeltaComponentsAndParts
-            "Tech Doc Delta_saa only" + str(months): ReportType.TechDocDeltaComponents
         }
 
         trigger = ReportTrigger()

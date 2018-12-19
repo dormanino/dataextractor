@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import sys
 from PDS_Extractors.Reporting.ReportOutput import ReportOutput
 from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
@@ -28,7 +28,7 @@ class TechDocStatusReport:
     def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor, parts_cost_data):
         self.production = production
         self.qvv_components_analyzer = qvv_components_analyzer
-        self.parts_cost_data = parts_cost_data
+        self.parts_cost_data: Dict = parts_cost_data
 
     def run(self, month_years: List[MonthYear], include_parts: bool, include_costs: bool, status_filter) -> ReportOutput:
         # sanity check: cost w/o parts as source

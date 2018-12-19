@@ -102,7 +102,7 @@ class ReportTrigger:
                 status_filter = [DueDateStatus.NoConclusion]
 
             report = TechDocStatusReport(self.production, self.qvv_components_extractor, self.parts_cost_data)
-            return report.run(month_years, include_parts, status_filter)
+            return report.run(month_years, include_parts, include_costs, status_filter)
 
         # SAA extraction from AGRMZ data
         if report_type in ReportGroupings.extract_saa_reports:
