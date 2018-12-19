@@ -4,7 +4,6 @@ from PDS_Extractors.Reporting.ReportOutput import ReportOutput
 from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
 from PDS_Extractors.Models.MonthYear import MonthYear
 from PDS_Extractors.Models.Production.Production import Production
-from Globus_Data.Models.PurchasingData import PartCostData
 
 
 class PartVolumeData:
@@ -12,12 +11,13 @@ class PartVolumeData:
         self.line_data = line_data
         self.month_year_vol = dict()
 
-
 class EPUSplitReport:
     headers = [
         "Part Number", "Quantity", "BZA", "DA", "W", "EHM",  # Part
         "Baumuster", "BU", "Family", "QVV",  # QVV Production
-        "Component Number", "KG", "ANZ", "Grouping", "Component BU", "Component Family",  # Component
+        "Component Number", "KG", "ANZ", "Grouping", "Component BU", "Component Family",
+        "PartID", "es1", "es2", "plant", "supplynbr", "dmcsupplcode", "supplier", "prdcountry",
+        "supcountry", "currency", "totalprice", "addon"
     ]
 
     def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor, parts_cost_data):

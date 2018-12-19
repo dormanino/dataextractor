@@ -64,13 +64,15 @@ class ReportTrigger:
     def run(self, report_type, month_years) -> ReportOutput:
 
         include_parts = False
+        include_costs = False
         if report_type in ReportGroupings.parts_reports:
             include_parts = True
 
         # COST ANALYSIS
         if report_type in ReportGroupings.cost_analysis_reports:
-            report = CostAnalysisReport(self.production, self.qvv_components_extractor)
-            return report.run(month_years, include_parts)
+            include_costs = True
+            report = CostAnalysisReport(self.production, self.qvv_components_extractor, self.parts_cost_data)
+            return report.run(month_years, include_parts, include_costs)
 
         # EPU SPLIT
         if report_type == ReportType.EPUSplit:
@@ -89,16 +91,17 @@ class ReportTrigger:
 
         # TECH DOC
         elif report_type in ReportGroupings.tech_doc_reports:
-
+            include_costs = False
             status_filter = None
             if report_type in ReportGroupings.tech_doc_delta_reports:
                 status_filter = [DueDateStatus.Modified_Valid, DueDateStatus.Modified_Invalid, DueDateStatus.New, DueDateStatus.Canceled]
+                include_costs = True
             elif report_type in ReportGroupings.tech_doc_inverted_sequence_reports:
                 status_filter = [DueDateStatus.InvertedSequence]
             elif report_type in ReportGroupings.tech_doc_no_conclusion_reports:
                 status_filter = [DueDateStatus.NoConclusion]
 
-            report = TechDocStatusReport(self.production, self.qvv_components_extractor)
+            report = TechDocStatusReport(self.production, self.qvv_components_extractor, self.parts_cost_data)
             return report.run(month_years, include_parts, status_filter)
 
         # SAA extraction from AGRMZ data
