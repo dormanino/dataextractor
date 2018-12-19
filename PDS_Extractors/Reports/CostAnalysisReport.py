@@ -1,4 +1,5 @@
-from typing import List
+import sys
+from typing import List, Dict
 
 from PDS_Extractors.Reporting.ReportOutput import ReportOutput
 from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
@@ -20,15 +21,25 @@ class CostAnalysisReport:
         "Status", "Comment"
     ]
 
-    def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor):
+    cost_headers = [
+        "Part ID", "ES1", "ES2", "Plant", "Supplier Number", "Daimler Supplier Code", "Supplier", "Production Country",
+        "Supplier Country", "Currency", "Total Price", "Add On"
+    ]
+
+    def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor, parts_cost_data):
         self.production = production
         self.qvv_components_analyzer = qvv_components_analyzer
+        self.parts_cost_data: Dict = parts_cost_data
 
-    def run(self, month_years: List[MonthYear], include_parts: bool) -> ReportOutput:
+    def run(self, month_years: List[MonthYear], include_parts: bool, include_costs: bool) -> ReportOutput:
+        # sanity check: cost w/o parts as source
+        if not include_parts and include_costs:
+            sys.exit("Request cost data without including parts in the method is not possible")
+
         all_data = []
         for month_year in month_years:
             try:
-                month_data = self.run_month(month_year, include_parts)
+                month_data = self.run_month(month_year, include_parts, include_costs)
                 all_data.extend(month_data)
             except ValueError as error:
                 print(error)
@@ -38,7 +49,7 @@ class CostAnalysisReport:
             final_headers.extend(self.part_headers)
         return ReportOutput(final_headers, all_data)
 
-    def run_month(self, month_year: MonthYear, include_parts: bool):
+    def run_month(self, month_year: MonthYear, include_parts: bool, include_costs: bool):
         data_rows = []
         monthly_production = self.production.extract_monthly_production(month_year)
         for qvv in monthly_production.qvv_production_list:
@@ -76,6 +87,7 @@ class CostAnalysisReport:
 
                     if include_parts:
                         for analyzed_part in analyzed_component.parts:
+
                             part_data = [
                                 analyzed_part.part.part_number,
                                 # analyzed_part.part.part_description,
@@ -88,13 +100,18 @@ class CostAnalysisReport:
                                 analyzed_part.part.t_b,
                                 # analyzed_part.due_date_analysis.status.name,
                                 # analyzed_part.due_date_analysis.comment
-
                             ]
+                            if include_costs:
+                                part_id = part_data[0].replace(" ", "")
+                                if part_id in self.parts_cost_data.keys():
+                                    for part_cost_data in self.parts_cost_data[part_id]:
+                                        part_data.extend(part_cost_data.to_list())
+                                else:
+                                    part_data.append("Cost data not found")
+
                             extended_data_row = data_row.copy()
                             extended_data_row.extend(part_data)
                             data_rows.append(extended_data_row)
-
                     else:
                         data_rows.append(data_row)
-
         return data_rows

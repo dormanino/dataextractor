@@ -17,3 +17,5 @@ class ReportType(Enum):
     ExtractSAAFromAGRMZ_JDF = "SAAs para copia de 3CA em JDF"
     ExtractOptionalsPartsFrom3CA_SBC = "Pecas optcionais em SBC"
     ExtractOptionalsPartsFrom3CA_JDF = "Pecas optcionais em JDF"
+    ExtractSAAandPartsfromBM_SBC = "Pecas optcionais em SBC"
+    ExtractSAAandPartsfromBM_JDF = "Pecas optcionais em JDF"

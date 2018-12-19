@@ -50,3 +50,8 @@ class ReportGroupings:
         ReportType.ExtractOptionalsPartsFrom3CA_SBC,
         ReportType.ExtractOptionalsPartsFrom3CA_JDF
     ]
+
+    extract_saa_and_parts_from_bm = [
+        ReportType.ExtractSAAandPartsfromBM_SBC,
+        ReportType.ExtractSAAandPartsfromBM_JDF
+    ]

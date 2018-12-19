@@ -1,25 +1,32 @@
 import json
 
-from Globus_Data.Models.Extractors import LoadGlobusData
-from PDS_Extractors.Models.Baumuster.BaumusterInfo import BaumusterInfo
+from PDS_Extractors.Data.DataPoint import DataPoint
+
 from PDS_Extractors.Models.Plant import Plant
-from PDS_Extractors.Reports.FamilyParts import FamilyPartsReport
+from PDS_Extractors.Models.Production.Production import Production
+from PDS_Extractors.Models.Baumuster.BaumusterInfo import BaumusterInfo
+from PDS_Extractors.Models.Baumuster.BaumusterCollection import BaumusterCollection
+from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
+from PDS_Extractors.Models.DataSource.TechDocDataSource import TechDocDataSource
+
+from Globus_Data.Models.Extractors import LoadGlobusData
+
 from PDS_Extractors.TechDoc.Extraction.BaumusterComponentsExtractor import BaumusterComponentsExtractor
 from PDS_Extractors.TechDoc.Extraction.QVVComponentsExtractor import QVVComponentsExtractor
-from PDS_Extractors.Data.DataPoint import DataPoint
-from PDS_Extractors.Models.Baumuster.BaumusterCollection import BaumusterCollection
-from PDS_Extractors.Models.DataSource.TechDocDataSource import TechDocDataSource
-from PDS_Extractors.Models.Part.ComponentsCollection import ComponentsCollection
-from PDS_Extractors.Models.Production.Production import Production
+
+from PDS_Extractors.TechDoc.Validation.DueDate.DueDateStatus import DueDateStatus
+
 from PDS_Extractors.Reporting.ReportGroupings import ReportGroupings
 from PDS_Extractors.Reporting.ReportOutput import ReportOutput
 from PDS_Extractors.Reporting.ReportType import ReportType
-from PDS_Extractors.Reports.CostAnalysisReport import CostAnalysisReport
+
 from PDS_Extractors.Reports.EPUSplitReport import EPUSplitReport
+from PDS_Extractors.Reports.CostAnalysisReport import CostAnalysisReport
 from PDS_Extractors.Reports.TechDocStatusReport import TechDocStatusReport
-from PDS_Extractors.TechDoc.Validation.DueDate.DueDateStatus import DueDateStatus
+from PDS_Extractors.Reports.FamilyParts import FamilyPartsReport
 from PDS_Extractors.Reports.SAAsExtractionReport import SAAsExtractionReport
 from PDS_Extractors.Reports.OptionalsPartNumberReport import OptionalsPartNumberReport
+from PDS_Extractors.Reports.PartsExtractionReport import PartsExtractionReport
 
 
 class ReportTrigger:
@@ -57,13 +64,15 @@ class ReportTrigger:
     def run(self, report_type, month_years) -> ReportOutput:
 
         include_parts = False
+        include_costs = False
         if report_type in ReportGroupings.parts_reports:
             include_parts = True
 
         # COST ANALYSIS
         if report_type in ReportGroupings.cost_analysis_reports:
-            report = CostAnalysisReport(self.production, self.qvv_components_extractor)
-            return report.run(month_years, include_parts)
+            include_costs = True
+            report = CostAnalysisReport(self.production, self.qvv_components_extractor, self.parts_cost_data)
+            return report.run(month_years, include_parts, include_costs)
 
         # EPU SPLIT
         if report_type == ReportType.EPUSplit:
@@ -82,16 +91,17 @@ class ReportTrigger:
 
         # TECH DOC
         elif report_type in ReportGroupings.tech_doc_reports:
-
+            include_costs = False
             status_filter = None
             if report_type in ReportGroupings.tech_doc_delta_reports:
                 status_filter = [DueDateStatus.Modified_Valid, DueDateStatus.Modified_Invalid, DueDateStatus.New, DueDateStatus.Canceled]
+                include_costs = True
             elif report_type in ReportGroupings.tech_doc_inverted_sequence_reports:
                 status_filter = [DueDateStatus.InvertedSequence]
             elif report_type in ReportGroupings.tech_doc_no_conclusion_reports:
                 status_filter = [DueDateStatus.NoConclusion]
 
-            report = TechDocStatusReport(self.production, self.qvv_components_extractor)
+            report = TechDocStatusReport(self.production, self.qvv_components_extractor, self.parts_cost_data)
             return report.run(month_years, include_parts, status_filter)
 
         # SAA extraction from AGRMZ data
@@ -110,3 +120,12 @@ class ReportTrigger:
             elif report_type is ReportType.ExtractSAAFromAGRMZ_JDF:
                 return report.run(Plant.JDF)
 
+        # SAA's and parts for bm
+        if report_type in ReportGroupings.extract_saa_and_parts_from_bm:
+            # TODO: pass list from outside of the method
+            bm_list = ["C963403", "C963414", "C963424", "C963425"]
+            report = PartsExtractionReport(self.tech_doc_data_source, bm_list)
+            if report_type is ReportType.ExtractSAAandPartsfromBM_SBC:
+                return report.run(Plant.SBC)
+            elif report_type is ReportType.ExtractSAAandPartsfromBM_JDF:
+                return report.run(Plant.JDF)
