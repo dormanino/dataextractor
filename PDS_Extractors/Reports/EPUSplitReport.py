@@ -16,8 +16,8 @@ class EPUSplitReport:
         "Part Number", "Quantity", "BZA", "DA", "W", "EHM",  # Part
         "Baumuster", "BU", "Family", "QVV",  # QVV Production
         "Component Number", "KG", "ANZ", "Grouping", "Component BU", "Component Family",
-        "PartID", "es1", "es2", "plant", "supplynbr", "dmcsupplcode", "supplier", "prdcountry",
-        "supcountry", "currency", "totalprice", "addon"
+        "Part ID", "ES1", "ES2", "Plant", "Supplier Number", "Daimler Supplier Code", "Supplier", "Production Country",
+        "Supplier Country", "Currency", "Total Price", "Add On"
     ]
 
     def __init__(self, production: Production, qvv_components_analyzer: QVVComponentsExtractor, parts_cost_data):
